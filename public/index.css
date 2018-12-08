@@ -1,0 +1,49 @@
+* {
+    font-family: 'Noto Sans JP', serif;
+}
+h1 {
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    padding: 5px;
+    font-weight: bold;
+}
+h2 {
+    text-decoration: underline;
+}
+h3 {
+    font-style: italic;
+}
+h1 > img {
+    width: 35px;
+    margin-right: 10px;
+}
+.game.watching {
+    border: 5px solid green;
+}
+.game {
+    padding: 10px;
+    border: 2px solid black;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+.game-title {
+    font-weight: bold;
+    display: inline-block;
+}
+.game-network {
+    font-style: italic;
+    color: grey;
+}
+.game-network:before {
+    content: "|";
+    color: black;
+    font-style: initial;
+    padding: 5px;
+}
+.game-time, .game-network {
+    float: right;
+}
+.game-seperator {
+    clear: both;
+}
