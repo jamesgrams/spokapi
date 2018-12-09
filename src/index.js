@@ -66,7 +66,7 @@ app.get("/", async function(request, response) {
 // Endpoint to get a list of games
 app.get('/games', async function(request, response) {
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         executablePath: PATH_TO_CHROME
     });
     let page = await browser.newPage();
