@@ -32,6 +32,12 @@ const UNSUPPORTED_CHANNELS = ["espn+","espndeportes","longhorn","accextra","sec"
  * @default
  */
 const STOP_URL = "https://google.com";
+/**
+ * @constant
+ * @type {number}
+ * @default
+ */
+const STANDARD_TIMEOUT = 0; // Disable timeout by default
 
 /**
  * Class representing a generate Sports Site.
@@ -42,6 +48,7 @@ class Site {
     static get PASSWORD() { return PASSWORD };
     static get UNSUPPORTED_CHANNELS() { return UNSUPPORTED_CHANNELS };
     static get PROVIDER() { return PROVIDER };
+    static get STANDARD_TIMEOUT() { return STANDARD_TIMEOUT };
 
     /**
     * Constructor.
@@ -68,7 +75,7 @@ class Site {
      */
     async loginSpectrum() {
         // Wait until we have the username box
-        await this.page.waitForSelector("#IDToken1");
+        await this.page.waitForSelector("#IDToken1", {timeout: STANDARD_TIMEOUT});
         // Enter the username and password
         await this.page.click("#IDToken1");
         await this.page.keyboard.type(USERNAME);

@@ -37,7 +37,7 @@ class Espn extends Site {
 
         await this.page.goto(ESPN_URL);
         // Wait until the schedule is loaded
-        await this.page.waitForSelector('#tabLive a');
+        await this.page.waitForSelector('#tabLive a', {timeout: Site.STANDARD_TIMEOUT});
         
         // Get all the links to games
         let sportTables = await this.page.$$('#tabLive table');
@@ -103,7 +103,7 @@ class Espn extends Site {
      */
     async login() {
         // Wait until we have the option to log in with Spectrum
-        await this.page.waitForSelector("img[alt='Charter Spectrum']");
+        await this.page.waitForSelector("img[alt='Charter Spectrum']", {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( () => document.querySelector("img[alt='Charter Spectrum']").click() );
         // We should be on our Provider screen now
         await this.loginProvider();
@@ -116,6 +116,7 @@ class Espn extends Site {
      * @returns {Promise}
      */
     async watch() {
+        await page.waitForNavigation({waitUntil: 'load', timeout: Site.STANDARD_TIMEOUT});
         // See if we need to log in
         try {
             // Wait for the play button
@@ -129,7 +130,7 @@ class Espn extends Site {
             }
         }
         // Wait for the play button
-        await this.page.waitForSelector(".vjs-big-play-button");
+        await this.page.waitForSelector(".vjs-big-play-button", {timeout: Site.STANDARD_TIMEOUT});
         await this.page.click(".vjs-big-play-button");
         // Click the full screen button (it might be hidden, so use evaluate)
         await this.page.evaluate( () => { document.querySelector('.vjs-fullscreen-control').click(); } );
