@@ -91,7 +91,7 @@ class Site {
      * @returns {Promise}
      */
     async stop() {
-        await this.page.goto(STOP_URL);
+        await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
         return Promise.resolve(1);
     }
 

@@ -90,7 +90,7 @@ app.get('/watch', async function(request, response) {
     let pages = await watchBrowser.pages();
     let page = pages[0];
 
-    await page.goto(url);
+    await page.goto(url, {timeout: 0});
 
     let network = request.query.network;
     // Use the right code to watch the game

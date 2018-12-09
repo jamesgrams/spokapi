@@ -35,7 +35,7 @@ class Espn extends Site {
     async generateGames() {
         let games = [];
 
-        await this.page.goto(ESPN_URL);
+        await this.page.goto(ESPN_URL, {timeout: Site.STANDARD_TIMEOUT});
         // Wait until the schedule is loaded
         await this.page.waitForSelector('#tabLive a', {timeout: Site.STANDARD_TIMEOUT});
         
@@ -116,7 +116,7 @@ class Espn extends Site {
      * @returns {Promise}
      */
     async watch() {
-        await page.waitForNavigation({waitUntil: 'load', timeout: Site.STANDARD_TIMEOUT});
+        await this.page.waitForNavigation({waitUntil: 'load', timeout: Site.STANDARD_TIMEOUT});
         // See if we need to log in
         try {
             // Wait for the play button
