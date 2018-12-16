@@ -19,13 +19,13 @@ class Game {
     * @param {string} subnetwork - The name of the subnetwork this game is on (e.g. espn3)
 	*/
 	constructor(name, link, time, sport, network, subsport, subnetwork) {
-		this.name 		= name;
-        this.link	    = link;
-        this.time       = time;
-        this.sport		= sport;
-        this.network    = network;
-        this.subsport   = subsport;
-        this.subnetwork = subnetwork;
+		this.name 		= name ? name : "";
+        this.link	    = link ? link : "";
+        this.time       = time ? time : "";
+        this.sport		= sport ? sport : "";
+        this.network    = network ? network : "";
+        this.subsport   = subsport ? subsport : "";
+        this.subnetwork = subnetwork ? subnetwork : "";
         this.generateLink();
     }
     

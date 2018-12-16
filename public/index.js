@@ -47,7 +47,7 @@ function loadGames() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             document.getElementById("games").innerHTML = "";
-            games = JSON.parse(this.responseText);
+            games = JSON.parse(this.responseText).games;
             sortGames();
             generateGames();
         }
@@ -57,12 +57,12 @@ function loadGames() {
 }
 function sortGames() {
     games.sort( function(a, b) {
-        if( a.sport < b.sport ) { return -1 };
-        if( b.sport < a.sport ) { return 1 };
-        if( a.subsport < b.subsport ) { return -1 };
-        if( b.subsport < a.subsport ) { return 1 };
-        if( a.name < b.name ) { return -1 };
-        if( b.name < a.name ) { return 1 };
+        if( a.sport.toLowerCase() < b.sport.toLowerCase() ) { return -1 };
+        if( b.sport.toLowerCase() < a.sport.toLowerCase() ) { return 1 };
+        if( a.subsport.toLowerCase() < b.subsport.toLowerCase() ) { return -1 };
+        if( b.subsport.toLowerCase() < a.subsport.toLowerCase() ) { return 1 };
+        if( a.name.toLowerCase() < b.name.toLowerCase() ) { return -1 };
+        if( b.name.toLowerCase() < a.name.toLowerCase() ) { return 1 };
         return 0;
     } );
 }
@@ -72,14 +72,14 @@ function generateGames() {
     for(var i=0; i<games.length; i++) {
         var game = games[i];
         // Add headings for sports
-        if(game.sport && game.sport != prevGameSport) {
+        if(game.sport && game.sport.toLowerCase() != prevGameSport) {
             document.getElementById("games").innerHTML += "<h2>" + game.sport + "</h2>";
-            prevGameSport = game.sport;
+            prevGameSport = game.sport.toLowerCase();
         }
         // Add headings for subsports
-        if(game.subsport && game.subsport != prevGameSubsport) {
+        if(game.subsport && game.subsport.toLowerCase() != prevGameSubsport) {
             document.getElementById("games").innerHTML += "<h3>" + game.subsport + "</h3>";
-            prevGameSubsport = game.subsport;
+            prevGameSubsport = game.subsport.toLowerCase();
         }
         game = generateGame(game);
         document.getElementById("games").innerHTML += game;

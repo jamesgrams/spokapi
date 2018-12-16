@@ -9,14 +9,9 @@ const path = require('path');
 const ip = require("ip");
 const Site 	= require('./modules/site');
 const Espn 	= require('./modules/site/espn');
+const NbcSports 	= require('./modules/site/nbcsports');
+const FoxSports 	= require('./modules/site/foxsports');
 
-// We need to use Chrome instead of Chromium here, since Chromium does not support video playback
-// https://github.com/GoogleChrome/puppeteer/issues/291
-/**
- * @constant
- * @type {string}
- */
-const PATH_TO_CHROME = process.env.SPOKAPI_CHROME_PATH;
 /**
  * @constant
  * @type {number}
@@ -65,19 +60,27 @@ app.get("/", async function(request, response) {
 
 // Endpoint to get a list of games
 app.get('/games', async function(request, response) {
-    const browser = await puppeteer.launch({
-        headless: true,
-        executablePath: PATH_TO_CHROME
-    });
-    let page = await browser.newPage();
-    
-    let espn = new Espn(page);
-    let espnGames = await espn.generateGames();
+    let espn = new Espn();
+    let nbcSports = new NbcSports();
+    let foxSports = new FoxSports();
+
+    let values = await Promise.all(
+        [ espn.generateGames(),
+        nbcSports.generateGames(),
+        foxSports.generateGames() ]
+    );
+
+    let joinedValues = [];
+    for (let value of values) {
+        joinedValues = joinedValues.concat(value);
+    }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify(espnGames));
+    response.end(JSON.stringify({ status: "success", games: joinedValues }));
 
-    browser.close();
+    espn.browser.close();
+    nbcSports.browser.close();
+    foxSports.browser.close();
 });
 
 // Endpoint to watch a game
@@ -90,21 +93,10 @@ app.get('/watch', async function(request, response) {
     let pages = await watchBrowser.pages();
     let page = pages[0];
 
-    await page.goto(url, {timeout: 0});
+    // We don't wait for watching to be done
+    // Browsers can start retrying requests that don't complete - we don't want this
+    watch(page, url, request);
 
-    let network = request.query.network;
-    // Use the right code to watch the game
-    switch(network) {
-        case "espn":
-            let espn = new Espn(page);
-            await espn.watch();
-            break;
-        default:
-            response.writeHead(200, {'Content-Type': 'application/json'});
-            response.end(JSON.stringify({"status":"failure", "message":"Invalid Network"}));
-            return;
-    }
-    
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 });
@@ -118,6 +110,9 @@ app.get('/stop', async function(request, response) {
     let page = pages[0];
     let site = new Site(page);
     await site.stop();
+
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
 });
 
 app.listen(PORT);
@@ -128,8 +123,9 @@ app.listen(PORT);
 async function openBrowser() {
     watchBrowser = await puppeteer.launch({
         headless: false,
-        executablePath: PATH_TO_CHROME,
-        args: ['--start-fullscreen', '--disable-infobars']
+        executablePath: Site.PATH_TO_CHROME,
+        args: ['--disable-infobars','--start-maximized'],
+        userDataDir: './userDataDir'
     });
     watchBrowser.on("disconnected", function() {
         watchBrowser = null;
@@ -139,4 +135,34 @@ async function openBrowser() {
     // This makes the viewport correct
     // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
     await page._client.send('Emulation.clearDeviceMetricsOverride');
+    return Promise.resolve(1);
+}
+
+/**
+ * Asynchronously start watching
+ */
+async function watch(page, url, request) {
+    await page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
+
+    let network = request.query.network;
+    // Use the right code to watch the game
+    switch(network) {
+        case "espn":
+            let espn = new Espn(page);
+            await espn.watch();
+            break;
+        case "nbcsports":
+            let nbcSports = new NbcSports(page);
+            await nbcSports.watch();
+            break;
+        case "foxsports":
+            let foxSports = new FoxSports(page);
+            await foxSports.watch();
+            break;
+        default:
+            response.writeHead(200, {'Content-Type': 'application/json'});
+            response.end(JSON.stringify({"status":"failure", "message":"Invalid Network"}));
+            return;
+    }
+    return Promise.resolve(1);
 }

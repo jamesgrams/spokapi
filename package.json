@@ -6,7 +6,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js --user-data-dir=./userDataDir"
   },
   "dependencies": {
     "puppeteer": "^1.11.0",
