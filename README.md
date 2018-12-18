@@ -32,6 +32,8 @@ Spokapi is an application that simplifies watching sports online (using sites su
     - Spectrum
 - Channels
     - ESPN
+    - NBC Sports
+    - Fox Sports
 
 ## Endpoints
 - `/games/`
