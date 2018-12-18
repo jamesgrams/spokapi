@@ -44,3 +44,5 @@ Spokapi is an application that simplifies watching sports online (using sites su
     - This stops the game that is currently playing (It directs the browser to Google)
 - `/`
     - This will return the Spokapi Client
+
+![Spokapi Logo](public/spokapi.png)
