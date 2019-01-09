@@ -7,6 +7,8 @@ const puppeteer = require('puppeteer');
 const express = require('express');
 const path = require('path');
 const ip = require("ip");
+const fetch = require('node-fetch');
+
 const Site 	= require('./modules/site');
 const Espn 	= require('./modules/site/espn');
 const NbcSports 	= require('./modules/site/nbcsports');
@@ -101,7 +103,7 @@ app.get('/watch', async function(request, response) {
     response.end(JSON.stringify({"status":"success"}));
 });
 
-// Endpoint to watch a game
+// Endpoint to stop a game
 app.get('/stop', async function(request, response) {
     if( !watchBrowser ) {
         await openBrowser();
@@ -121,12 +123,19 @@ app.listen(PORT);
  * Launch the watch browser.
  */
 async function openBrowser() {
-    watchBrowser = await puppeteer.launch({
-        headless: false,
-        executablePath: Site.PATH_TO_CHROME,
-        args: ['--disable-infobars','--start-maximized'],
-        userDataDir: './userDataDir'
-    });
+    // If there is a Chrome path, we will try to launch chrome
+    if ( Site.PATH_TO_CHROME ) {
+        watchBrowser = await puppeteer.launch({
+            headless: false,
+            executablePath: Site.PATH_TO_CHROME,
+            args: ['--disable-infobars','--start-maximized'],
+            userDataDir: './userDataDir'
+        });
+    }
+    // If not, we'll try to connect to an existing instance (ChromeOS)
+    else {
+        watchBrowser = await connectToChrome();
+    }
     watchBrowser.on("disconnected", function() {
         watchBrowser = null;
     });
@@ -165,4 +174,18 @@ async function watch(page, url, request) {
             return;
     }
     return Promise.resolve(1);
+}
+
+/**
+ * Connect to a pre-running instance of Chrome
+ * @returns {Promise<Browser>}
+ */
+async function connectToChrome() {
+    // First, get the ID of the running chrome instance (it must have remote debugging enabled on port 1337)
+    let response = await fetch('http://localhost:1337/json/version');
+    let json = await response.json();
+        // Now, we can connect to chrome
+    let endpoint = json.webSocketDebuggerUrl;
+    let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
+    return Promise.resolve(browser);
 }
