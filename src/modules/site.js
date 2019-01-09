@@ -4,6 +4,7 @@
  */
 
 const puppeteer = require('puppeteer');
+const fetch = require('node-fetch');
 
 /**
  * @constant
@@ -80,10 +81,15 @@ class Site {
      * @returns {Promise<Page>}
      */
     async openPage() {
-        this.browser = await puppeteer.launch({
-            headless: true,
-            executablePath: PATH_TO_CHROME
-        });
+        if( PATH_TO_CHROME ) {
+            this.browser = await puppeteer.launch({
+                headless: true,
+                executablePath: PATH_TO_CHROME
+            });
+        }
+        else {
+            this.browser = await Site.connectToChrome();
+        }
         let page = await this.browser.newPage();
         return Promise.resolve(page); 
     }
@@ -93,13 +99,9 @@ class Site {
      * @returns {Promise}
      */
     async loginProvider() {
-        try {
-            if( PROVIDER === "Spectrum" ) {
-                await this.loginSpectrum();
-            }
+        if( PROVIDER === "Spectrum" ) {
+            await this.loginSpectrum();
         }
-        // Sometimes there will be no login, so don't crash if so
-        catch(err) {}
         return Promise.resolve(1);
     }
 
@@ -132,6 +134,20 @@ class Site {
     async stop() {
         await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
         return Promise.resolve(1);
+    }
+
+    /**
+     * Connect to a pre-running instance of Chrome
+     * @returns {Promise<Browser>}
+     */
+    static async connectToChrome() {
+        // First, get the ID of the running chrome instance (it must have remote debugging enabled on port 1337)
+        let response = await fetch('http://localhost:1337/json/version');
+        let json = await response.json();
+         // Now, we can connect to chrome
+        let endpoint = json.webSocketDebuggerUrl;
+        let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
+        return Promise.resolve(browser);
     }
 
 };
