@@ -93,9 +93,13 @@ class Site {
      * @returns {Promise}
      */
     async loginProvider() {
-        if( PROVIDER === "Spectrum" ) {
-            await this.loginSpectrum();
+        try {
+            if( PROVIDER === "Spectrum" ) {
+                await this.loginSpectrum();
+            }
         }
+        // Sometimes there will be no login, so don't crash if so
+        catch(err) {}
         return Promise.resolve(1);
     }
 
