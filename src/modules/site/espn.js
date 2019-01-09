@@ -39,65 +39,68 @@ class Espn extends Site {
 
         let games = [];
 
-        await this.page.goto(ESPN_URL, {timeout: Site.STANDARD_TIMEOUT});
-        // Wait until the schedule is loaded
-        await this.page.waitForSelector('#tabLive a', {timeout: Site.STANDARD_TIMEOUT});
-        
-        // Get all the links to games
-        let sportTables = await this.page.$$('#tabLive table');
-        // All the games are listed in tables (1 table per SUBSPORT)
-        for (let sportTable of sportTables) {
+        try {
+            await this.page.goto(ESPN_URL, {timeout: Site.STANDARD_TIMEOUT});
+            // Wait until the schedule is loaded
+            await this.page.waitForSelector('#tabLive a', {timeout: Site.STANDARD_TIMEOUT});
 
-            // Get the sport
-            let sportTableTitle = await this.page.evaluateHandle(
-                element => element.closest('.responsive-table-wrap').previousSibling.querySelector('h2'),
-                sportTable
-            );
-            // Evaluate Handle will return a JSHandle (JS object), which we can convert to an element
-            // Evaluate will return null unless you return a promise with a value. You can get that value.
-            sportTableTitle = await sportTableTitle.asElement();
-            let sport = await (await sportTableTitle.getProperty('textContent')).jsonValue();
+            // Get all the links to games
+            let sportTables = await this.page.$$('#tabLive table');
+            // All the games are listed in tables (1 table per SUBSPORT)
+            for (let sportTable of sportTables) {
 
-            // Get the data for each individual game
-            let gameRows = await sportTable.$$("tbody tr");
-            for (let gameRow of gameRows) {
+                // Get the sport
+                let sportTableTitle = await this.page.evaluateHandle(
+                    element => element.closest('.responsive-table-wrap').previousSibling.querySelector('h2'),
+                    sportTable
+                );
+                // Evaluate Handle will return a JSHandle (JS object), which we can convert to an element
+                // Evaluate will return null unless you return a promise with a value. You can get that value.
+                sportTableTitle = await sportTableTitle.asElement();
+                let sport = await (await sportTableTitle.getProperty('textContent')).jsonValue();
 
-                // Get the "subsport" (e.g. NCAA Men's Basketball)
-                // Check there will be a subsport
-                let sportTableSubTitle = await sportTable.$('thead span');
-                let subsport = null;
-                if( sportTableSubTitle ) {
-                    // Get the closest one
-                    sportTableSubTitle = await this.page.evaluateHandle(
-                        element => element.closest('tbody').previousSibling.querySelector('span'),
-                        gameRow
-                    );
-                    sportTableSubTitle = sportTableSubTitle.asElement();
-                    // There can still sometimes be no subtitle...
+                // Get the data for each individual game
+                let gameRows = await sportTable.$$("tbody tr");
+                for (let gameRow of gameRows) {
+
+                    // Get the "subsport" (e.g. NCAA Men's Basketball)
+                    // Check there will be a subsport
+                    let sportTableSubTitle = await sportTable.$('thead span');
+                    let subsport = null;
                     if( sportTableSubTitle ) {
-                        subsport = await (await sportTableSubTitle.getProperty('textContent')).jsonValue();
+                        // Get the closest one
+                        sportTableSubTitle = await this.page.evaluateHandle(
+                            element => element.closest('tbody').previousSibling.querySelector('span'),
+                            gameRow
+                        );
+                        sportTableSubTitle = sportTableSubTitle.asElement();
+                        // There can still sometimes be no subtitle...
+                        if( sportTableSubTitle ) {
+                            subsport = await (await sportTableSubTitle.getProperty('textContent')).jsonValue();
+                        }
+                    }
+
+                    let network = this.constructor.name.toLowerCase();
+                    let subnetwork = await (await (await gameRow.$(".schedule__network img")).getProperty('alt')).jsonValue();
+
+                    // Make sure the network is not blacklisted
+                    if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(subnetwork) === -1 ) {
+                        games.push( new Game (
+                            await (await (await gameRow.$(".schedule__competitors a")).getProperty('textContent')).jsonValue(),
+                            await (await (await gameRow.$(".schedule__competitors a")).getProperty('href')).jsonValue(),
+                            await (await (await gameRow.$(".schedule__time")).getProperty('textContent')).jsonValue(),
+                            sport,
+                            network, // This is the network (this class name)
+                            subsport,
+                            subnetwork
+                        ) );
                     }
                 }
-
-                let network = this.constructor.name.toLowerCase();
-                let subnetwork = await (await (await gameRow.$(".schedule__network img")).getProperty('alt')).jsonValue();
-
-                // Make sure the network is not blacklisted
-                if( Site.UNSUPPORTED_CHANNELS.indexOf(network) === -1 && Site.UNSUPPORTED_CHANNELS.indexOf(subnetwork) === -1 ) {
-                    games.push( new Game (
-                        await (await (await gameRow.$(".schedule__competitors a")).getProperty('textContent')).jsonValue(),
-                        await (await (await gameRow.$(".schedule__competitors a")).getProperty('href')).jsonValue(),
-                        await (await (await gameRow.$(".schedule__time")).getProperty('textContent')).jsonValue(),
-                        sport,
-                        network, // This is the network (this class name)
-                        subsport,
-                        subnetwork
-                    ) );
-                }
             }
-        }
 
-        await this.page.waitFor(100);
+            await this.page.waitFor(100);
+        }
+        catch(err) { console.log(err); }
         return Promise.resolve(games);
     }
 
@@ -108,7 +111,7 @@ class Espn extends Site {
     async login() {
         // Wait until we have the option to log in
         let providerSelector = "";
-        if( Site.PROVIDER === "Spectrum" ) {
+        if( Site.provider === "Spectrum" ) {
             providerSelector = "img[alt='Charter Spectrum']";
         }
         await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});

@@ -46,43 +46,46 @@ class FoxSports extends Site {
 
         let games = [];
 
-        // We have to go to fox sports, so fox will allow us to access the API
-        // Otherwise, we will get rejected when we try to go to the API
-        await this.page.goto(FOX_SPORTS_URL, {timeout: Site.STANDARD_TIMEOUT});
-        // We need to make sure we are logged in for Fox, since Fox's data is location specific
-        await this.checkLogin();
-        await this.page.waitFor(500);
-        // We now go to fox's API
-        await this.page.goto(FOX_SPORTS_API_URL, {timeout: Site.STANDARD_TIMEOUT});
+        try {
+            // We have to go to fox sports, so fox will allow us to access the API
+            // Otherwise, we will get rejected when we try to go to the API
+            await this.page.goto(FOX_SPORTS_URL, {timeout: Site.STANDARD_TIMEOUT});
+            // We need to make sure we are logged in for Fox, since Fox's data is location specific
+            await this.checkLogin();
+            await this.page.waitFor(500);
+            // We now go to fox's API
+            await this.page.goto(FOX_SPORTS_API_URL, {timeout: Site.STANDARD_TIMEOUT});
 
-        // Get the JSON
-        let jsonString = await this.page.evaluate( () => document.body.textContent );
-        let json = JSON.parse(jsonString);
-        
-        // Iterate over the live items
-        if( json.body.items && json.body.items.length ) {
-            for ( let item of json.body.items ) {
+            // Get the JSON
+            let jsonString = await this.page.evaluate( () => document.body.textContent );
+            let json = JSON.parse(jsonString);
 
-                let airing = item.airings[0];
-                let network = this.constructor.name.toLowerCase();
-                let subnetwork = airing.channel_name;
+            // Iterate over the live items
+            if( json.body.items && json.body.items.length ) {
+                for ( let item of json.body.items ) {
 
-                // Make sure the network is not blacklisted
-                if( Site.UNSUPPORTED_CHANNELS.indexOf(network) === -1 && Site.UNSUPPORTED_CHANNELS.indexOf(subnetwork) === -1 ) {
-                    games.push( new Game (
-                        item.title,
-                        FOX_SPORTS_URL + airing.mf_links[0].href.replace("airing/", ""),
-                        new Date( Date.parse(item.airing_date) ).toLocaleTimeString(),
-                        item.sport_tag,
-                        network, // This is the network (this class name)
-                        null,
-                        subnetwork
-                    ) );
+                    let airing = item.airings[0];
+                    let network = this.constructor.name.toLowerCase();
+                    let subnetwork = airing.channel_name;
+
+                    // Make sure the network is not blacklisted
+                    if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(subnetwork) === -1 ) {
+                        games.push( new Game (
+                            item.title,
+                            FOX_SPORTS_URL + airing.mf_links[0].href.replace("airing/", ""),
+                            new Date( Date.parse(item.airing_date) ).toLocaleTimeString(),
+                            item.sport_tag,
+                            network, // This is the network (this class name)
+                            null,
+                            subnetwork
+                        ) );
+                    }
                 }
             }
+
+            await this.page.waitFor(100);
         }
-        
-        await this.page.waitFor(100);
+        catch(err) { console.log(err); }
         return Promise.resolve(games);
     }
 
@@ -93,7 +96,7 @@ class FoxSports extends Site {
     async login() {
         // Wait until we have the option to log in
         let providerSelector = "";
-        if( Site.PROVIDER === "Spectrum" ) {
+        if( Site.provider === "Spectrum" ) {
             providerSelector = ".provider-desktop-image-container:nth-child(5)";
         }
         await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT, visible: true});

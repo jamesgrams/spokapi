@@ -39,42 +39,45 @@ class NbcSports extends Site {
 
         let games = [];
 
-        await this.page.goto(NBC_SPORTS_URL, {timeout: Site.STANDARD_TIMEOUT});
-        // Wait until the schedule is loaded
-        // There may not be any live events
         try {
-            await this.page.waitForSelector(".events-list__list-wrapper_live", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
-        }
-        // There are no live events
-        catch(err) {
-            return Promise.resolve(games);
-        }
-
-        // Get the live section
-        let liveSection = await this.page.$(".events-list__list-wrapper_live",{timeout: Site.STANDARD_TIMEOUT});
-        // Get all the events
-        let liveEvents = await liveSection.$$('.live-upcoming-list__event');
-
-        // Generate the games by cycling through live events
-        for ( let liveEvent of liveEvents ) {
-            let network = this.constructor.name.toLowerCase();
-            let subnetwork = await (await (await liveEvent.$(".live-upcoming-list__event-channel")).getProperty('textContent')).jsonValue();
-
-            // Make sure the network is not blacklisted
-            if( Site.UNSUPPORTED_CHANNELS.indexOf(network) === -1 && Site.UNSUPPORTED_CHANNELS.indexOf(subnetwork) === -1 ) {
-                games.push( new Game (
-                    await (await (await liveEvent.$(".live-upcoming-list__event-name")).getProperty('textContent')).jsonValue(),
-                    await (await (await liveEvent.$(".link")).getProperty('href')).jsonValue(),
-                    await (await (await liveEvent.$(".live-upcoming-list__event-time")).getProperty('textContent')).jsonValue(),
-                    await (await (await liveEvent.$(".live-upcoming-list__event-type")).getProperty('textContent')).jsonValue(),
-                    network, // This is the network (this class name)
-                    null,
-                    subnetwork
-                ) );
+            await this.page.goto(NBC_SPORTS_URL, {timeout: Site.STANDARD_TIMEOUT});
+            // Wait until the schedule is loaded
+            // There may not be any live events
+            try {
+                await this.page.waitForSelector(".events-list__list-wrapper_live", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
             }
+            // There are no live events
+            catch(err) {
+                return Promise.resolve(games);
+            }
+
+            // Get the live section
+            let liveSection = await this.page.$(".events-list__list-wrapper_live",{timeout: Site.STANDARD_TIMEOUT});
+            // Get all the events
+            let liveEvents = await liveSection.$$('.live-upcoming-list__event');
+
+            // Generate the games by cycling through live events
+            for ( let liveEvent of liveEvents ) {
+                let network = this.constructor.name.toLowerCase();
+                let subnetwork = await (await (await liveEvent.$(".live-upcoming-list__event-channel")).getProperty('textContent')).jsonValue();
+
+                // Make sure the network is not blacklisted
+                if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(subnetwork) === -1 ) {
+                    games.push( new Game (
+                        await (await (await liveEvent.$(".live-upcoming-list__event-name")).getProperty('textContent')).jsonValue(),
+                        await (await (await liveEvent.$(".link")).getProperty('href')).jsonValue(),
+                        await (await (await liveEvent.$(".live-upcoming-list__event-time")).getProperty('textContent')).jsonValue(),
+                        await (await (await liveEvent.$(".live-upcoming-list__event-type")).getProperty('textContent')).jsonValue(),
+                        network, // This is the network (this class name)
+                        null,
+                        subnetwork
+                    ) );
+                }
+            }
+
+            await this.page.waitFor(100);
         }
-        
-        await this.page.waitFor(100);
+        catch(err) { console.log(err); }
         return Promise.resolve(games);
     }
 
@@ -88,7 +91,7 @@ class NbcSports extends Site {
         await this.page.evaluate( () => { document.querySelector('#accessEnablerLogin').click(); } );
         // Wait until we have the option to log in
         let providerSelector = "";
-        if( Site.PROVIDER === "Spectrum" ) {
+        if( Site.provider === "Spectrum" ) {
             providerSelector = "a[provider-id='Charter_Direct']";
         }
         await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});

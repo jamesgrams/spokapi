@@ -47,3 +47,29 @@ h1 > img {
 .game-seperator {
     clear: both;
 }
+#login-wrapper, #break-cache-wrapper, #channels-wrapper {
+    border: 2px dotted black;
+    padding: 5px;
+}
+#login-wrapper {
+    margin-top: 40px;
+}
+#break-cache-wrapper, #channels-wrapper {
+    margin-top: 5px;
+}
+#update-info {
+    margin-top: 20px;
+}
+#block-channel {
+    margin-top: 10px;
+}
+#blocked-channels {
+    margin-top: 10px;
+}
+.blocked-channel {
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid black;
+    display: inline-block;
+    cursor: pointer;
+}

@@ -3,6 +3,10 @@ var games = {};
 var xhttp;
 window.addEventListener('load', function() {
     loadGames();
+    loadBlockedChannels();
+    document.getElementById("update-info").addEventListener('click', updateInfo);
+    document.getElementById("break-cache").addEventListener('click', breakCache);
+    document.getElementById("block-channel").addEventListener('click', addBlockedChannel);
 });
 function clearWatchedGames() {
     var gameElements = document.querySelectorAll(".game");
@@ -51,6 +55,9 @@ function loadGames() {
             sortGames();
             generateGames();
         }
+        else if( this.readyState == 4 ) {
+            document.getElementById("games").innerHTML = "An error has occurred.";
+        }
     };
     xhttp.open("GET", "/games", true);
     xhttp.send();
@@ -86,11 +93,75 @@ function generateGames() {
     }
 }
 function generateGame(game) {
-    var html = "<div class='game' onclick='watchGame(this)' data-link='"+game.link+"'>" +
+    var className = 'game';
+    if( game.watching ) {
+        className += " watching";
+    }
+    var html = "<div class='" + className + "' onclick='watchGame(this)' data-link='"+game.link+"'>" +
         "<div class='game-title'>" + game.name + "</div>" +
         "<div class='game-network'>" + game.network + " (" + game.subnetwork + ")" + "</div>" +
         "<div class='game-time'>" + game.time + "</div>" +
         "<div class='game-seperator'></div>"
         "</div>";
     return html;
+}
+function updateInfo() {
+    var username = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
+    var provider = document.getElementById("provider").value;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/info", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        "username": username,
+        "password": password,
+        "provider": provider
+    }));
+}
+function breakCache() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/break", true);
+    xhttp.send();
+}
+function loadBlockedChannels() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/channel", true);
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementById('blocked-channels').innerHTML = ""; // Clear out any current list of blocked channels
+            channels = JSON.parse(this.responseText).channels;
+            for(var i=0; i<channels.length; i++) {
+                createBlockedChannel(channels[i]);
+            }
+        }
+    };
+    xhttp.send();
+}
+function createBlockedChannel(channel) {
+    var html = "<div onclick='removeBlockedChannel(this)' class='blocked-channel'>" + channel + "</div>";
+    document.getElementById('blocked-channels').innerHTML += html;
+}
+function addBlockedChannel() {
+    var channel = document.getElementById("channel").value;
+    if( channel ) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/channel", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({
+            "channel": channel,
+            "type": "block"
+        }));
+    }
+    loadBlockedChannels();
+}
+function removeBlockedChannel(channelElement) {
+    var channel = channelElement.textContent;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/channel", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        "channel": channel,
+        "type": "allow"
+    }));
+    loadBlockedChannels();
 }
