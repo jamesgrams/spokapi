@@ -40,7 +40,7 @@ const STOP_URL = "https://google.com";
  * @type {number}
  * @default
  */
-const STANDARD_TIMEOUT = 20000;
+const STANDARD_TIMEOUT = 40000;
 /**
  * @constant
  * @type {number}
