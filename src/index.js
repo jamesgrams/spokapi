@@ -26,7 +26,7 @@ const PORT = 8080;
  * @type {number}
  * @default
  */
-const FETCH_GAMES_INTERVAL = 120000;
+const FETCH_GAMES_INTERVAL = 240000;
 /**
  * @constant
  * @type {number}
@@ -38,7 +38,7 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @type {Array.<Object>}
  * @default
  */
-const NETWORKS = { "espn": Espn, "nbcsports": NbcSports, "foxSports": FoxSports };
+const NETWORKS = { "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports };
 /**
  * @constant
  * @type {string}
