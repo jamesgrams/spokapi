@@ -29,6 +29,12 @@ const PORT = 8080;
 const FETCH_GAMES_INTERVAL = 120000;
 /**
  * @constant
+ * @type {number}
+ * @default
+ */
+let MAX_SIMULTANEOUS_FETCHES = 2;
+/**
+ * @constant
  * @type {Array.<Object>}
  * @default
  */
@@ -329,9 +335,20 @@ async function fetchGames() {
     }
 
     // Generate all the games
-    let values = await Promise.all(
-        networks.map( network => network.generateGames() )
-    );
+    let values = [];
+    for( let i=0; i < networks.length; i += MAX_SIMULTANEOUS_FETCHES ) {
+        let currentNetworks = [];
+        for ( let j=0; j<MAX_SIMULTANEOUS_FETCHES; j++ ) {
+            if( i+j < networks.length ) {
+                currentNetworks.push(networks[i+j]);
+            }
+        }
+        values = values.concat(
+            await Promise.all(
+                currentNetworks.map( network => network.generateGames() )
+            )
+        );
+    }
 
     // Concatenate all the values
     let joinedValues = [];
