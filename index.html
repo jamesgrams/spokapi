@@ -1059,7 +1059,9 @@
 			}
 			
 			var profileColors = ["#ff0055", "#00fff2", "#6f00ff", "#0073ff", "#88ff00", "#ff0000", "#aa00ff", "#ff00f7", "#d1e004", "#00ffaa", "#ffa200"];
+			var usedProfileColors = "";
 			function askForProfile(){
+				usedProfileColors = "";
 				$.get(DOMAIN + "/php/getProfiles.php?email=" + encodeURIComponent(email), function(data){
 					//success
 					if(data.indexOf("true|") == 0){
@@ -1067,8 +1069,17 @@
 						
 						var htmlToAdd = "<div id=\"profileSelectionHeading\">Who's watching?</div>";
 						for(var i = 0; i < profiles.length; i++){
+							var thisProfileColor = profileColors[profiles[i][0] % profileColors.length];
+							for(var j = 1; j < profileColors.length; j++){
+								if(usedProfileColors.indexOf(thisProfileColor) > -1){
+									thisProfileColor = profileColors[(profiles[i][0] + j) % profileColors.length];
+								}
+								else{
+									break;
+								}
+							}
 							htmlToAdd += "<div class=\"profile\" onclick=\"selectProfile('" + profiles[i][0] + "', '" + profiles[i][1] + "')\">" + 
-								"<div class=\"smiley\" style=\"background-color:" + profileColors[profiles[i][0] % profileColors.length] + ";\"></div>" + 
+								"<div class=\"smiley\" style=\"background-color:" + thisProfileColor + ";\"></div>" + 
 								"<div class=\"name\">" + profiles[i][1] + "</div>" + 
 							"</div>";
 						}
