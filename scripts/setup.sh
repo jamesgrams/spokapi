@@ -7,16 +7,16 @@ curl -Ls git.io/vddgY | bash
 crew install node
 
 # Install SPOKAPI
-cp /home/chronos/user/Downloads/spokapi /opt/
-npm install --prefix /opt/spokapi
+sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
+sudo npm install --prefix /opt/spokapi
 
 # Place the SPOKAPI startup script
-cp /opt/spokapi/scripts/spokapi.conf /etc/init/
+sudo cp /opt/spokapi/scripts/spokapi.conf /etc/init/
 
 # Allow Flash
-mkdir -p mkdir /etc/opt/chrome/policies/managed
-touch /etc/opt/chrome/policies/managed/test_policy.json
-echo "{ \"RunAllFlashInAllowMode\": true, \"AllowOutdatedPlugins\": true, \"DefaultPluginsSetting\": 1,\"PluginsAllowedForUrls\": [\"https://*\", \"http://*\"]}" > /etc/opt/chrome/policies/managed/test_policy.json
+sudo mkdir -p mkdir /etc/opt/chrome/policies/managed
+sudo touch /etc/opt/chrome/policies/managed/test_policy.json
+sudo echo "{ \"RunAllFlashInAllowMode\": true, \"AllowOutdatedPlugins\": true, \"DefaultPluginsSetting\": 1,\"PluginsAllowedForUrls\": [\"https://*\", \"http://*\"]}" > /etc/opt/chrome/policies/managed/test_policy.json
 
 # Allow Chrome remote debugging
-echo "--remote-debugging-port=1337" >> /etc/chrome_dev.conf
+sudo echo "--remote-debugging-port=1337" >> /etc/chrome_dev.conf
