@@ -1,0 +1,2570 @@
+<html>
+	<head>
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<link href="https://fonts.googleapis.com/css?family=Berkshire+Swash|Open+Sans:400,700" rel="stylesheet">
+		<style>
+			*{
+				font-family: 'Open Sans', sans-serif;
+			}
+			
+			::placeholder {
+				color:#333;
+				opacity: 1;
+			}
+			:-ms-input-placeholder {
+				color:#333;
+			}
+			::-ms-input-placeholder {
+				color:#333;
+			}
+			
+			body{
+				margin:0px;
+				background: #ff0055;
+			}
+			
+			#error, #confirmation, #alert{
+				text-align:center;
+				position:fixed;
+				top:0px;
+				left:0px;
+				z-index:99999;
+				width:100%;
+				padding:20px;
+				box-sizing:border-box;
+				color:#fff;
+				font-size:16px;
+				display:none;
+				font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			}
+			
+			#error{
+				background:#eb3d68;
+			}
+			
+			#confirmation{
+				background:#37e666;
+			}
+			
+			#alert{
+				background:#333;
+			}
+			
+			#error img, #confirmation img, #alert img{
+				max-width:100%;
+				max-height:150px;
+				border-radius:4px;
+				display:block;
+				margin:auto;
+			}
+			
+			#promptInteractionBlock{
+				background:rgba(0,0,0,.4);
+				position:fixed;
+				top:0px;
+				left:0px;
+				z-index:99997;
+				width:100%;
+				height:100%;
+				display:none;
+			}
+			
+			#noticeInteractionBlock{
+				background:rgba(0,0,0,0.85);
+				position:fixed;
+				top:0px;
+				left:0px;
+				z-index:99997;
+				width:100%;
+				height:100%;
+				display:none;
+			}
+			
+			#clearInteractionBlock{
+				position:fixed;
+				top:0px;
+				left:0px;
+				z-index:99997;
+				width:100%;
+				height:100%;
+				display:none;
+			}
+			
+			#splash{
+				position:fixed;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:100%;
+				overflow:hidden;
+				background:#ff0055;
+				color:#fff;
+				z-index:3;
+				text-align:center;
+				padding-top:20%;
+				box-sizing:border-box;
+				font-size:40px;
+				font-family: 'Berkshire Swash', cursive;
+			}
+			
+			#cableLogin{
+				position:fixed;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:100%;
+				overflow:scroll;
+				background:#00a6ff;
+				color:#fff;
+				z-index:2;
+				text-align:center;
+				padding:30px;
+				box-sizing:border-box;
+			}
+			
+			#cableLoginHeading{
+				font-weight:bold;
+				font-size:40px;
+				margin-top:-30px;
+				padding-top:20%;
+				padding-bottom:25px;
+			}
+			
+			#cableLogin #cableLoginProvider{
+				position:relative;
+				height:53px;
+				border-radius:4px;
+				overflow:hidden;
+				margin:10px 0px;
+			}
+			
+			#cableLogin #cableLoginProviderFacade{
+				width:100%;
+				padding:15px 30px 15px 15px;
+				box-sizing:border-box;
+				background:#fff;
+				color:#333;
+				font-size:17px;
+				border:0px none transparent;
+				text-align:left;
+				pointer-events: none;
+				position:relative;
+			}
+			
+			#cableLogin #cableLoginProviderShown{
+				display:inline-block;
+				max-width:100%;
+				overflow:hidden;
+				white-space:nowrap;
+			}
+			
+			#cableLogin #cableLoginProviderFacade .dropDownArrow{
+				position:absolute;
+				right:0px;
+				top:0px;
+				width:30px;
+				height:100%;
+				background-color:#aaa;
+				background-image:url("images/dropDownArrow.png");
+				background-size:12px auto;
+				background-position:center;
+				background-repeat:no-repeat;
+				opacity:.2;
+			}
+			
+			#cableLogin select{
+				background:red;
+				position:absolute;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:100%;
+				padding:50px;
+				opacity:0;
+			}
+			
+			#cableLogin input{
+				border:0px none transparent;
+				background:#fff;
+				margin:10px 0px;
+				padding:15px;
+				font-size:17px;
+				border-radius:4px;
+				overflow:hidden;
+				outline:none;
+				width:100%;
+			}
+			
+			#cableLoginButton{
+				background:rgba(0,0,0,0.5);
+				color:#fff;
+				padding:20px;
+				font-size:20px;
+				font-weight:bold;
+				text-transform:uppercase;
+				margin:10px 0px;
+				border-radius:4px;
+				overflow:hidden;
+			}
+			
+			#cableLoginButton img{
+				height:27px;
+			}
+			
+			#profileSelection{
+				position:fixed;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:100%;
+				overflow:scroll;
+				background:#333;
+				color:#fff;
+				z-index:1;
+				text-align:center;
+				padding:30px;
+				box-sizing:border-box;
+			}
+			
+			#profilesLoading{
+				margin:100px auto;
+				height:30px;
+			}
+			
+			#profileSelection #profileSelectionHeading{
+				font-size:31px;
+				margin-bottom:40px;
+				margin-top:-30px;
+				padding-top:20%;
+				font-weight:bold;
+			}
+			
+			#profileSelection .profile{
+				display:table;
+				width:100%;
+				max-width:100%;
+				padding:10px;
+				box-sizing:border-box;
+				background:rgba(0,0,0,0.3);
+				border-radius:4px;
+				overflow:hidden;
+				margin:10px 0px;
+			}
+			
+			#profileSelection .profile .smiley{
+				width:100px;
+				min-width:100px;
+				height:100px;
+				display:table-cell;
+				vertical-align:top;
+				border-radius:4px;
+				overflow:hidden;
+				background-image:url("images/smile.png");
+				background-size:70% auto;
+				background-position:center;
+				background-repeat:no-repeat;
+			}
+			
+			#profileSelection .profile .name{
+				display:table-cell;
+				max-width:0px;
+				vertical-align:middle;
+				padding-left:10px;
+				font-size:16px;
+				text-transform:uppercase;
+				font-weight:bold;
+				overflow:hidden;
+				word-wrap: break-word;
+			}
+			
+			#profileSelection .profile .name input[type="text"]{
+				border:0px none transparent;
+				background:rgba(0,0,0,0.3);
+				color:#fff;
+				text-align:left;
+				padding:5px;
+				outline:none;
+				text-transform:uppercase;
+				font-weight:bold;
+				font-size:16px;
+				box-sizing:border-box;
+				width:100%;
+				border-radius:4px;
+				overflow:hidden;
+			}
+			
+			#profileSelection .newProfileButton{
+				width:47%;
+				margin:10px 1%;
+				background:rgba(0,0,0,0.3);
+				border-radius:4px;
+				overflow:hidden;
+				color:rgba(255,255,255,0.5);
+				padding:10px 15px;
+				box-sizing:border-box;
+				display:inline-block;
+				text-transform:uppercase;
+				font-weight:bold;
+				font-size:12px;
+			}
+			
+			header{
+			}
+			
+			#headerBackground{
+				background:#ff0055;
+			}
+			
+			#logo{
+				padding:24px 10px 14px 10px;
+				font-size:30px;
+				text-align:center;
+				font-family: 'Berkshire Swash', cursive;
+				color:#fff;
+			}
+			
+			#primaryCategories{
+				display:table;
+				width:100%;
+			}
+			#primaryCategories>div{
+				display:table-cell;
+				text-align:center;
+				width:50%;
+				padding:6px;
+				background:rgba(0,0,0,0.05);
+				color:rgba(255,255,255,1);
+				font-weight:bold;
+				font-size:14px;
+				border-bottom:3px solid rgba(0,0,0,.1);
+			}
+			
+			#search{
+				padding:25px 20px;
+				background:#f3f3f3;
+			}
+			
+			#searchBar{
+				width:100%;
+				background:rgba(0,0,0,0.07);
+				border-radius:999999px;
+				overflow:hidden;
+				background-image:url("images/search.png");
+				background-size:auto 50%;
+				background-position:10px center;
+				background-repeat:no-repeat;
+				position:replative;
+			}
+			
+			#searchBar .inputX{
+				height:16px;
+				position:absolute;
+				padding:6px;
+				right:20px;
+				display:none;
+			}
+			
+			#searchInput{
+				background:transparent;
+				border:0px none transparent;
+				padding:3px;
+				font-size:16px;
+				float:left;
+				width:100%;
+				padding-left:35px;
+				padding-right:35px;
+				color:#333;
+				outline:none;
+			}
+			
+			main{
+				background:#fff;
+			}
+			
+			#live .loading, #replays .loading{
+				height:30px;
+				margin:30px auto;
+				display:block;
+			}
+			
+			#searchResults{
+				position:absolute;
+				top:187px;
+				left:0px;
+				width:100%;
+				overflow:hidden;
+			}
+			
+			#episodes{
+				position:absolute;
+				top:0px;
+				left:0px;
+				width:100%;
+			}
+			
+			#live, #replays, #headerBackground{
+				position:relative;
+			}
+			
+			#live, #replays, #searchResults, #episodes{
+				min-height:100%;
+				background:#fff;
+				padding:10px 0px;
+				box-sizing:border-box;
+			}
+			
+			#live, #replays{
+				overflow:hidden;
+			}
+			
+			.listings{
+				padding:0px 20px;
+			}
+			
+			.listings .listing{
+				border-bottom:2px solid rgba(0,0,0,.1);
+				padding:10px;
+			}
+			.listings .listing:last-of-type{
+				border-bottom:0px none transparent;
+			}
+			
+			.listings .listing .table{
+				display:table;
+				width:100%;
+			}
+			
+			.listings .listing .table>div{
+				display:table-cell;
+				vertical-align:middle;
+			}
+			
+			.listings .listing .logo{
+				width:40px;
+				height:40px;
+				background-size:contain;
+				background-repeat:no-repeat;
+				background-position:center;
+				font-weight:bold;
+				font-size:18px;
+				text-align:center;
+			}
+			
+			.listings .listing .title{
+				padding-left:10px;
+				box-sizing:border-box;
+				text-transform:capitalize;
+			}
+			
+			.listings .listing .more{
+				overflow:hidden;
+			}
+			
+			.listings .listing .more>.table{
+				padding:15px 0px;
+			}
+			
+			.listings .listing .table>div.thumbnail{
+				width:100px;
+				vertical-align:top;
+				border-radius:1px;
+				overflow:hidden;
+			}
+			
+			.listings .listing .thumbnail .image{
+				display:inline-block;
+				width:100%;
+				height:150px;
+				background-color:#eee;
+				background-size:cover;
+				background-position:center;
+				background-repeat:no-repeat;
+			}
+			
+			.listings .listing .table>div.details{
+				padding-left:10px;
+				vertical-align:top;
+				font-size:13px;
+				color:#333;
+			}
+			
+			.listings .listing .episodeTitle{
+				font-weight:bold;
+			}
+			
+			.listings .listing .runtime{
+				color:#666;
+			}
+			
+			.listings .listing .description{
+				padding-top:5px;
+			}
+			
+			.programButton{
+				margin-top:5px;
+				text-align:center;
+				padding:5px;
+			}
+			
+			.watch{
+				margin-top:5px;
+				border:1px solid #ff0055;
+				text-align:center;
+				color:#ff0055;
+				background:rgba(255,0,85,0.05);
+				padding:5px;
+			}
+			
+			.moreEpisodes{
+				border:1px solid #007bff;
+				color:#007bff;
+				background:rgba(0,123,255,0.05);
+			}
+			
+			.addToList{
+				border:1px solid #00db83;
+				color:#00db83;
+				background:rgba(0,219,131,0.05);
+			}
+			
+			.live .addToList, .live .moreEpisodes{
+				display:none;
+			}
+			
+			.programButton img{
+				height:18px;
+			}
+			
+			#replays, #searchResults, #episodes{
+				display:none;
+			}
+			
+			.titleBar{
+				padding:10px 10px;
+				margin:10px;
+				font-size:16px;
+				
+				background:rgba(0,0,0,0.05);
+				color:#333;
+				border:0px solid #333;
+				border-radius:0px;
+			}
+			
+			.cover{
+				position:absolute;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:100%;
+				background:rgba(0,0,0,0.2);
+				display:none;
+			}
+			
+			#moreEpisodesCoverPhoto{
+				height:0px;
+				min-height:200px;
+				margin-top:-10px;
+				background-position:center;
+				background-size:cover;
+				background-repeat:no-repeat;
+				background-color:#444;
+			}
+			
+			#moreEpisodesCoverPhoto>div{
+				display:table;
+				width:100%;
+				height:100%;
+				background:rgba(0,0,0,0.3);
+			}
+			
+			#moreEpisodesCoverPhoto>div>div{
+				font-size:20px;
+				font-weight:bold;
+				text-align:center;
+				text-transform:capitalize;
+				color:#fff;
+				text-shadow: 2px 2px 0px rgba(0,0,0, 1);
+				display:table-cell;
+				vertical-align:middle;
+			}
+			
+			#episodes .addToList{
+				margin-top:0px;
+				margin-bottom:10px;
+				font-size:13px;
+				padding:9px;
+				width:100%;
+				border:0px none transparent;
+				background:#eee;
+				color:#888;
+				display:inline-block;
+			}
+			
+			.episodes{
+				padding:0px 20px;
+			}
+			
+			.episodes .episode{
+				border-bottom:2px solid rgba(0,0,0,.1);
+				padding:15px 10px;
+			}
+			.episodes .episode:last-of-type{
+				border-bottom:0px none transparent;
+			}
+			
+			.episodes .episode .table{
+				display:table;
+				width:100%;
+			}
+			
+			.episodes .episode .table>div{
+				display:table-cell;
+				vertical-align:middle;
+			}
+			
+			.episodes .episode .number{
+				height:30px;
+				width:30px;
+				overflow:hidden;
+				background:#444;
+				color:#fff;
+				font-weight:bold;
+				font-size:13px;
+				text-align:center;
+				border-radius:9999px;
+			}
+			
+			.episodes .episode .title{
+				padding-left:10px;
+				box-sizing:border-box;
+				text-transform:capitalize;
+			}
+			
+			.episodes .episode .more{
+				overflow:hidden;
+			}
+			
+			.episodes .episode .more>.table{
+				padding:15px 0px;
+			}
+			
+			.episodes .episode .table>div.thumbnail{
+				width:100px;
+				vertical-align:top;
+			}
+			
+			.episodes .episode .thumbnail .image{
+				display:inline-block;
+				width:100%;
+				height:100px;
+				border-radius:4px;
+				background-color:#eee;
+				background-size:cover;
+				background-position:center;
+				background-repeat:no-repeat;
+			}
+			
+			.episodes .episode .table>div.details{
+				padding-left:10px;
+				vertical-align:top;
+				font-size:13px;
+				color:#333;
+			}
+			
+			.episodes .episode .runtime{
+				color:#666;
+			}
+			
+			.episodes .episode .description{
+				padding-top:5px;
+			}
+			
+			#seasons{
+				margin:20px;
+				color:#666;
+				font-size:18px;
+				border-radius:4px;
+				overflow:hidden;
+				position:relative;
+			}
+			
+			#seasons .season{
+				background:#f1f1f1;
+				overflow:hidden;
+			}
+			
+			#seasons .season>div{
+				padding:10px;
+			}
+			
+			#seasons .season:nth-of-type(even){
+				background:#f7f7f7;
+			}
+			
+			#seasonsDropDownArrow{
+				height:14px;
+				width:14px;
+				position:absolute;
+				top:15px;
+				right:15px;
+				background-image:url("images/dropDownArrow.png");
+				background-size:contain;
+				background-position:center;
+				background-repeat:no-repeat;
+				opacity:0.5;
+			}
+			
+			#exitMoreEpisodes{
+				width:35px;
+				height:25px;
+				border-radius:9999px;
+				background-image:url("images/back.png");
+				background-size:80%;
+				background-position:center;
+				background-repeat:no-repeat;
+				position:absolute;
+				top:20px;
+				left:20px;
+			}
+			
+			.centeredText{
+				text-align:center;
+			}
+		</style>
+		<script>
+			var DOMAIN = "http://mintymark.com/cablemooch";
+			
+			//START OF DATA PROVIDED BY BOX
+			/*
+			var data = {
+				"live": [
+					{
+						"channel": "",				//REQUIRED
+						"programTitle": "",			//REQUIRED
+						"episodeThumbnailURL": "",	//OPTIONAL. CAN BE ADDED FOR ANY TYPE OF PROGRAM.
+						"episodeTitle": "",
+						"season": "",				//REQUIRED IF IT'S A SERIES
+						"episode": "",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					}
+				],
+				"replays": [
+					{
+						"channel": "",				//REQUIRED
+						"programTitle": "",			//REQUIRED
+						"episodeThumbnailURL": "",	//OPTIONAL. CAN BE ADDED FOR ANY TYPE OF PROGRAM.
+						"episodeTitle": "",
+						"season": "",				//REQUIRED IF IT'S A SERIES
+						"episode": "",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					}
+				]
+			};
+			*/
+			
+			var data = {
+				"live": [
+					{
+						"channel": "tbs",				//REQUIRED
+						"programTitle": "the big bang theory",			//REQUIRED
+						"episodeThumbnailURL": "https://images.tbs.com/tbs/w_1360/https%3A%2F%2Fi.cdn.tbs.com%2Fassets%2Fimages%2F2017%2F03%2FBigBangTheory_1692x695.jpg",
+						"episodeTitle": "",
+						"season": "1",				//REQUIRED IF IT'S A SERIES
+						"episode": "2",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					},
+					{
+						"channel": "abc",				//REQUIRED
+						"programTitle": "modern family",			//REQUIRED
+						"episodeThumbnailURL": "",
+						"episodeTitle": "",
+						"season": "3",				//REQUIRED IF IT'S A SERIES
+						"episode": "4",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "23 min.",
+						"description": "",
+						"link": ""					//REQUIRED
+					}
+				],
+				"replays": [
+					{
+						"channel": "tbs",				//REQUIRED
+						"programTitle": "the big bang theory",			//REQUIRED
+						"episodeThumbnailURL": "https://images.tbs.com/tbs/w_1360/https%3A%2F%2Fi.cdn.tbs.com%2Fassets%2Fimages%2F2017%2F03%2FBigBangTheory_1692x695.jpg",
+						"episodeTitle": "",
+						"season": "1",				//REQUIRED IF IT'S A SERIES
+						"episode": "2",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					},
+					
+					{
+						"channel": "tbs",				//REQUIRED
+						"programTitle": "the big bang theory",			//REQUIRED
+						"episodeThumbnailURL": "https://images.tbs.com/tbs/w_1360/https%3A%2F%2Fi.cdn.tbs.com%2Fassets%2Fimages%2F2017%2F03%2FBigBangTheory_1692x695.jpg",
+						"episodeTitle": "",
+						"season": "1",				//REQUIRED IF IT'S A SERIES
+						"episode": "3",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					},
+					
+					{
+						"channel": "tbs",				//REQUIRED
+						"programTitle": "the big bang theory",			//REQUIRED
+						"episodeThumbnailURL": "https://images.tbs.com/tbs/w_1360/https%3A%2F%2Fi.cdn.tbs.com%2Fassets%2Fimages%2F2017%2F03%2FBigBangTheory_1692x695.jpg",
+						"episodeTitle": "",
+						"season": "1",				//REQUIRED IF IT'S A SERIES
+						"episode": "1",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					},
+					
+					{
+						"channel": "tbs",				//REQUIRED
+						"programTitle": "the big bang theory",			//REQUIRED
+						"episodeThumbnailURL": "https://images.tbs.com/tbs/w_1360/https%3A%2F%2Fi.cdn.tbs.com%2Fassets%2Fimages%2F2017%2F03%2FBigBangTheory_1692x695.jpg",
+						"episodeTitle": "",
+						"season": "2",				//REQUIRED IF IT'S A SERIES
+						"episode": "1",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					},
+					
+					{
+						"channel": "nickelodeon",				//REQUIRED
+						"programTitle": "spongebob squarepants",			//REQUIRED
+						"episodeThumbnailURL": "",
+						"episodeTitle": "",
+						"season": "7",				//REQUIRED IF IT'S A SERIES
+						"episode": "9",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					},
+					{
+						"channel": "tnt",				//REQUIRED
+						"programTitle": "rocky IV",			//REQUIRED
+						"episodeThumbnailURL": "",
+						"episodeTitle": "",
+						"season": "",				//REQUIRED IF IT'S A SERIES
+						"episode": "",				//REQUIRED IF IT'S A SERIES
+						"runtime" : "",
+						"description": "",
+						"link": ""					//REQUIRED
+					}
+				]
+			};
+			//END OF DATA PROVIDED BY BOX
+			
+			var noticeQueue = [];
+			var showingQueue = false;
+			function queueNotice(type, message){
+				for(var i = 0; i < noticeQueue.length; i++){
+					if(noticeQueue[i][0] == type && noticeQueue[i][1] == message){
+						//if its already in the queue
+						return false;
+					}
+				}
+				
+				noticeQueue[noticeQueue.length] = [type, message];
+				if(!showingQueue){
+					showingQueue = true;
+					showNextNoticeInQueue();
+				}
+			}
+			
+			function showNextNoticeInQueue(){
+				if(noticeQueue.length > 0){
+					setTimeout(function(){
+						if(noticeQueue[0][0] == "error"){
+							showError(noticeQueue[0][1]);
+							$('html, body').animate({scrollTop: 0}, 500);
+						}
+						else if(noticeQueue[0][0] == "confirmation"){
+							showConfirmation(noticeQueue[0][1]);
+							$('html, body').animate({scrollTop: 0}, 500);
+						}
+						else if(noticeQueue[0][0] == "alert"){
+							showAlert(noticeQueue[0][1]);
+							$('html, body').animate({scrollTop: 0}, 500);
+						}
+					}, 1);
+				}
+				else{
+					showingQueue = false;
+				}
+			}
+			
+			function showError(message){
+				//show an error message
+				$("#error")[0].innerHTML = message;
+				$("#error").stop().fadeIn();
+				$("#noticeInteractionBlock").stop().fadeIn();
+			}
+			
+			function showConfirmation(message){
+				//show a confirmation message
+				$("#confirmation")[0].innerHTML = message;
+				$("#confirmation").stop().fadeIn();
+				$("#noticeInteractionBlock").stop().fadeIn();
+			}
+			
+			function showAlert(message){
+				//show a regular alert message
+				$("#alert")[0].innerHTML = message;
+				$("#alert").stop().fadeIn();
+				$("#noticeInteractionBlock").stop().fadeIn();
+			}
+			
+			function hideNotice(){
+				if($("#noticeInteractionBlock")[0].style.display == "block"){
+					$("#noticeInteractionBlock").stop().fadeOut(200);
+					$("#alert").stop().fadeOut(200);
+					$("#error").stop().fadeOut(200);
+					$("#confirmation").stop().fadeOut(200, function(){
+						noticeQueue.splice(0, 1);
+						showNextNoticeInQueue();
+					});
+				}
+			}
+			
+			function promptConfirm(message, cancelMessage, confirmMessage, cancelFunction, confirmFunction){
+				if(cancelMessage == ""){cancelMessage = "cancel";}
+				if(confirmMessage == ""){cancelMessage = "ok";}
+				cancelMessage = cancelMessage.charAt(0).toUpperCase() + cancelMessage.substring(1);
+				confirmMessage = confirmMessage.toUpperCase();
+				
+				$("#promptInteractionBlock").stop().fadeIn(150);
+				$("#confirm div").eq(0)[0].innerHTML = message;
+				$("#confirm button").eq(0)[0].innerHTML = confirmMessage;
+				$("#confirm button").eq(1)[0].innerHTML = cancelMessage;
+				$("#confirm").stop().fadeIn(150);
+				$("#confirm button").eq(0)[0].onclick = function(){confirmFunction();$("#confirm").stop().fadeOut(150);$("#promptInteractionBlock").stop().fadeOut(150);};
+				$("#confirm button").eq(1)[0].onclick = function(){cancelFunction();$("#confirm").stop().fadeOut(150);$("#promptInteractionBlock").stop().fadeOut(150);};
+			}
+			
+			$(document).ready(function(){
+				setTimeout(setMinHeights, 1);
+				$(window).resize(setMinHeights);
+				askForCableLogin();
+			});
+			
+			function storeOnStick(key, value){
+				//USING LOCALSTORAGE AS A PLACEHOLDER UNTIL WE STORE STUFF ON THE STICK
+				window.localStorage.setItem(key, value);
+			}
+			
+			var stickRequest = false;
+			function requestFromStick(key){
+				//USING LOCALSTORAGE AS A PLACEHOLDER UNTIL WE STORE STUFF ON THE STICK
+				stickRequest = window.localStorage.getItem(key);
+			}
+			
+			function grabStickRequest(){
+				var tempStickRequest = stickRequest;
+				stickRequest = false;
+				return tempStickRequest;
+			}
+			
+			function stickRequestExisted(stickRequest){
+				//USING null HERE UNTIL WE KNOW WHAT THE STICK SENDS US IF NO VALUE WAS STORED ON THE STICK FOR THE KEY WE REQUESTED
+				return (stickRequest !== null);
+			}
+			
+			var email = "";
+			function askForCableLogin(){
+				requestFromStick("cableUsername");
+				setTimeout(function(){
+					var stickRequestCheck = setInterval(function(){
+						var stickRequest = grabStickRequest();
+						if(stickRequest !== false){
+							clearInterval(stickRequestCheck);
+							$("#splash").stop().animate({top:"-100%"}, 200);
+							if(stickRequestExisted(stickRequest)){
+								email = stickRequest;
+								$("#cableLogin").stop().animate({top:"-100%"}, 100);
+								askForProfile();
+							}
+						}
+					}, 100);
+				}, 2000);
+			}
+			
+			var cableLoginWorked = null;
+			var submittingCableCredentials = false;
+			function submitCableCredentials(){
+				if(submittingCableCredentials){
+					return false;
+				}
+				
+				var provider = $('#cableLoginProviderShown')[0].innerHTML;
+				var username = $('#cableLoginUsername')[0].value.trim();
+				var password = $('#cableLoginPassword')[0].value.trim();
+				
+				if(provider == "Cable Provider" || provider == "Not Selected"){
+					queueNotice("error", "Select your cable provider.");
+					return false;
+				}
+				if(username == "" && password == ""){
+					queueNotice("error", "Enter your " + provider + " username and password.");
+					return false;
+				}
+				if(username == ""){
+					queueNotice("error", "Enter your " + provider + " username.");
+					return false;
+				}
+				if(password == ""){
+					queueNotice("error", "Enter your " + provider + " password.");
+					return false;
+				}
+				
+				submittingCableCredentials = true;
+				$("#cableLoginButton")[0].innerHTML = "<img src=\"images/rollingWhite.svg\"/>";
+				verifyCableLoginCredentials(provider, username, password);
+				var cableLoginVerificationCheck = setInterval(function(){
+					if(cableLoginWorked !== null){
+						$("#cableLoginButton")[0].innerHTML = "Log in";
+						submittingCableCredentials = false;
+						clearInterval(cableLoginVerificationCheck);
+						if(cableLoginWorked === true){
+							storeOnStick("cableProvider", provider);
+							storeOnStick("cableUsername", username);
+							storeOnStick("cablePassword", password);
+							email = username;
+							askForProfile();
+							$("#cableLogin").stop().animate({top:"-100%"}, 200);
+						}
+						else{
+							queueNotice("error", "Some of that info is incorrect.");
+						}
+					}
+				}, 100);
+			}
+			
+			function verifyCableLoginCredentials(provider, username, password){
+				//JUST ASSUMING IT WORKS UNTIL WE CAN VERIFY THAT ON THE STICK
+				cableLoginWorked = true;
+			}
+			
+			var profileColors = ["#ff0055", "#00fff2", "#6f00ff", "#0073ff", "#88ff00", "#ff0000", "#aa00ff", "#ff00f7", "#d1e004", "#00ffaa", "#ffa200"];
+			function askForProfile(){
+				$.get(DOMAIN + "/php/getProfiles.php?email=" + encodeURIComponent(email), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						var profiles = JSON.parse(data.replace("true|", ""));
+						
+						var htmlToAdd = "<div id=\"profileSelectionHeading\">Who's watching?</div>";
+						for(var i = 0; i < profiles.length; i++){
+							htmlToAdd += "<div class=\"profile\" onclick=\"selectProfile('" + profiles[i][0] + "', '" + profiles[i][1] + "')\">" + 
+								"<div class=\"smiley\" style=\"background-color:" + profileColors[profiles[i][0] % profileColors.length] + ";\"></div>" + 
+								"<div class=\"name\">" + profiles[i][1] + "</div>" + 
+							"</div>";
+						}
+						htmlToAdd += "<div class=\"profile\" onclick=\"showNewProfileForm();\">" + 
+							"<div class=\"smiley\" style=\"background-color:#555;background-image:url('images/plus.png');background-size:40%;\"></div>" + 
+							"<div class=\"name\">new profile</div>" + 
+						"</div>";
+						
+						$("#profileSelection")[0].innerHTML = htmlToAdd;
+					}
+					else{
+						queueNotice("error", data.replace("false|", "") + " Please reboot the app to try again.");
+					}
+				})
+				.fail(function(){
+					//error
+					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy. Please reboot the app to try again.");
+				})
+				.always(function() {
+					//complete
+				});
+			}
+			
+			var lastProfilesHTML = "";
+			function showNewProfileForm(){
+				$("#profileSelection>div").stop().fadeOut(200, function(){
+					lastProfilesHTML = $("#profileSelection")[0].innerHTML;
+					
+					var htmlToAdd = "<div id=\"profileSelectionHeading\" style=\"display:none;\">New Profile</div>";
+					htmlToAdd += "<div class=\"profile\" style=\"display:none;\">" + 
+						"<div class=\"smiley\" style=\"background-color:#555;\"></div>" + 
+						"<div class=\"name\"><input type=\"text\" placeholder=\"NAME\"/></div>" + 
+					"</div>";
+					htmlToAdd += "<div class=\"newProfileButton\" style=\"display:none;float:left;\" onclick=\"revertToAskForProfile();\">Cancel</div>" + 
+						"<div class=\"newProfileButton\" id=\"saveNewProfileButton\" style=\"display:none;float:right;\" onclick=\"createProfile();\">Save</div>";
+					
+					setTimeout(function(){
+						$("#profileSelection")[0].innerHTML = htmlToAdd;
+						$("#profileSelection>div").fadeIn(200, function(){
+							$("#profileSelection input").eq(0)[0].focus();
+						});
+					}, 100);
+				});
+			}
+			
+			var savingNewProfile = false;
+			function createProfile(){
+				var newProfileName = $("#profileSelection input").eq(0)[0].value;
+				if(newProfileName.trim() == ""){
+					queueNotice("error", "Please enter a name for this profile.");
+					return false;
+				}
+				
+				savingNewProfile = true;
+				$("#saveNewProfileButton")[0].innerHTML = "<img src=\"images/rollingWhite.svg\" style=\"opacity:.5;height:17px;\">";
+				$.get(DOMAIN + "/php/createUser.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(newProfileName), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						var profileData = JSON.parse(data.replace("true|", ""));
+						savingNewProfile = false;
+						revertToAskForProfile("<div class=\"profile\" onclick=\"selectProfile('" + profileData[0] + "', '" + profileData[1] + "')\"><div class=\"smiley\" style=\"background-color:" + profileColors[profileData[0] % profileColors.length] + ";\"></div><div class=\"name\">" + profileData[1] + "</div></div>");
+					}
+					else{
+						savingNewProfile = false;
+						queueNotice("error", data.replace("false|", ""));
+					}
+				})
+				.fail(function(){
+					//error
+					savingNewProfile = false;
+					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy. Please try again.");
+				})
+				.always(function() {
+					//complete
+					$("#saveNewProfileButton")[0].innerHTML = "Save";
+				});
+			}
+			
+			function revertToAskForProfile(newProfileHTML){
+				if(typeof newProfileHTML === 'undefined'){newProfileHTML = "";}
+				if(!savingNewProfile){
+					$("#profileSelection>div").stop().fadeOut(200, function(){
+						$("#profileSelection")[0].innerHTML = lastProfilesHTML;
+						if(newProfileHTML != ""){
+							$("#profileSelection .profile").eq($("#profileSelection .profile").length - 1).before(newProfileHTML);
+						}
+						$("#profileSelection>div").fadeIn(200);
+					});
+				}
+			}
+			
+			function selectProfile(profileID, profileName){
+				window.localStorage.setItem("name", profileName);
+				loadPrograms();
+				$("#profileSelection").stop().animate({top:"-100%"}, 200);
+			}
+			
+			function setMinHeights(){
+				var desiredMinHeight = window.innerHeight - $("header").eq(0)[0].clientHeight;
+				$("#live")[0].style.minHeight = desiredMinHeight;
+				$("#replays")[0].style.minHeight = desiredMinHeight;
+				$("#searchResults")[0].style.minHeight = desiredMinHeight;
+				
+				$("#searchResults")[0].style.top = $("header").eq(0)[0].clientHeight;
+				
+				$("#searchResults")[0].style.width = "";//because jquery's show() function makes the width an absolute number
+			}
+			
+			var myList = [];
+			function loadPrograms(){
+				$.get(DOMAIN + "/php/getList.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(window.localStorage.getItem("name")), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						myList = JSON.parse(data.replace("true|", ""));
+						showLiveListings();
+						showReplaysListings();
+					}
+					else{
+						queueNotice("error", data.replace("false|", "") + " Please reboot the app to try again.");
+					}
+				})
+				.fail(function(){
+					//error
+					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy. Please reboot the app to try again.");
+				})
+				.always(function() {
+					//complete
+					$("#live .loading").eq(0)[0].style.display = "none";
+					$("#replays .loading").eq(0)[0].style.display = "none";
+				});
+			}
+			
+			function compareEpisodes(a, b){
+				if(Number(a.season.toString().replace(/\D/g, "")) < Number(b.season.toString().replace(/\D/g, ""))){
+					return -1;
+				}
+				if(Number(a.season.toString().replace(/\D/g, "")) > Number(b.season.toString().replace(/\D/g, ""))){
+					return 1;
+				}
+				if(Number(a.episode.toString().replace(/\D/g, "")) < Number(b.episode.toString().replace(/\D/g, ""))){
+					return -1;
+				}
+				if(Number(a.episode.toString().replace(/\D/g, "")) > Number(b.episode.toString().replace(/\D/g, ""))){
+					return 1;
+				}
+				return 0;
+			}
+			
+			function getEpisodes(channel, programTitle){
+				var episodes = [];
+				for(var i = 0; i < data["replays"].length; i++){
+					if(data["replays"][i]["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() == channel.toLowerCase().replace(/\s\s+/g, ' ').trim() && data["replays"][i]["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() == programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						episodes[episodes.length] = data["replays"][i];
+					}
+				}
+				return episodes;
+			}
+			
+			function getFirstEpisode(channel, programTitle){
+				var episodes = getEpisodes(channel, programTitle);
+				episodes.sort(compareEpisodes);
+				return episodes[0];
+				
+			}
+			
+			function sortData(unsortedData){
+				var unsortedLiveData = unsortedData["live"];
+				var unsortedReplaysData = unsortedData["replays"];
+				
+				var sortedLiveData = unsortedLiveData.sort(function(a, b){
+					if(a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim() < b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return -1;
+					}
+					if(a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim() > b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return 1;
+					}
+					if(a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() < b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return -1;
+					}
+					if(a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() > b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return 1;
+					}
+					return 0;
+				});
+				
+				sortedReplaysData = unsortedReplaysData.sort(function(a, b){
+					if(a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim() < b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return -1;
+					}
+					if(a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim() > b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return 1;
+					}
+					if(a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() < b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return -1;
+					}
+					if(a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() > b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return 1;
+					}
+					return compareEpisodes(a, b);
+				});
+				
+				return {
+					"live": sortedLiveData,
+					"replays": sortedReplaysData
+				};
+			}
+			
+			function indexOfProgramInMyList(programArray){
+				if(programArray.length != 2){
+					return -1;
+				}
+				
+				for(var i = 0; i < myList.length; i++){
+					if(myList[i][0].toLowerCase().replace(/\s\s+/g, ' ').trim() == programArray[0].toLowerCase().replace(/\s\s+/g, ' ').trim() && myList[i][1].toLowerCase().replace(/\s\s+/g, ' ').trim() == programArray[1].toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return i;
+					}
+				}
+				return -1;
+			}
+			
+			function getListingHTML(listingObject, hidden){
+				hidden = hidden || false;
+				var thumbnail = "images/thumbnails/noThumbnail.png";
+				if(listingObject["episodeThumbnailURL"] != ""){
+					thumbnail = listingObject["episodeThumbnailURL"];
+				}
+				
+				var channelLogoText = listingObject["channel"].toUpperCase();
+				var channelLogo = "#";
+				var knownChannels = ["ae", "abc", "abcfamily", "acc", "accespnnetwork", "accnetwork", "amc", "animalplanet", "axs", "axstv", "bbc", "bbcamerica", "bet", "bravo", "cartoonnetwork", "cbs", "cheddar", "cheddarnews", "cinemax", "cmt", "cn", "cnbc", "cnn", "comedycentral", "cooking", "cookingchannel", "create", "cspan", "cw", "discovery", "discoverychannel", "discoverylife", "disney", "disneychannel", "disneyxd", "diy", "diynetwork", "e", "encore", "epix", "epixdrivein", "espn", "espn2", "espn3", "espncls", "espnu", "food", "foodnetwork", "fox", "foxnews", "foxnewschannel", "foxsports", "foxsports1", "foxsports2", "freeform", "fs1", "fs2", "fuse", "fx", "fxm", "fxmovie", "fxmoviechannel", "fxmovies", "fxx", "fyi", "gameshownetwork", "gsn", "hallmark", "hallmarkchannel", "hbo", "headlinenews", "hgtv", "history", "historychannel", "hln", "homeshoppingnetwork", "hsn", "id", "ifc", "insp", "inspiration", "inspirationnetwork", "inspnetwork", "investigationdiscovery", "ion", "lifetime", "lifetimemovie", "lifetimemovienetwork", "lifetimemovies", "lmn", "mnt copy", "msnbc", "mtv", "mynetworktv", "mytv", "natgeo", "nationalgeographic", "nbc", "nbcgolf", "nbcsn", "nbcsports", "nbcsportsnetwork", "nfl", "nflnetwork", "nick", "nickelodeon", "nickelodeonjr", "nickelodeontoons", "nickjr", "nicktoons", "ovation", "ovationtv", "own", "oxygen", "oxygentv", "paramount", "paramountnetwork", "pbs", "pbskids", "pop", "publicbroadcastingservice", "qvc", "reelz", "reelzchannel", "science", "sciencechannel", "shortlist", "showtime", "spike", "spiketv", "starz", "sundance", "sundancetv", "syfy", "tbs", "tcm", "telemundo", "thecw", "thewarnerbrothers", "thewb", "theweatherchannel", "tlc", "tnt", "travel", "travelchannel", "tribeca", "tribecashortlist", "tru", "trutv", "turnerclassicmovies", "tvg", "tvland", "uni", "univision", "upn", "usa", "usanetwork", "vh1", "viceland", "warnerbrothers", "wb", "we", "weatherchannel", "wetv", "wgn", "wgna", "wgnamerica", "world"];
+				if(knownChannels.indexOf(channelLogoText.toLowerCase().replace(/[\W_]+/g, "")) > -1){
+					channelLogo = "images/channelLogos/" + channelLogoText.toLowerCase().replace(/[\W_]+/g, "") + ".png";
+					channelLogoText = "";
+				}
+				
+				var hiddenStyle = "";
+				if(hidden){
+					hiddenStyle = " style=\"display:none;\"";
+				}
+				
+				var htmlToReturn = "<div class=\"listing channel" + listingObject["channel"].toLowerCase().replace(/[\W_]+/g, "") + "\"" + hiddenStyle + ">";
+				htmlToReturn += 		"<div class=\"main table\" onclick=\"toggleListing(this.parentNode);\">";
+				htmlToReturn += 			"<div class=\"logo\" style=\"background-image:url('" + channelLogo + "');\">" + channelLogoText + "</div>";
+				htmlToReturn +=				"<div class=\"title\">" + listingObject["programTitle"] + "</div>";
+				htmlToReturn +=			"</div>";
+				htmlToReturn +=			"<div class=\"more\" style=\"max-height:0px;overflow:hidden;\">";
+				htmlToReturn +=				"<div class=\"table\">";
+				htmlToReturn +=					"<div class=\"thumbnail\">";
+				htmlToReturn +=						"<div class=\"image\" style=\"background-image:url('" + thumbnail + "');\"></div>";
+				htmlToReturn +=					"</div>";
+				htmlToReturn +=					"<div class=\"details\">";
+				if(listingObject["episodeTitle"].toString() != ""){
+					htmlToReturn +=					"<div class=\"episodeTitle\">" + listingObject["episodeTitle"] + "</div>";
+				}
+				if(listingObject["season"].toString() != "" && listingObject["episode"].toString() != ""){
+					htmlToReturn +=					"<div class=\"seasonAndEpisode\">Season " + listingObject["season"] + ", Episode " + listingObject["episode"] + "</div>";
+				}
+				if(listingObject["runtime"].toString() != ""){
+					htmlToReturn +=					"<div class=\"runtime\">" + listingObject["runtime"] + "</div>";
+				}
+				if(listingObject["description"].toString() != ""){
+					htmlToReturn +=					"<div class=\"description\">" + listingObject["description"] + "</div>";
+				}
+				htmlToReturn +=						"<div class=\"watch programButton\" onclick=\"watch('" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + Number(listingObject["season"].toString().replace(/\D/g, "")) + "', '" + Number(listingObject["episode"].toString().replace(/\D/g, "")) + "', '" + listingObject["link"].trim() + "');\">WATCH NOW</div>";
+				if(listingObject["season"].toString() != "" || listingObject["episode"].toString() != ""){
+					htmlToReturn +=					"<div class=\"moreEpisodes programButton\" onclick=\"showEpisodes('" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "');\">MORE EPISODES</div>";
+				}
+				if(indexOfProgramInMyList([listingObject["channel"], listingObject["programTitle"]]) > -1){
+					htmlToReturn +=					"<div class=\"addToList programButton\" onclick=\"removeFromList(this, '" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["episodeThumbnailURL"] + "', '" + listingObject["episodeTitle"] + "', '" + listingObject["season"] + "', '" + listingObject["episode"] + "', '" + listingObject["runtime"] + "', '" + listingObject["description"] + "', '" + listingObject["link"] + "');\">REMOVE FROM MY LIST</div>";
+				}
+				else{
+					htmlToReturn +=					"<div class=\"addToList programButton\" onclick=\"addToList(this, '" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["episodeThumbnailURL"] + "', '" + listingObject["episodeTitle"] + "', '" + listingObject["season"] + "', '" + listingObject["episode"] + "', '" + listingObject["runtime"] + "', '" + listingObject["description"] + "', '" + listingObject["link"] + "');\">&plus; ADD TO MY LIST</div>";
+				}
+				htmlToReturn +=					"</div>";
+				htmlToReturn +=				"</div>";
+				htmlToReturn +=			"</div>";
+				htmlToReturn +=		"</div>";
+				return htmlToReturn;
+			}
+			
+			function getEpisodeHTML(episode){
+				var thumbnail = "images/thumbnails/noThumbnail.png";
+				if(episode["episodeThumbnailURL"] != ""){
+					thumbnail = episode["episodeThumbnailURL"];
+				}
+				
+				episodeTitle = "Episode " + episode["episode"];
+				if(episode["episodeTitle"] != ""){
+					episodeTitle = episode["episodeTitle"];
+				}
+				
+				var htmlToReturn = "<div class=\"episode\">";
+				htmlToReturn += 		"<div class=\"main table\" onclick=\"toggleEpisode(this.parentNode);\">";
+				htmlToReturn += 			"<div class=\"number\">" + episode["episode"] + "</div>";
+				htmlToReturn +=				"<div class=\"title\">" + episodeTitle + "</div>";
+				htmlToReturn +=			"</div>";
+				htmlToReturn +=			"<div class=\"more\" style=\"max-height:0px;overflow:hidden;\">";
+				htmlToReturn +=				"<div class=\"table\">";
+				htmlToReturn +=					"<div class=\"thumbnail\">";
+				htmlToReturn +=						"<div class=\"image\" style=\"background-image:url('" + thumbnail + "');\"></div>";
+				htmlToReturn +=					"</div>";
+				htmlToReturn +=					"<div class=\"details\">";
+				if(episode["runtime"].toString() != ""){
+					htmlToReturn +=					"<div class=\"runtime\">" + episode["runtime"] + "</div>";
+				}
+				if(episode["description"].toString() != ""){
+					htmlToReturn +=					"<div class=\"description\">" + episode["description"] + "</div>";
+				}
+				htmlToReturn +=						"<div class=\"watch programButton\" onclick=\"watch('" + episode["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + episode["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + Number(episode["season"].toString().replace(/\D/g, "")) + "', '" + Number(episode["episode"].toString().replace(/\D/g, "")) + "', '" + episode["link"].trim() + "');\">WATCH NOW</div>";
+				htmlToReturn +=					"</div>";
+				htmlToReturn +=				"</div>";
+				htmlToReturn +=			"</div>";
+				htmlToReturn +=		"</div>";
+				return htmlToReturn;
+			}
+			
+			function getEpisodesHTMLBySeason(sortedEpisodes, season){
+				var htmlToAdd = "<div class=\"episodes\">";
+				for(var i = 0; i < sortedEpisodes.length; i++){
+					if(sortedEpisodes[i]["season"] == season){
+						htmlToAdd += getEpisodeHTML(sortedEpisodes[i]);
+					}
+					else if(sortedEpisodes[i]["season"] > season){
+						break;
+					}
+				}
+				htmlToAdd += "</div>";
+				return htmlToAdd;
+			}
+			
+			function showLiveListings(){
+				var sortedData = sortData(data);
+				var htmlToAdd = "";
+				for(var i = 0; i < sortedData["live"].length; i++){
+					htmlToAdd += getListingHTML(sortedData["live"][i]);
+				}
+				$("#live .listings").eq(0)[0].innerHTML = htmlToAdd;
+			}
+			
+			function showReplaysListings(){
+				var sortedData = sortData(data);
+				var myListHTML = "";
+				var newHTML = "";
+				var continueWatchingHTML = "";
+				var seriesHTML = "";
+				var moviesHTML = "";
+				var watchItAgainHTML = "";
+				
+				var lastChannel = "";
+				var lastTitle = "";
+				for(var i = 0; i < sortedData["replays"].length; i++){
+					if(lastChannel != sortedData["replays"][i]["channel"] || lastTitle != sortedData["replays"][i]["programTitle"]){
+						if(indexOfProgramInMyList([sortedData["replays"][i]["channel"], sortedData["replays"][i]["programTitle"]]) > -1){
+							myListHTML += getListingHTML(sortedData["replays"][i]);
+							$("#myList")[0].style.display = "";
+						}
+						
+						if(sortedData["replays"][i]["season"].toString() == "" && sortedData["replays"][i]["episode"].toString() == ""){
+							moviesHTML += getListingHTML(sortedData["replays"][i]);
+							$("#movies")[0].style.display = "";
+						}
+						else{
+							seriesHTML += getListingHTML(sortedData["replays"][i]);
+							$("#series")[0].style.display = "";
+						}
+						
+						lastChannel = sortedData["replays"][i]["channel"];
+						lastTitle = sortedData["replays"][i]["programTitle"];
+					}
+				}
+				$("#replays #myList .listings").eq(0)[0].innerHTML = myListHTML;
+				$("#replays #new .listings").eq(0)[0].innerHTML = newHTML;
+				$("#replays #continueWatching .listings").eq(0)[0].innerHTML = continueWatchingHTML;
+				$("#replays #series .listings").eq(0)[0].innerHTML = seriesHTML;
+				$("#replays #movies .listings").eq(0)[0].innerHTML = moviesHTML;
+				$("#replays #watchItAgain .listings").eq(0)[0].innerHTML = watchItAgainHTML;
+			}
+			
+			function toggleListing(listing){
+				var more = $(listing).find(".more").eq(0)[0];
+				if(Number(more.style.maxHeight.replace(/\D/g, "")) > 0){
+					more.style.maxHeight = more.clientHeight;
+					$(more).stop().animate({maxHeight:"0px"}, 200);
+				}
+				else{
+					$(more).stop().animate({maxHeight:"3000px"}, 700);
+				}
+			}
+			
+			function toggleEpisode(episode){
+				var more = $(episode).find(".more").eq(0)[0];
+				if(Number(more.style.maxHeight.replace(/\D/g, "")) > 0){
+					more.style.maxHeight = more.clientHeight;
+					$(more).stop().animate({maxHeight:"0px"}, 200);
+				}
+				else{
+					$(more).stop().animate({maxHeight:"3000px"}, 700);
+				}
+			}
+			
+			function showCoverIfNeeded(){
+				if($("#searchInput").eq(0)[0].value == ""){
+					$(".cover").stop().fadeIn(200);
+				}
+			}
+			
+			function hideSearchResults(){
+				$("#searchBar .inputX").eq(0)[0].style.display = "";
+				$("#live")[0].style.maxHeight = "none";
+				$("#replays")[0].style.maxHeight = "none";
+				$("#searchResults").stop().hide(200);
+				$("#searchInput").eq(0)[0].value = "";
+				if($("#replays")[0].style.display == "block"){
+					$("#replaysButton")[0].style.textDecoration = "underline";
+				}
+				else{
+					$("#liveTVButton")[0].style.textDecoration = "underline";
+				}
+			}
+			
+			function showLiveTVPage(){
+				hideSearchResults();
+				$("#live")[0].style.display = "block";
+				$("#replays")[0].style.display = "none";
+				$("#liveTVButton")[0].style.textDecoration = "underline";
+				$("#replaysButton")[0].style.textDecoration = "none";
+				
+			}
+			
+			function showReplaysPage(){
+				hideSearchResults();
+				$("#live")[0].style.display = "none";
+				$("#replays")[0].style.display = "block";
+				$("#liveTVButton")[0].style.textDecoration = "none";
+				$("#replaysButton")[0].style.textDecoration = "underline";
+			}
+			
+			var sortedShownEpisodes = null;
+			function showEpisodes(channel, programTitle){
+				var episodes = getEpisodes(channel, programTitle);
+				episodes.sort(compareEpisodes);
+				sortedShownEpisodes = episodes;
+				
+				var thumbnails = [];
+				for(var i = 0; i < episodes.length; i++){
+					if(episodes[i]["episodeThumbnailURL"] != ""){
+						thumbnails[thumbnails.length] = episodes[i]["episodeThumbnailURL"];
+					}
+				}
+				var thumbnail = "images/blur.jpg";
+				if(thumbnails.length > 0){
+					thumbnail = thumbnails[Math.floor(Math.random() * thumbnails.length)];
+				}
+				
+				var xHTML = "<div id=\"exitMoreEpisodes\" onclick=\"hideEpisodes()\"></div>";
+				
+				var titleHTML = "<div id=\"moreEpisodesCoverPhoto\" style=\"background-image:url('" + thumbnail + "');\"><div><div>" + programTitle + "</div></div></div>";
+				
+				var addToListButtonHTML = "<div class=\"addToList programButton\" onclick=\"addToList(this, '" + channel.toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() + "', true);\">&plus; ADD TO MY LIST</div>";
+				if(indexOfProgramInMyList([channel, programTitle]) > -1){
+					addToListButtonHTML = "<div class=\"addToList programButton\" onclick=\"removeFromList(this, '" + channel.toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() + "', true);\">REMOVE FROM MY LIST</div>";
+				}
+				
+				var seasons = [];
+				var seasonsHTML = "<div id=\"seasons\">";
+				for(var i = 0; i < episodes.length; i++){
+					if(seasons.indexOf(episodes[i]["season"]) == -1){
+						seasons[seasons.length] = episodes[i]["season"];
+						
+						var seasonStyle = " style=\"max-height:100px;\"";
+						if(i != 0){
+							seasonStyle = " style=\"max-height:0px;\"";
+						}
+						seasonsHTML += 	"<div class=\"season\"" + seasonStyle + " onclick=\"toggleSeason(" + episodes[i]["season"] + ");\"><div>Season " + episodes[i]["season"] + "</div></div>";
+					}
+				}
+				if(seasons.length > 1){
+					seasonsHTML += "<div id=\"seasonsDropDownArrow\"></div>";
+				}
+				seasonsHTML += "</div>";
+				
+				var episodesHTML = getEpisodesHTMLBySeason(episodes, seasons[0]);
+				
+				$("#episodes")[0].innerHTML = xHTML + titleHTML + addToListButtonHTML + seasonsHTML + episodesHTML;
+				$("#episodes").stop().fadeIn(200, function(){
+					$("#live")[0].style.maxHeight = "0px";
+					$("#replays")[0].style.maxHeight = "0px";
+					$("#searchResults")[0].style.maxHeight = "0px";
+				});
+			}
+			
+			function hideEpisodes(){
+				$("#searchResults")[0].style.maxHeight = "none";
+				//if search results are closed, maxheight none for live and replays
+				if($("#searchResults")[0].style.display != "block"){
+					$("#live")[0].style.maxHeight = "none";
+					$("#replays")[0].style.maxHeight = "none";
+				}
+				
+				//fade out #episodes
+				$("#episodes").stop().fadeOut(100);
+			}
+			
+			var lastSeasonClicked = -1;
+			function toggleSeason(season){
+				if($("#episodes .season").length > 1){
+					if(Number("0" + $("#episodes .season").eq(0)[0].style.maxHeight.replace(/\D/g, "")) > 0 && Number("0" + $("#episodes .season").eq(1)[0].style.maxHeight.replace(/\D/g, "")) > 0){
+						//hide all except season
+						$("#seasonsDropDownArrow").stop().fadeIn(200);
+						
+						var seasons = $("#episodes .season");
+						for(var i = 0; i < seasons.length; i++){
+							if(seasons.eq(i).text() != "Season " + season){
+								seasons.eq(i).stop().css({maxHeight:seasons.eq(i)[0].clientHeight});
+								seasons.eq(i).animate({maxHeight:"0px"}, 100);
+							}
+						}
+						
+						//show season episodes
+						if(season != lastSeasonClicked){
+							$("#episodes .episodes").eq(0)[0].style.display = "none";
+							$("#episodes .episodes").eq(0)[0].innerHTML = getEpisodesHTMLBySeason(sortedShownEpisodes, season);
+							$("#episodes .episodes").stop().fadeIn(200);
+						}
+					}
+					else{
+						//show all
+						lastSeasonClicked = season;
+						$("#seasonsDropDownArrow").stop().fadeOut(0);
+						$("#episodes .season").stop().animate({maxHeight:"100px"}, 200);
+					}
+				}
+			}
+			
+			var togglingToFromList = [];
+			function addToList(buttonElement, channel, programTitle, darkLoader){
+				darkLoader = darkLoader || false;
+				
+				for(var i = 0; i < togglingToFromList.length; i++){
+					if(togglingToFromList[i][0].toLowerCase().replace(/\s\s+/g, ' ').trim() == channel.toLowerCase().replace(/\s\s+/g, ' ').trim() && togglingToFromList[i][1].toLowerCase().replace(/\s\s+/g, ' ').trim() == programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return false;
+					}
+				}
+				var togglingToFromListIndex = togglingToFromList.length;
+				togglingToFromList[togglingToFromListIndex] = [channel, programTitle];
+				
+				var loaderPath = "images/thinGreenRolling.svg";
+				if(darkLoader){
+					loaderPath = "images/thinGrayRolling.svg";
+				}
+				$(buttonElement)[0].innerHTML = "<img src=\"" + loaderPath + "\"/>";
+				$.get(DOMAIN + "/php/addToList.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(window.localStorage.getItem("name")) + "&channel=" + encodeURIComponent(channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&programTitle=" + encodeURIComponent(programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						var listingsToCheck = $("#replays .listing.channel" + channel.toLowerCase().replace(/[\W_]+/g, ""));
+						var matches = 0;
+						for(var i = (listingsToCheck.length - 1); i >= 0; i--){
+							if(listingsToCheck.eq(i).find(".title").eq(0)[0].innerHTML.toLowerCase().replace(/\s\s+/g, ' ').trim() == programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+								listingsToCheck.eq(i).find(".addToList").eq(0)[0].innerHTML = "REMOVE FROM MY LIST";
+								listingsToCheck.eq(i).find(".addToList").eq(0)[0].onclick = function(){removeFromList(buttonElement, channel, programTitle, darkLoader)};
+							}
+						}
+						//make sure more episodes addToList button is take care of too if that was the one that was clicked
+						$(buttonElement)[0].innerHTML = "REMOVE FROM MY LIST";
+						$(buttonElement)[0].onclick = function(){removeFromList(buttonElement, channel, programTitle, darkLoader)};
+						
+						//add to myList variable
+						myList[myList.length] = [channel, programTitle];
+						
+						//update UI
+						var myListAdditionHTML = getListingHTML(getFirstEpisode(channel, programTitle), true);
+						
+						if($("#myList .listing").length == 0){
+							$("#myList .listings").eq(0)[0].innerHTML = myListAdditionHTML;
+						}
+						else{
+							var listings = $("#myList .listing");
+							var added = false;
+							for(var i = 0; i < listings.length; i++){
+								var listingChannel = listings.eq(i)[0].className;
+								listingChannel = listingChannel.substring(listingChannel.indexOf("channel") + 7);
+								if(listingChannel.indexOf(" ") > -1){
+									listingChannel = listingChannel.sustring(0, listingChannel.indexOf(" "))
+								}
+								var listingProgramTitle = listings.eq(i).find(".title").eq(0)[0].innerHTML.toLowerCase().replace(/\s\s+/g, ' ').trim();
+								
+								if(listingChannel > channel.toLowerCase().replace(/[\W_]+/g, "") || (listingChannel == channel.toLowerCase().replace(/[\W_]+/g, "") && listingProgramTitle > programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+									//prepend to this listing
+									listings.eq(i).before(myListAdditionHTML);
+									added = true;
+									break;
+								}
+							}
+							if(!added){
+								//append to last listing
+								listings.eq(listings.length - 1).after(myListAdditionHTML);
+							}
+						}
+						$("#myList").stop().show(100);
+						$("#myList .listing").stop().show(100);
+					}
+					else{
+						$(buttonElement)[0].innerHTML = "&plus; ADD TO MY LIST";
+						//queueNotice("error", data.replace("false|", ""));
+						$(buttonElement).stop().animate({backgroundColor:"rgba(219,0,0,0.3)"}).delay(500).animate({backgroundColor:"rgba(0,219,131,0.05)"});
+					}
+				})
+				.fail(function(){
+					//error
+					$(buttonElement)[0].innerHTML = "&plus; ADD TO MY LIST";
+					$(buttonElement).stop().animate({backgroundColor:"rgba(219,0,0,0.3)"}).delay(500).animate({backgroundColor:"rgba(0,219,131,0.05)"});
+				})
+				.always(function() {
+					//complete
+					togglingToFromList.splice(togglingToFromListIndex, 1);
+				});
+			}
+			
+			function removeFromList(buttonElement, channel, programTitle, darkLoader){
+				darkLoader = darkLoader || false;
+				
+				for(var i = 0; i < togglingToFromList.length; i++){
+					if(togglingToFromList[i][0].toLowerCase().replace(/\s\s+/g, ' ').trim() == channel.toLowerCase().replace(/\s\s+/g, ' ').trim() && togglingToFromList[i][1].toLowerCase().replace(/\s\s+/g, ' ').trim() == programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+						return false;
+					}
+				}
+				var togglingToFromListIndex = togglingToFromList.length;
+				togglingToFromList[togglingToFromListIndex] = [channel, programTitle];
+				
+				var loaderPath = "images/thinGreenRolling.svg";
+				if(darkLoader){
+					loaderPath = "images/thinGrayRolling.svg";
+				}
+				$(buttonElement)[0].innerHTML = "<img src=\"" + loaderPath + "\"/>";
+				$.get(DOMAIN + "/php/removeFromList.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(window.localStorage.getItem("name")) + "&channel=" + encodeURIComponent(channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&programTitle=" + encodeURIComponent(programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						//update buttons
+						var listingsToCheck = $("#replays .listing.channel" + channel.toLowerCase().replace(/[\W_]+/g, ""));
+						var matches = 0;
+						for(var i = (listingsToCheck.length - 1); i >= 0; i--){
+							if(listingsToCheck.eq(i).find(".title").eq(0)[0].innerHTML.toLowerCase().replace(/\s\s+/g, ' ').trim() == programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+								listingsToCheck.eq(i).find(".addToList").eq(0)[0].innerHTML = "&plus; ADD TO MY LIST";
+								listingsToCheck.eq(i).find(".addToList").eq(0)[0].onclick = function(){addToList(buttonElement, channel, programTitle, darkLoader)};
+							}
+						}
+						//make sure more episodes addToList button is take care of too if that was the one that was clicked
+						$(buttonElement)[0].innerHTML = "&plus; ADD TO MY LIST";
+						$(buttonElement)[0].onclick = function(){addToList(buttonElement, channel, programTitle, darkLoader)};
+						
+						//remove from myList variable
+						var index = indexOfProgramInMyList([channel, programTitle]);
+						if(index > -1){
+							myList.splice(index, 1);
+						}
+						
+						//update UI
+						var listingsToCheck = $("#myList .listing.channel" + channel.toLowerCase().replace(/[\W_]+/g, ""));
+						var matches = 0;
+						for(var i = (listingsToCheck.length - 1); i >= 0; i--){
+							if(listingsToCheck.eq(i).find(".title").eq(0)[0].innerHTML.toLowerCase().replace(/\s\s+/g, ' ').trim() == programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()){
+								matches++;
+								listingsToCheck.eq(i).stop().hide(100, function(){
+									listingsToCheck.eq(i)[0].outerHTML = "";
+								});
+							}
+						}
+						if($("#myList .listing").length - matches <= 0){
+							$("#myList").stop().hide(100);
+						}
+					}
+					else{
+						$(buttonElement)[0].innerHTML = "REMOVE FROM MY LIST";
+						//queueNotice("error", data.replace("false|", ""));
+						$(buttonElement).stop().animate({backgroundColor:"rgba(219,0,0,0.3)"}).delay(500).animate({backgroundColor:"rgba(0,219,131,0.05)"});
+					}
+				})
+				.fail(function(){
+					//error
+					$(buttonElement)[0].innerHTML = "REMOVE FROM MY LIST";
+					$(buttonElement).stop().animate({backgroundColor:"rgba(219,0,0,0.3)"}).delay(500).animate({backgroundColor:"rgba(0,219,131,0.05)"});
+				})
+				.always(function() {
+					//complete
+					togglingToFromList.splice(togglingToFromListIndex, 1);
+				});
+			}
+			
+			function getIndexFromBeginningOfWord(search, subject){
+				var words = subject.replace(/\s\s+/g, ' ').trim().split(" ");
+				
+				var lowestIndex = 999999999;
+				for(var i = 0; i < words.length; i++){
+					var index = words[i].indexOf(search);
+					if(index > -1 && index < lowestIndex){
+						lowestIndex = index;
+					}
+				}
+				return lowestIndex;
+			}
+			
+			function getWordIndexThatStartsWith(search, subject){
+				var words = subject.replace(/\s\s+/g, ' ').trim().split(" ");
+				
+				for(var i = 0; i < words.length; i++){
+					if(words[i].indexOf(search) == 0){
+						return i;
+					}
+				}
+				return 9999999999;
+			}
+			
+			var currentQuery
+			function compareSearchResults(query){
+				return function(a, b) {
+					//if its the same program, make sure we return the appropriate episode first
+					if(a.channel == b.channel && a.programTitle == b.programTitle){
+						return compareEpisodes(a, b);
+					}
+					
+					//after that, exact match of anything comes first
+					if(a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() == query){
+						return -1;
+					}
+					if(b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim() == query){
+						return 1;
+					}
+					if(a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim() == query){
+						return -1;
+					}
+					if(b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim() == query){
+						return 1;
+					}
+					//program title matches come second
+					//...closest to beginning of word first
+					if(getIndexFromBeginningOfWord(query, a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) == 0 || getIndexFromBeginningOfWord(query, b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) == 0){
+						if(getIndexFromBeginningOfWord(query, a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) < getIndexFromBeginningOfWord(query, b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return -1;
+						}
+						if(getIndexFromBeginningOfWord(query, a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) > getIndexFromBeginningOfWord(query, b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return 1;
+						}
+						//...then lowest index first
+						if(getIndexFromBeginningOfWord(query, a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) < getIndexFromBeginningOfWord(query, b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return -1;
+						}
+						if(getIndexFromBeginningOfWord(query, a.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) > getIndexFromBeginningOfWord(query, b.programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return 1;
+						}
+					}
+					//channel title matches come third
+					//...closest to beginning of word first
+					if(getIndexFromBeginningOfWord(query, a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) == 0 || getIndexFromBeginningOfWord(query, b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) == 0){
+						if(getIndexFromBeginningOfWord(query, a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) < getIndexFromBeginningOfWord(query, b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return -1;
+						}
+						if(getIndexFromBeginningOfWord(query, a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) > getIndexFromBeginningOfWord(query, b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return 1;
+						}
+						//...then lowest index first
+						if(getWordIndexThatStartsWith(query, a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) < getWordIndexThatStartsWith(query, b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return -1;
+						}
+						if(getWordIndexThatStartsWith(query, a.channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) > getWordIndexThatStartsWith(query, b.channel.toLowerCase().replace(/\s\s+/g, ' ').trim())){
+							return 1;
+						}
+					}
+					return 0;
+				}
+			}
+			
+			function search(query){
+				query = query.toLowerCase().replace(/\s\s+/g, ' ').trim();
+				
+				var matchingLiveData = [];
+				for(var i = 0; i < data["live"].length; i++){
+					if(getIndexFromBeginningOfWord(query, data["live"][i]["channel"].toLowerCase()) == 0 || getIndexFromBeginningOfWord(query, data["live"][i]["programTitle"].toLowerCase()) == 0){
+						matchingLiveData[matchingLiveData.length] = data["live"][i];
+					}
+				}
+				matchingLiveData.sort(compareSearchResults(query));
+				
+				var matchingReplaysData = [];
+				for(var i = 0; i < data["replays"].length; i++){
+					if(getIndexFromBeginningOfWord(query, data["replays"][i]["channel"].toLowerCase()) == 0 || getIndexFromBeginningOfWord(query, data["replays"][i]["programTitle"].toLowerCase()) == 0){
+						matchingReplaysData[matchingReplaysData.length] = data["replays"][i];
+					}
+				}
+				matchingReplaysData.sort(compareSearchResults(query));
+				
+				if(query == ""){
+					hideSearchResults();
+					showCoverIfNeeded();
+				}
+				else{
+					$(".cover").stop().css({display:"none"});
+					$("#searchBar .inputX").eq(0)[0].style.display = "block";
+					$("#replaysButton")[0].style.textDecoration = "none";
+					$("#liveTVButton")[0].style.textDecoration = "none";
+					$("#searchResults").stop().show(200, function(){
+						$("#searchResults")[0].style.height = "";
+						$("#searchResults")[0].style.width = "";
+						$("#live")[0].style.maxHeight = "0px";
+						$("#replays")[0].style.maxHeight = "0px";
+					});
+					var htmlToAdd = "";
+					if(matchingLiveData.length > 0){
+						htmlToAdd += "<div class=\"titleBar\">Live TV</div>";
+						htmlToAdd += "<div class=\"live listings\">";
+						var lastChannel = "";
+						var lastTitle = "";
+						for(var i = 0; i < matchingLiveData.length; i++){
+							if(lastChannel != matchingLiveData[i]["channel"] || lastTitle != matchingLiveData[i]["programTitle"]){
+								htmlToAdd += getListingHTML(matchingLiveData[i]);
+								lastChannel = matchingLiveData[i]["channel"];
+								lastTitle = matchingLiveData[i]["programTitle"];
+							}
+						}
+						htmlToAdd += "</div>";
+					}
+					if(matchingReplaysData.length > 0){
+						htmlToAdd += "<div class=\"titleBar\">Replays</div>";
+						htmlToAdd += "<div class=\"listings\">";
+						var lastChannel = "";
+						var lastTitle = "";
+						for(var i = 0; i < matchingReplaysData.length; i++){
+							if(lastChannel != matchingReplaysData[i]["channel"] || lastTitle != matchingReplaysData[i]["programTitle"]){
+								htmlToAdd += getListingHTML(matchingReplaysData[i]);
+								lastChannel = matchingReplaysData[i]["channel"];
+								lastTitle = matchingReplaysData[i]["programTitle"];
+							}
+						}
+						htmlToAdd += "</div>";
+					}
+					
+					if(htmlToAdd == ""){
+						htmlToAdd = "<div class=\"centeredText\" style=\"margin-top:10px;\">No results found...</div>";
+					}
+					
+					$("#searchResults")[0].innerHTML = htmlToAdd;
+				}
+			}
+			
+			function watch(channel, programTitle, season, episode, link){
+				//track that the user has watched this
+				$.get(DOMAIN + "/php/addWatched.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(window.localStorage.getItem("name")) + "&channel=" + encodeURIComponent(channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&programTitle=" + encodeURIComponent(programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&season=" + Number(season.toString().replace(/\D/g, "")) + "&episode=" + Number(episode.toString().replace(/\D/g, "")), function(data){});
+				
+				//TODO: connect to the stick and throw it up on the tv
+			}
+		</script>
+	</head>
+	<body>
+		<div id="error" onclick="hideNotice();"></div>
+		<div id="confirmation" onclick="hideNotice();"></div>
+		<div id="alert" onclick="hideNotice();"></div>
+		<div id="promptInteractionBlock"></div>
+		<div id="noticeInteractionBlock" onclick="hideNotice();"></div>
+		<div id="clearInteractionBlock"></div>
+		<div id="splash">CableMooch</div>
+		<div id="cableLogin">
+			<div id="cableLoginHeading">Cable Login</div>
+			<div id="cableLoginProvider">
+				<div id="cableLoginProviderFacade" onclick="$('#cableLoginProviderSelect')[0].focus();">
+					<div id="cableLoginProviderShown">Cable Provider</div>
+					<div class="dropDownArrow"></div>
+				</div>
+				<select id="cableLoginProviderSelect" onchange="$('#cableLoginProviderShown')[0].innerHTML = this.options[this.selectedIndex].value;">
+					<option>Not Selected</option>
+					<option>3 Rivers Communications</option>
+					<option>Access Montana</option>
+					<option>AcenTek</option>
+					<option>Acme Communications</option>
+					<option>Adams Cable Service</option>
+					<option>Albany Mutual Telephone</option>
+					<option>Algona Municipal Utilities</option>
+					<option>All West Communications</option>
+					<option>Allen's Communications</option>
+					<option>Alliance Communications</option>
+					<option>ALLO Communications</option>
+					<option>Alpine Communications</option>
+					<option>American Broadband</option>
+					<option>American Broadband Missouri</option>
+					<option>American Community Networks</option>
+					<option>American Warrior Networks</option>
+					<option>Amherst Telephone/Tomorrow Valley</option>
+					<option>Andycable</option>
+					<option>Antietam Cable Television</option>
+					<option>Arkwest Communications</option>
+					<option>Armstrong</option>
+					<option>Arthur Mutual Telephone Company</option>
+					<option>Arvig</option>
+					<option>Ashland Home Net</option>
+					<option>Astound (now Wave)</option>
+					<option>AT&T U-Verse</option>
+					<option>ATC Broadband</option>
+					<option>ATC Communications</option>
+					<option>Atlantic Broadband</option>
+					<option>ATMC</option>
+					<option>Auburn Essential Services</option>
+					<option>Ayersville Communications</option>
+					<option>Baldwin Lightstream</option>
+					<option>Ballard TV</option>
+					<option>Bardstown Cable TV</option>
+					<option>Bay Country Communications</option>
+					<option>Beach Cable</option>
+					<option>Beaver Creek Cooperative Telephone</option>
+					<option>Beaver Valley Cable</option>
+					<option>Bee Line Cable</option>
+					<option>Beehive Broadband</option>
+					<option>BEK Communications</option>
+					<option>BELD</option>
+					<option>Bellevue Municipal Cable</option>
+					<option>Ben Lomand Connect / BLTV</option>
+					<option>BendBroadband</option>
+					<option>Benton Cablevision</option>
+					<option>BEVCOMM</option>
+					<option>Big Sandy Broadband</option>
+					<option>Bledsoe Telephone Cooperative</option>
+					<option>Bloomingdale Communications</option>
+					<option>Blue Ridge Communications</option>
+					<option>Blue Stream</option>
+					<option>Blue Valley Tele-Communications</option>
+					<option>BOLT Fiber Optic Services</option>
+					<option>Brandenburg Telephone Co.</option>
+					<option>Bristol Tennessee Essential Services</option>
+					<option>Broadstripe</option>
+					<option>BTC Communications</option>
+					<option>BTC Vision - Nahunta</option>
+					<option>Buckeye Broadband</option>
+					<option>Bulloch Telephone Cooperative</option>
+					<option>Burlington Telecom</option>
+					<option>Butler-Bremer Communications</option>
+					<option>C Spire</option>
+					<option>C Spire SNAP</option>
+					<option>Cable Co-op</option>
+					<option>Cable ONE</option>
+					<option>Cable Services Inc.</option>
+					<option>CableAmerica</option>
+					<option>CableSouth Media 3</option>
+					<option>Cam-Tel Company</option>
+					<option>Camellia Communication - Hayneville Telephone</option>
+					<option>Cameron Communications</option>
+					<option>CapRock Tv</option>
+					<option>Carnegie Cable</option>
+					<option>Carolina Mountain Cablevision</option>
+					<option>CAS Cable</option>
+					<option>CASSCOMM</option>
+					<option>Catalina Broadband Solutions</option>
+					<option>CC Communications</option>
+					<option>CDE Lightband</option>
+					<option>Cedar Falls Utilities</option>
+					<option>Celect-Bloomer Telephone Area</option>
+					<option>Celect-Bruce Telephone Area</option>
+					<option>Celect-Citizens Connected Area</option>
+					<option>Celect-Elmwood/Spring Valley Area</option>
+					<option>Celect-Mosaic Telecom</option>
+					<option>Celect-West WI Telephone Area</option>
+					<option>CentraCom</option>
+					<option>Central Arkansas Telephone Cooperative Cable TV</option>
+					<option>Central Scott / CSTV</option>
+					<option>CenturyLink Prism</option>
+					<option>Chaparral CableVision</option>
+					<option>Chariton Valley Communication Corporation, Inc.</option>
+					<option>Charter | Spectrum</option>
+					<option>Chatmoss Cablevision</option>
+					<option>Cherokee Communications</option>
+					<option>Chesapeake Bay Communications</option>
+					<option>Cim-Tel Cable, LLC.</option>
+					<option>Cincinnati Bell Fioptics</option>
+					<option>Citizens Cablevision - Floyd, VA</option>
+					<option>Citizens Cablevision, Inc.</option>
+					<option>Citizens Fiber</option>
+					<option>Citizens Mutual</option>
+					<option>Citizens Telephone Corporation</option>
+					<option>City of Hawarden dba HITEC</option>
+					<option>City of Monroe</option>
+					<option>CityLink</option>
+					<option>Citynet</option>
+					<option>CL Tel</option>
+					<option>Clarence Telephone and Cedar Communications</option>
+					<option>Clear Creek Communications</option>
+					<option>Click! Cable TV</option>
+					<option>CLICK1.NET</option>
+					<option>CLT Communications</option>
+					<option>CML Telephone Cooperative Association</option>
+					<option>CNS</option>
+					<option>Co-Mo Connect</option>
+					<option>Coast Communications</option>
+					<option>Cobalt TV (Mid-State Community TV)</option>
+					<option>Columbia Power and Water Systems</option>
+					<option>Communications 1 Cablevision, Inc.</option>
+					<option>Community Cable and Broadband</option>
+					<option>Community Communications Company</option>
+					<option>commZoom</option>
+					<option>Compas X-Stream</option>
+					<option>Complete Communication Services</option>
+					<option>Comporium</option>
+					<option>ComSouth Telesys</option>
+					<option>Consolidated</option>
+					<option>Consolidated Communications</option>
+					<option>Continuum</option>
+					<option>Conway Corporation</option>
+					<option>Coon Rapids Municipal Utilities</option>
+					<option>Coon Valley Telecommunications Inc</option>
+					<option>Cooperative Telephone Company</option>
+					<option>Country Cablevision, Inc.</option>
+					<option>Cox</option>
+					<option>CP-TEL</option>
+					<option>Craw-Kan Telephone</option>
+					<option>Crestview Cable</option>
+					<option>Cross TV</option>
+					<option>Crosslake Communications</option>
+					<option>CTC - Brainerd MN</option>
+					<option>CTI Fiber</option>
+					<option>CTV-Beam - East Alabama</option>
+					<option>Cunningham Telephone and Cable</option>
+					<option>D and P Communications</option>
+					<option>Dakota Central</option>
+					<option>Darien Communications</option>
+					<option>Delcambre Telephone LLC</option>
+					<option>DiamondNet</option>
+					<option>Direct Communications</option>
+					<option>DIRECTV</option>
+					<option>DIRECTV NOW</option>
+					<option>DIRECTV Puerto Rico</option>
+					<option>DISH</option>
+					<option>Docomo Pacific</option>
+					<option>Doylestown Cable TV</option>
+					<option>DRN</option>
+					<option>DTC</option>
+					<option>DTC Cable (Delhi)</option>
+					<option>Dumont Telephone Company</option>
+					<option>Dunkerton Communications</option>
+					<option>Duo County Telecom</option>
+					<option>Eagle Communications</option>
+					<option>East Arkansas Cable TV</option>
+					<option>Easton Velocity</option>
+					<option>EATEL Video, LLC</option>
+					<option>EATEL- Westside</option>
+					<option>ECTA</option>
+					<option>ElbertonNet</option>
+					<option>Emery Telcom Video LLC</option>
+					<option>Emily Cooperative Telephone Company</option>
+					<option>Empire Access</option>
+					<option>Endeavor Communications</option>
+					<option>Enhanced Telecommunications Corporation</option>
+					<option>enTouch</option>
+					<option>EPB Fiber Optics</option>
+					<option>EPB Smartnet</option>
+					<option>EPlus Broadband</option>
+					<option>ETC</option>
+					<option>Etex Communications</option>
+					<option>EZVideo</option>
+					<option>Familyview Cablevision</option>
+					<option>FandB Communications</option>
+					<option>Farmers Mutual Telephone Company</option>
+					<option>fibrant</option>
+					<option>Fidelity Communications</option>
+					<option>Flint River Communications</option>
+					<option>FMCTC</option>
+					<option>Foothills Communications</option>
+					<option>Forsyth CableNet</option>
+					<option>Frankfort Plant Board</option>
+					<option>Franklin Telephone Company</option>
+					<option>Frontier Communications</option>
+					<option>FTC</option>
+					<option>FTCtv</option>
+					<option>Full Channel</option>
+					<option>Fusion Media</option>
+					<option>Garden Valley - GVTV</option>
+					<option>Gardonville Cooperative Telephone Association</option>
+					<option>GBT Communications, Inc.</option>
+					<option>GCI</option>
+					<option>Genuine Telecom</option>
+					<option>Giant Communications</option>
+					<option>Gigabit Minnesota</option>
+					<option>Glasgow EPB</option>
+					<option>Glenwood Telecommunications</option>
+					<option>GLW Broadband Inc.</option>
+					<option>Golden West Cablevision</option>
+					<option>Google Fiber Direct</option>
+					<option>Grande Communications</option>
+					<option>Grantsburg Telcom</option>
+					<option>Great Plains Communications</option>
+					<option>GreatWave Communications</option>
+					<option>Greenlight Community Broadband</option>
+					<option>Gridley Cable Inc</option>
+					<option>GTA</option>
+					<option>GTel</option>
+					<option>GTI TV</option>
+					<option>GVTC</option>
+					<option>Haefele Connect</option>
+					<option>Halstad Telephone Company</option>
+					<option>HandB Cable Services</option>
+					<option>Hardy Telecommunications, Inc.</option>
+					<option>Hargray</option>
+					<option>Harlan Municipal Utilities</option>
+					<option>Hart Communications</option>
+					<option>Hartelco TV</option>
+					<option>Hawaiian Telcom</option>
+					<option>HBC</option>
+					<option>Heart of Iowa Communications Cooperative</option>
+					<option>Heartland Technology</option>
+					<option>Hickory Telephone Company</option>
+					<option>Highland Communication Services</option>
+					<option>Highland Media</option>
+					<option>Hilliary Communications</option>
+					<option>Hinton CATV Co.</option>
+					<option>Home Telecom</option>
+					<option>Home Town Communications</option>
+					<option>HomeTel Entertainment, Inc.</option>
+					<option>Hood Canal Communications</option>
+					<option>Hope - Prescott Cable TV</option>
+					<option>Horizon Cable TV, Inc.</option>
+					<option>Horizon Chillicothe Telephone</option>
+					<option>Hotwire Communications</option>
+					<option>HTC Communications Co. - IL</option>
+					<option>HTC Communications, Inc. - IA</option>
+					<option>HTC Digital Cable-SC</option>
+					<option>Hulu</option>
+					<option>Huxley Communications</option>
+					<option>iFIBER Communications</option>
+					<option>ImOn Communications</option>
+					<option>Independence Telecommunications</option>
+					<option>Industry I-Net</option>
+					<option>Inland Networks</option>
+					<option>Inside Connect Cable</option>
+					<option>Integra Telecom</option>
+					<option>Intelliwave Broadband</option>
+					<option>Inter Mountain Cable</option>
+					<option>Interstate Telecommunications Coop</option>
+					<option>Iron River Co-Op TV</option>
+					<option>Irvine Cable</option>
+					<option>Jaguar Communications</option>
+					<option>Jefferson Telecom</option>
+					<option>Kalida Telephone Company, Inc.</option>
+					<option>Kalona Cooperative Telephone Company</option>
+					<option>Kaptel</option>
+					<option>Keystone Communications</option>
+					<option>KMTelecom</option>
+					<option>KPU Telecommunications</option>
+					<option>Kuhn Communications, Inc.</option>
+					<option>Lakeland Communications</option>
+					<option>Langco</option>
+					<option>LaValle Telephone Cooperative, Inc.</option>
+					<option>Lehigh Valley Cooperative Telephone</option>
+					<option>LHTC Broadband</option>
+					<option>Liberty Cablevision of PR</option>
+					<option>Limestone Cable/Bracken Cable</option>
+					<option>Lincolnville Communications</option>
+					<option>LISCO</option>
+					<option>Litestream</option>
+					<option>LivCom</option>
+					<option>LocalTel Communications</option>
+					<option>Long Lines</option>
+					<option>Longview - Kilgore Cable TV</option>
+					<option>Lonsdale Video Ventures, LLC</option>
+					<option>Lost Nation-Elwood Telephone Co.</option>
+					<option>LPC Connect</option>
+					<option>Lumos Networks</option>
+					<option>LUS Fiber</option>
+					<option>Lycom Communications</option>
+					<option>M2X Communications</option>
+					<option>Madison Communications</option>
+					<option>Madison County Cable Inc.</option>
+					<option>Mahaska Communication Group</option>
+					<option>Marne and Elk Horn Telephone Company</option>
+					<option>MaxxSouth Broadband</option>
+					<option>MCTV</option>
+					<option>Mediacom</option>
+					<option>Merrimac Communications Ltd.</option>
+					<option>MetroCast</option>
+					<option>Metronet</option>
+					<option>MHTC</option>
+					<option>Mid-Hudson Cable</option>
+					<option>Mid-Rivers Communications</option>
+					<option>Midco</option>
+					<option>Midstate Communications</option>
+					<option>MIDTEL</option>
+					<option>Milford Communications</option>
+					<option>MINET</option>
+					<option>Minford TV</option>
+					<option>Mitchell Telecom</option>
+					<option>MLGC</option>
+					<option>Mon-Cre TVE</option>
+					<option>Morris Broadband</option>
+					<option>Mountain Telephone</option>
+					<option>Mountain Village Cable</option>
+					<option>MTA Communications, LLC</option>
+					<option>MTC Cable</option>
+					<option>MTC Communications/McDonough Telephone Coop</option>
+					<option>MTC Technologies</option>
+					<option>MTCC</option>
+					<option>MTCO Communications</option>
+					<option>Mulberry Telecommunications</option>
+					<option>Murray Electric System</option>
+					<option>MUS FiberNET</option>
+					<option>Muscatine Power and Water</option>
+					<option>myEVTV.com</option>
+					<option>Naicom</option>
+					<option>NCC</option>
+					<option>NDTC</option>
+					<option>Nebraska Central Telecom, Inc.</option>
+					<option>Nelsonville TV Cable</option>
+					<option>Nemont</option>
+					<option>NEP Datavision</option>
+					<option>New Hope Telephone Cooperative</option>
+					<option>New Visions</option>
+					<option>NewWave Communications</option>
+					<option>Nex-Tech</option>
+					<option>Nextgen Communications</option>
+					<option>NICP</option>
+					<option>NineStar Connect</option>
+					<option>NITCO</option>
+					<option>NKTelco</option>
+					<option>NNTV</option>
+					<option>Nortex Communications</option>
+					<option>North Central Telephone Cooperative</option>
+					<option>North State</option>
+					<option>Northland Communications</option>
+					<option>Northwest Communications</option>
+					<option>Norvado</option>
+					<option>Norwood Light Broadband</option>
+					<option>Nsight Telservices</option>
+					<option>Ntec</option>
+					<option>NTS Communications</option>
+					<option>NuLink</option>
+					<option>Nuvera</option>
+					<option>NVC</option>
+					<option>Olin Telephone Company</option>
+					<option>OmniTel Communications</option>
+					<option>OneSource Communications</option>
+					<option>Opelika Power Services</option>
+					<option>Optic Communications</option>
+					<option>Opticaltel</option>
+					<option>OptiLink</option>
+					<option>Optimum</option>
+					<option>OPTURA</option>
+					<option>Orbitel</option>
+					<option>OTEC Communication Company</option>
+					<option>OzarksGo</option>
+					<option>Packerland Broadband</option>
+					<option>Palmetto Rural Telephone Cooperative</option>
+					<option>Panora Telco/Guthrie Center Communications</option>
+					<option>Park Region Telephone and Otter Tail Telcom</option>
+					<option>Partner Communications Cooperative</option>
+					<option>Pathway</option>
+					<option>Paul Bunyan Communications</option>
+					<option>Pembroke Telephone Company</option>
+					<option>Penn Broadband</option>
+					<option>Peoples Rural Telephone Cooperative</option>
+					<option>PES Energize</option>
+					<option>Philo</option>
+					<option>Phonoscope Cable</option>
+					<option>Pine</option>
+					<option>Pine Belt Communications, Inc.</option>
+					<option>Pine Bluff Cable TV</option>
+					<option>Pineland Telephone Cooperative</option>
+					<option>Pineville Communication Systems</option>
+					<option>Pinpoint Communications</option>
+					<option>Pioneer Broadband</option>
+					<option>Pioneer Communications</option>
+					<option>Pioneer DTV</option>
+					<option>Plant TiftNet, Inc.</option>
+					<option>Plateau Telecommunications</option>
+					<option>Playstation Vue</option>
+					<option>PLWC</option>
+					<option>PMT</option>
+					<option>Polar Cablevision</option>
+					<option>Pottawatomie Telephone Co.</option>
+					<option>Premier Communications</option>
+					<option>PSC</option>
+					<option>PTCI</option>
+					<option>QCOL</option>
+					<option>Quality Cablevision</option>
+					<option>Radcliffe Telephone Company</option>
+					<option>Rainbow Communications</option>
+					<option>Rainier Connect</option>
+					<option>Ralls Technologies</option>
+					<option>Randolph Communications</option>
+					<option>RC Technologies</option>
+					<option>RCN</option>
+					<option>Red River Communications</option>
+					<option>Reedsburg Utility Commission</option>
+					<option>Reliance Connects- Oregon</option>
+					<option>Reserve Telecommunications</option>
+					<option>Resort TV Cable</option>
+					<option>Richland Grant Telephone Cooperative, Inc.</option>
+					<option>Ripley Cable</option>
+					<option>Ritter Communications</option>
+					<option>River Valley Telecommunications Coop.</option>
+					<option>Rock Port Cablevision</option>
+					<option>RS Fiber</option>
+					<option>RTC Communication Corp</option>
+					<option>RTC Communications / Daviess Martin</option>
+					<option>RTC Digital Television</option>
+					<option>RTC-Reservation Telephone Coop.</option>
+					<option>RTEC Communications</option>
+					<option>San Bruno Cable TV</option>
+					<option>Sandhill</option>
+					<option>SandT</option>
+					<option>Santel</option>
+					<option>SC Telco</option>
+					<option>SCI Broadband-Savage Communications Inc.</option>
+					<option>Scottsboro Electric Power Board</option>
+					<option>Scranton Telephone Company</option>
+					<option>SELCO</option>
+					<option>Service Electric Broadband Cable</option>
+					<option>Service Electric Cable TV and Communications</option>
+					<option>Service Electric Cablevision</option>
+					<option>Shentel</option>
+					<option>Sherwood Mutual Telephone Association, Inc.</option>
+					<option>Silver Star Communications</option>
+					<option>Sister Lakes Cable</option>
+					<option>Sjoberg's Inc.</option>
+					<option>Skitter TV</option>
+					<option>Skitter TV - Galva</option>
+					<option>SKT</option>
+					<option>SkyBest TV</option>
+					<option>Smithville Communications</option>
+					<option>Solarus</option>
+					<option>South Central Rural Telephone Cooperative</option>
+					<option>South Holt Cablevision, Inc.</option>
+					<option>South Slope Cooperative Communications</option>
+					<option>Southern Vermont Cable</option>
+					<option>Spencer Municipal Utilities</option>
+					<option>Spillway Communications, Inc.</option>
+					<option>SRT</option>
+					<option>St John Cable Company</option>
+					<option>STaC-Tv</option>
+					<option>Star Communications</option>
+					<option>STC Hills</option>
+					<option>STE</option>
+					<option>STRATA Networks</option>
+					<option>StratusIQ</option>
+					<option>Suddenlink</option>
+					<option>Summit Broadband</option>
+					<option>Sumner Cable TV</option>
+					<option>Sunset Fiber</option>
+					<option>Surry TV/PCSI TV</option>
+					<option>SWAT TV</option>
+					<option>Swayzee Communications</option>
+					<option>Sweetwater Cable Television Co</option>
+					<option>Swiftel Communications</option>
+					<option>T-Mobile</option>
+					<option>Tahlequah Cable TV</option>
+					<option>TCT</option>
+					<option>TCT TV</option>
+					<option>TDS</option>
+					<option>TDS (K2 Communications)</option>
+					<option>Tele-Media Company</option>
+					<option>The Community Agency</option>
+					<option>Three River</option>
+					<option>Town and Country Technologies</option>
+					<option>Trans-Video</option>
+					<option>Trenton TV Cable Company</option>
+					<option>Tri County Communications Cooperative</option>
+					<option>TriCounty Telecom</option>
+					<option>TrioTel Communications, Inc.</option>
+					<option>Troy Cablevision, Inc.</option>
+					<option>TruVista</option>
+					<option>TSC</option>
+					<option>Tullahoma Utilities Authority</option>
+					<option>TVC Cable</option>
+					<option>TVision</option>
+					<option>Twin Lakes</option>
+					<option>Twin Valley</option>
+					<option>Union Telephone Company</option>
+					<option>United Communications - TN</option>
+					<option>United Communications Association INC</option>
+					<option>United Communications/Turtle Mountain Communications</option>
+					<option>United Services</option>
+					<option>US Sonet</option>
+					<option>USA Communications</option>
+					<option>USA Communications/Shellsburg, IA</option>
+					<option>Valley TeleCom Group</option>
+					<option>Valley Telecommunications</option>
+					<option>Valparaiso Broadband</option>
+					<option>ValuNet Fiber</option>
+					<option>Van Horne Cablevision</option>
+					<option>Vast Broadband</option>
+					<option>Venture Communications Cooperative, Inc.</option>
+					<option>Venus Telephone Corp</option>
+					<option>Verizon Fios</option>
+					<option>Vernon Communications Co-op</option>
+					<option>Vicksburg Video</option>
+					<option>Vision Communications</option>
+					<option>Viya St Croix</option>
+					<option>Viya St Thomas-St John</option>
+					<option>VNET Fiber</option>
+					<option>Volcano Vision, Inc.</option>
+					<option>VolFirst / BLTV</option>
+					<option>VTel</option>
+					<option>VTX1</option>
+					<option>Vyve Broadband</option>
+					<option>Wabash Mutual Telephone</option>
+					<option>Waitsfield Cable</option>
+					<option>Walnut Communications</option>
+					<option>Wave</option>
+					<option>Waverly Communications Utility</option>
+					<option>WBI</option>
+					<option>Webster-Calhoun Cooperative Telephone Association</option>
+					<option>Wellman Cooperative Telephone Association</option>
+					<option>West Alabama TV Cable</option>
+					<option>West Carolina Communications</option>
+					<option>West Central Telephone Association</option>
+					<option>West River Cooperative Telephone Company</option>
+					<option>WesTel Systems</option>
+					<option>Western Iowa Networks</option>
+					<option>Wheat State Telephone</option>
+					<option>Whidbey Telecom</option>
+					<option>White County Cable TV</option>
+					<option>Wiatel</option>
+					<option>Wiktel</option>
+					<option>Wilkes Communications, Inc./RiverStreet Networks</option>
+					<option>Wilson Communications</option>
+					<option>Windomnet/SMBS</option>
+					<option>Windstream Cable TV</option>
+					<option>Windstream Kinetic TV</option>
+					<option>Winnebago Cooperative Telecom Association</option>
+					<option>Wire Tele-View Corp</option>
+					<option>WOW!</option>
+					<option>WTC</option>
+					<option>WTC Communications, Inc.</option>
+					<option>Wyandotte Cable</option>
+					<option>Xfinity</option>
+					<option>XIT Communications</option>
+					<option>Yadtel Telecom</option>
+					<option>Yelcot Communications</option>
+					<option>yondoo</option>
+					<option>Zito Media</option>
+				</select>
+			</div>
+			<div><input type="text" placeholder="Username/Email" id="cableLoginUsername"/></div>
+			<div><input type="password" placeholder="Password" id="cableLoginPassword"/></div>
+			<div id="cableLoginButton" onclick="submitCableCredentials();">Log in</div>
+		</div>
+		<div id="profileSelection">
+			<img id="profilesLoading" src="images/rollingWhite.svg"/>
+		</div>
+		<header>
+			<div id="headerBackground">
+				<div id="logo">
+					CableMooch
+				</div>
+				<div id="primaryCategories">
+					<div id="liveTVButton" style="text-decoration:underline;" onclick="showLiveTVPage();">Live TV</div>
+					<div id="replaysButton" onclick="showReplaysPage();">Replays</div>
+				</div>
+				<div class="cover"></div>
+			</div>
+			<div id="search">
+				<div id="searchBar">
+					<input type="text" id="searchInput" placeholder="mooch" oninput="search(this.value);" onfocus="showCoverIfNeeded();" onblur="$('.cover').stop().fadeOut(200);"/>
+					<img class="inputX" src="images/inputX.png" onclick="hideSearchResults();$('#searchInput').eq(0)[0].focus();"/>
+				</div>
+			</div>
+		</header>
+		<main>
+			<div id="live">
+				<img src="images/rolling.svg" class="loading"/>
+				<div class="live listings"></div>
+				<div class="cover"></div>
+			</div>
+			<div id="replays">
+				<img src="images/rolling.svg" class="loading"/>
+				<div id="myList" style="display:none;">
+					<div class="titleBar">My List</div>
+					<div class="listings"></div>
+				</div>
+				<div id="new" style="display:none;">
+					<div class="titleBar">New</div>
+					<div class="listings"></div>
+				</div>
+				<div id="continueWatching" style="display:none;">
+					<div class="titleBar">Continue Watching</div>
+					<div class="listings"></div>
+				</div>
+				<div id="series" style="display:none;">
+					<div class="titleBar">Series</div>
+					<div class="listings"></div>
+				</div>
+				<div id="movies" style="display:none;">
+					<div class="titleBar">Movies</div>
+					<div class="listings"></div>
+				</div>
+				<div id="watchItAgain" style="display:none;">
+					<div class="titleBar">Watch It Again</div>
+					<div class="listings"></div>
+				</div>
+				<div class="cover"></div>
+			</div>
+			<div id="searchResults"></div>
+			<div id="episodes"></div>
+		</main>
+		<footer>
+		</footer>
+	</body>
+</html>
