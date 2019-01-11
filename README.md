@@ -58,6 +58,10 @@ Spokapi is an application that simplifies watching sports online (using sites su
 - `/channel/`
     - Post to this endpoint to change what channels you want to include
     - Get this endpoint to get what channels are currently blocked
+- `/start-interval/`
+    - This starts the regular fetching of games (on an interval)
+- `/stop-interval/`
+    - This stops the regular fetching of games (on an interval)
 - `/`
     - This will return the Spokapi Client
 

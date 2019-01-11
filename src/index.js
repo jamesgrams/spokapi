@@ -8,7 +8,8 @@
 const puppeteer = require('puppeteer');
 const express = require('express');
 const ip = require("ip");
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const bluetooth = require('node-bluetooth');
 
 const Site 	= require('./modules/site');
 const Espn 	= require('./modules/site/espn');
@@ -129,9 +130,6 @@ app.get('/games', async function(request, response) {
         // Otherwise, go ahead and fetch games
         else {
             await fetchGames();
-            if( !fetchInterval ) {
-                fetchInterval = setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
-            }
         }
     }
 
@@ -255,7 +253,39 @@ app.get( '/channel', async function(request, response) {
     response.end(JSON.stringify({"status":"success", "channels":Site.unsupportedChannels}));
 } );
 
+// Endpoint to start the regularly occuring process of refetching games
+app.get( '/start-interval', async function(request, response) {
+    if( !fetchInterval ) {
+        fetchInterval = setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
+    }
+} );
+
+// Endpoint to stop the regularly occuring process of refetching games
+app.get( '/stop-interval', async function(request, response) {
+    clearInterval(fetchInterval);
+    fetchInterval = null;
+} );
+
 app.listen(PORT); // Listen for requests
+
+/*const device = new bluetooth.DeviceINQ();
+device
+.on('finished',  console.log.bind(console, 'finished'))
+.on('found', function found(address, name){
+    console.log('Found: ' + address + ' with name ' + name);
+    if( name === "James’s iPhone" ) {
+        device.findSerialPortChannel(address, function(channel) {
+            // make bluetooth connect to remote device
+            bluetooth.connect(address, channel, function(err, connection){
+                if(err) return console.error(err);
+            
+                connection.on('data', (buffer) => {
+                    console.log('received message:', buffer.toString());
+                });
+            });
+        });
+    }
+}).scan();*/
 
 // -------------------- Helper Functions --------------------
 
