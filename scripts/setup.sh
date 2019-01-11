@@ -5,6 +5,8 @@ curl -Ls git.io/vddgY | bash
 
 # Install node
 crew install node
+nodebrew install 10.15.0
+nodebrew use 10.15.0
 
 # Install SPOKAPI
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
