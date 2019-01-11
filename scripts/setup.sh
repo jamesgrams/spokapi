@@ -9,8 +9,8 @@ nodebrew install 10.15.0
 nodebrew use 10.15.0
 
 # Install SPOKAPI
+sudo npm install --prefix /home/chronos/user/Downloads/spokapi
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
-sudo npm install --prefix /opt/spokapi
 
 # Place the SPOKAPI startup script
 sudo cp /opt/spokapi/scripts/spokapi.conf /etc/init/
