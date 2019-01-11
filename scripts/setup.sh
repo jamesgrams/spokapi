@@ -19,7 +19,7 @@ sudo cp /opt/spokapi/scripts/spokapi.conf /etc/init/
 # Allow Flash
 sudo mkdir -p /etc/opt/chrome/policies/managed
 sudo touch /etc/opt/chrome/policies/managed/test_policy.json
-sudo echo "{ \"RunAllFlashInAllowMode\": true, \"AllowOutdatedPlugins\": true, \"DefaultPluginsSetting\": 1,\"PluginsAllowedForUrls\": [\"https://*\", \"http://*\"]}" > /etc/opt/chrome/policies/managed/test_policy.json
+echo "{ \"RunAllFlashInAllowMode\": true, \"AllowOutdatedPlugins\": true, \"DefaultPluginsSetting\": 1,\"PluginsAllowedForUrls\": [\"https://*\", \"http://*\"]}" | sudo tee /etc/opt/chrome/policies/managed/test_policy.json
 
 # Allow Chrome remote debugging
-sudo echo "--remote-debugging-port=1337" >> /etc/chrome_dev.conf
+echo "--remote-debugging-port=1337" | sudo tee --append /etc/chrome_dev.conf
