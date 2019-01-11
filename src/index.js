@@ -128,6 +128,7 @@ app.get('/games', async function(request, response) {
         // Otherwise, go ahead and fetch games
         else {
             await fetchGames();
+            setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
         }
     }
 
@@ -252,8 +253,6 @@ app.get( '/channel', async function(request, response) {
 } );
 
 app.listen(PORT); // Listen for requests
-fetchGames(); // Kick off the cache
-setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes
 
 // -------------------- Helper Functions --------------------
 
