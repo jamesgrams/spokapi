@@ -9,14 +9,15 @@ nodebrew install 10.15.0
 nodebrew use 10.15.0
 
 # Install SPOKAPI
-sudo npm install --prefix /home/chronos/user/Downloads/spokapi
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+npm install --prefix /home/chronos/user/Downloads/spokapi
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
 
 # Place the SPOKAPI startup script
 sudo cp /opt/spokapi/scripts/spokapi.conf /etc/init/
 
 # Allow Flash
-sudo mkdir -p mkdir /etc/opt/chrome/policies/managed
+sudo mkdir -p /etc/opt/chrome/policies/managed
 sudo touch /etc/opt/chrome/policies/managed/test_policy.json
 sudo echo "{ \"RunAllFlashInAllowMode\": true, \"AllowOutdatedPlugins\": true, \"DefaultPluginsSetting\": 1,\"PluginsAllowedForUrls\": [\"https://*\", \"http://*\"]}" > /etc/opt/chrome/policies/managed/test_policy.json
 
