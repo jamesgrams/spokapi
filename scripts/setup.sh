@@ -13,8 +13,9 @@ export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
 npm install --prefix /home/chronos/user/Downloads/spokapi
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
 
-# Place the SPOKAPI startup script
+# Place the SPOKAPI startup scripts
 sudo cp /opt/spokapi/scripts/spokapi.conf /etc/init/
+sudo cp /opt/spokapi/scripts/spokapi_desktop.conf /etc/init/
 
 # Allow Flash
 sudo mkdir -p /etc/opt/chrome/policies/managed
