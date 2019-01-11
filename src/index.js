@@ -9,7 +9,6 @@ const puppeteer = require('puppeteer');
 const express = require('express');
 const ip = require("ip");
 const bodyParser = require('body-parser');
-const bluetooth = require('node-bluetooth');
 
 const Site 	= require('./modules/site');
 const Espn 	= require('./modules/site/espn');
@@ -268,8 +267,58 @@ app.get( '/stop-interval', async function(request, response) {
 
 app.listen(PORT); // Listen for requests
 
+// list serial ports:
+var serialport = require('serialport');
+serialport.list(function (err, ports) {
+    ports.forEach(function(port) {
+      console.log(port.comName);
+    });
+  }); 
+var port = new serialport("/dev/tty.Bluetooth-Incoming-Port", 9600);
+/*var Readline = serialport.parsers.Readline; // make instance of Readline parser
+var parser = new Readline(); // make a new parser to read ASCII lines
+port.pipe(parser); // pipe the serial stream to the parser
+
+port.on('open', showPortOpen);
+parser.on('data', readSerialData);
+port.on('close', showPortClose);
+port.on('error', showError);*/
+
+function showPortOpen() {
+    console.log('port open. Data rate: ' + myPort.baudRate);
+ }
+  
+ function readSerialData(data) {
+    console.log(data);
+ }
+  
+ function showPortClose() {
+    console.log('port closed.');
+ }
+  
+ function showError(error) {
+    console.log('Serial port error: ' + error);
+ }
+
 /*const device = new bluetooth.DeviceINQ();
-device
+device.listPairedDevices(waitForData);
+function waitForData(connectedDevices) {
+    console.log(connectedDevices);
+    device.findSerialPortChannel(connectedDevices[0].address, function(channel) {
+        console.log(channel);
+        for(let service of connectedDevices[0].services) {
+            console.log(service);
+        }
+        bluetooth.connect(connectedDevices[0].address, channel, function(err, connection){
+            if(err) return console.error(err);
+        
+            connection.on('data', (buffer) => {
+                console.log('received message:', buffer.toString());
+            });
+        });
+    } );
+}*/
+/*device
 .on('finished',  console.log.bind(console, 'finished'))
 .on('found', function found(address, name){
     console.log('Found: ' + address + ' with name ' + name);
