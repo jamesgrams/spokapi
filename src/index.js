@@ -51,6 +51,7 @@ Site.totalNetworks = Object.keys(NETWORKS).length;
 var watchBrowser;
 var gamesCache;
 var fetchGamesLocked = false;
+var fetchInterval;
 
 const app = express();
 
@@ -128,7 +129,9 @@ app.get('/games', async function(request, response) {
         // Otherwise, go ahead and fetch games
         else {
             await fetchGames();
-            setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
+            if( !fetchInterval ) {
+                fetchInterval = setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
+            }
         }
     }
 

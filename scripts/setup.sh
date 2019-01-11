@@ -14,7 +14,7 @@ npm install --prefix /home/chronos/user/Downloads/spokapi
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
 
 # Place the SPOKAPI startup scripts
-sudo cp /opt/spokapi/scripts/spokapi.conf /etc/init/
+sudo cp /opt/spokapi/scripts/spokapi_login.conf /etc/init/
 sudo cp /opt/spokapi/scripts/spokapi_desktop.conf /etc/init/
 
 # Allow Flash
