@@ -9,7 +9,7 @@ nodebrew install 10.15.0
 nodebrew use 10.15.0
 
 # Install Python
-crew install python2.7
+crew install python27
 # Install uinput
 pip2.7 install python-uinput 
 
