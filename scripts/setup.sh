@@ -1,5 +1,8 @@
 # Script to set up parameters for Spokapi
 
+# Disable auto updates
+sudo rm /etc/init/update-engine.conf 
+
 # Allow ssh
 sudo /usr/libexec/debugd/helpers/dev_features_ssh
 
