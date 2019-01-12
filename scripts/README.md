@@ -13,3 +13,4 @@
 11. Reboot, go back into a bash terminal (see step 2) and make sure you can write to the file system (`touch /etc/test`)
 12. If you can't remove the write protection (happens sometimes) repeat the previous two steps until you can (should take at most 3 times)
 13. At this point, the system is setup where all future steps can be done automatically. Run `/home/chronos/user/Downloads/spokapi/scripts/setup.sh` to setup Spokapi. You may have to input some information (such as typing Y to confirm) while this script runs.
+14. To allow ssh with a password, you may have to set a password for the chronos user.

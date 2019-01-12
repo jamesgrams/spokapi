@@ -76,6 +76,8 @@ def main():
     with open(filename) as f:
         content = f.read()
 
+    print "Loading..."
+
     # Type the password
     with Device(events) as device:
         time.sleep(5) # This gives the screen time to load up
