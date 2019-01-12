@@ -5,13 +5,14 @@ import time
 import uinput
 
 def main():
+    print "Running"
     events = (
         uinput.KEY_E,
         uinput.KEY_H,
         uinput.KEY_L,
         uinput.KEY_O,
         )
-
+    print "OK"
     with uinput.Device(events) as device:
         time.sleep(10) # This is required here only for demonstration
                       # purposes. Without this, the underlying machinery might
@@ -28,6 +29,11 @@ def main():
         device.emit_click(uinput.KEY_L)
         device.emit_click(uinput.KEY_L)
         device.emit_click(uinput.KEY_O)
+    print "Yes"
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print e
+    print "Finished"
