@@ -80,7 +80,7 @@ def main():
 
     # Type the password
     with Device(events) as device:
-        time.sleep(10) # This gives the screen time to load up
+        time.sleep(5) # This gives the screen time to load up
         for char in content:
             # If the character needs shift (is uppercase or is special charater)
             shift = False
