@@ -1,17 +1,21 @@
 # Script to set up parameters for Spokapi
 
+# Allow ssh
+sudo /usr/libexec/debugd/helpers/dev_features_ssh
+
 # Install node
 crew install node
 nodebrew install 10.15.0
 nodebrew use 10.15.0
 
-# Install Java
-crew install jdk8
+# Install Python
+crew install python2.7
+# Install uinput
+pip2.7 install python-uinput 
 
 # Install SPOKAPI
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 npm install --prefix /home/chronos/user/Downloads/spokapi
-javac /home/chronos/user/Downloads/spokapi/scripts/Login.java
 # Note that everything for Spokapi is installed prior to moving the files
 # There was some issue running npm in the /opt/ directory 
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
