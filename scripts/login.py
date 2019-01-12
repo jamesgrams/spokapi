@@ -13,7 +13,7 @@ def main():
         )
 
     with uinput.Device(events) as device:
-        time.sleep(1) # This is required here only for demonstration
+        time.sleep(10) # This is required here only for demonstration
                       # purposes. Without this, the underlying machinery might
                       # not have time to assign a proper handler for our device
                       # before the execution of this script reaches the end and
