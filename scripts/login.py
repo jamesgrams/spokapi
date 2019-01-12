@@ -30,4 +30,4 @@ def main():
         device.emit_click(uinput.KEY_O)
 
 if __name__ == "__main__":
-main()
+    main()
