@@ -6,6 +6,10 @@ import os.path
 
 from uinput import *
 
+filename = "/opt/spokapi/password.txt"
+logged_in_file = "/home/chronos/user/Downloads/spokapi/scripts/login.py"
+timeout_seconds = 3
+
 class timeout:
     def __init__(self, seconds=1, error_message='Timeout'):
         self.seconds = seconds
@@ -19,10 +23,6 @@ class timeout:
         signal.alarm(0)
 
 def main():
-
-    filename = "/opt/spokapi/password.txt"
-    logged_in_file = "/home/chronos/user/Downloads/spokapi/scripts/login.py"
-    timeoutSeconds = 3
 
     char_map = {
         "a":  KEY_A,
@@ -97,7 +97,7 @@ def main():
     complete = False
     while not complete:
         # The Device can hang sometimes, retry after 3 seconds
-        with timeout(seconds=timeoutSeconds):
+        with timeout(seconds=timeout_seconds):
             # Type the password
             with Device(events) as device:
                 time.sleep(1) # This gives the screen time to load up
@@ -125,5 +125,5 @@ def main():
     print "Complete"
 
 while not os.path.isfile(logged_in_file):
-    time.sleep(timeoutSeconds)
+    time.sleep(timeout_seconds)
     main()
