@@ -1,9 +1,22 @@
 # Program to create a virtual keyboard and type a password
 
 import time
+import signal
 import os.path
 
 from uinput import *
+
+class timeout:
+    def __init__(self, seconds=1, error_message='Timeout'):
+        self.seconds = seconds
+        self.error_message = error_message
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.error_message)
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
+    def __exit__(self, type, value, traceback):
+        signal.alarm(0)
 
 def main():
 
@@ -79,30 +92,34 @@ def main():
 
     print "Loading..."
 
-    # Type the password
-    with Device(events) as device:
-        time.sleep(1) # This gives the screen time to load up
-        for char in content:
-            # If the character needs shift (is uppercase or is special charater)
-            shift = False
-            if ( char.isupper() ) or ( char in shift_keys ):
-                shift = True
-                if ( char in shift_keys ):
-                    char = shift_keys[char]
-            # Get the right keycode
-            keycode = char_map[char.lower()]
-            # emit the appropriate keys
-            if shift:
-                device.emit_combo([
-                    KEY_LEFTSHIFT,
-                    keycode
-                ])
-            else:
-                device.emit_click(keycode)
-        time.sleep(1)
-        device.emit_click(KEY_ENTER)
+    complete = False
+    while not complete:
+        with timeout(seconds=5):
+            # Type the password
+            with Device(events) as device:
+                print "J"
+                time.sleep(1) # This gives the screen time to load up
+                for char in content:
+                    # If the character needs shift (is uppercase or is special charater)
+                    shift = False
+                    if ( char.isupper() ) or ( char in shift_keys ):
+                        shift = True
+                        if ( char in shift_keys ):
+                            char = shift_keys[char]
+                    # Get the right keycode
+                    keycode = char_map[char.lower()]
+                    # emit the appropriate keys
+                    if shift:
+                        device.emit_combo([
+                            KEY_LEFTSHIFT,
+                            keycode
+                        ])
+                    else:
+                        device.emit_click(keycode)
+                time.sleep(1)
+                device.emit_click(KEY_ENTER)
+                complete = True
+    
+    print "Complete"
 
-while not os.path.isfile("/home/chronos/user/Downloads/spokapi/scripts/login.py"):
-    print "Checking"
-    main()
-    time.sleep(5)
+main()
