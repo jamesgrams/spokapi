@@ -25,12 +25,12 @@ sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
 
 # Install Bluetooth dependencies
 # First, the header files
-sudo mv /opt/spokapi/bluetooth /usr/local/include/bluetooth
+sudo mv /opt/spokapi/lib/bluetooth /usr/local/include/bluetooth
 # Next, the custom version of PyBluez (this version specifies the gcc compiler to use gold)
 # See here for info on why we need this (https://bugs.chromium.org/p/chromium/issues/detail?id=883719)
 # Basically, the Chromium compiled .so files for Bluetooth have some infomation not supported by ld, the standard linker
 # They do work with the gold linker, however (see here: https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html)
-sudo mv /opt/spokapi/PyBluez-0.22 /usr/local/PyBluez-0.22
+sudo mv /opt/spokapi/lib/PyBluez-0.22 /usr/local/PyBluez-0.22
 # Install PyBluez locally
 sudo pip2.7 install -e /usr/local/PyBluez-0.22
 
