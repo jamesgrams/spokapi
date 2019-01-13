@@ -21,6 +21,8 @@ class timeout:
 def main():
 
     filename = "/opt/spokapi/password.txt"
+    logged_in_file = "/home/chronos/user/Downloads/spokapi/scripts/login.py"
+    timeoutSeconds = 3
 
     char_map = {
         "a":  KEY_A,
@@ -94,10 +96,10 @@ def main():
 
     complete = False
     while not complete:
-        with timeout(seconds=5):
+        # The Device can hang sometimes, retry after 3 seconds
+        with timeout(seconds=timeoutSeconds):
             # Type the password
             with Device(events) as device:
-                print "J"
                 time.sleep(1) # This gives the screen time to load up
                 for char in content:
                     # If the character needs shift (is uppercase or is special charater)
@@ -122,4 +124,6 @@ def main():
     
     print "Complete"
 
-main()
+while not os.path.isfile(logged_in_file):
+    time.sleep(timeoutSeconds)
+    main()
