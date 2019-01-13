@@ -257,12 +257,18 @@ app.get( '/start-interval', async function(request, response) {
     if( !fetchInterval ) {
         fetchInterval = setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
     }
+
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
 } );
 
 // Endpoint to stop the regularly occuring process of refetching games
 app.get( '/stop-interval', async function(request, response) {
     clearInterval(fetchInterval);
     fetchInterval = null;
+
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
 } );
 
 app.listen(PORT); // Listen for requests
