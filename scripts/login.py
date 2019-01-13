@@ -102,7 +102,7 @@ def main():
         time.sleep(1)
         device.emit_click(KEY_ENTER)
 
-while not os.path.isfile("/home/chronos/user/Downloads/spokapi/scripts/login.py"):
+while False:
     print "Checking"
     main()
-    time.sleep(5)
+    time.sleep(20)
