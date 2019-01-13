@@ -32,7 +32,7 @@ sudo mv /opt/spokapi/lib/bluetooth /usr/local/include/bluetooth
 # They do work with the gold linker, however (see here: https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html)
 sudo mv /opt/spokapi/lib/PyBluez-0.22 /usr/local/PyBluez-0.22
 # Install PyBluez locally
-sudo pip2.7 install -e /usr/local/PyBluez-0.22
+sudo LD_LIBRARY_PATH=/usr/local/lib pip2.7 install -e /usr/local/PyBluez-0.22
 
 # Place the SPOKAPI startup scripts
 sudo cp /opt/spokapi/scripts/spokapi_login.conf /etc/init/
