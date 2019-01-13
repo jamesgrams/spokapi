@@ -1,6 +1,7 @@
 # Program to create a virtual keyboard and type a password
 
 import time
+import os.path
 
 from uinput import *
 
@@ -101,5 +102,7 @@ def main():
         time.sleep(1)
         device.emit_click(KEY_ENTER)
 
-if __name__ == "__main__":
+while ! os.path.isfile("/home/chronos/user/Downloads/spokapi/scripts/login.py"):
+    print "Checking"
     main()
+    time.sleep(5)
