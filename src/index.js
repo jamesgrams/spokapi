@@ -32,7 +32,7 @@ const FETCH_GAMES_INTERVAL = 240000;
  * @type {number}
  * @default
  */
-let MAX_SIMULTANEOUS_FETCHES = 2;
+let MAX_SIMULTANEOUS_FETCHES = 1;
 /**
  * @constant
  * @type {Array.<Object>}
