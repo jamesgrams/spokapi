@@ -4,7 +4,7 @@
 2. Put your Chrome Device in developer mode (Follow instructions [here](https://archlinuxarm.org/platforms/armv7/rockchip/asus-chromebit-cs10))
 3. Open a terminal by pressing `Ctrl + Alt + T` in Chrome, and use the `shell` command to get to a bash shell.
 4. Install Chromebrew using `curl -Ls git.io/vddgY | bash` (this will also install Git)
-5. Clone Spokapi into `/home/chronos/user/Downloads` by running `git clone https://github.com/jamesgrams/spokapi.git`
+5. Clone Spokapi into `/home/chronos/user/Downloads` by running `git clone https://github.com/jamesgrams/spokapi.git` (This file location is important, and you should not delete the repo from this location!)
 6. Reboot, and go back into a bash terminal (see step 2).
 7. Create a file named `password.txt` and place in `/home/chronos/user/Downloads/spokapi`. The contents of this file should be the password of your account (This will be used to auto-login).
 8. In Chrome Settings, set to boot to the new tab page each time.
