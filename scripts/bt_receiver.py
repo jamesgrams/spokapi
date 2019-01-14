@@ -1,28 +1,20 @@
 """
-Bluetooth Receiver script
+Bluetooth receiver script
 """
 
 import bluetooth
-import subprocess
 
-command = 'hcitool dev | grep -o "[[:xdigit:]:]\{11,17\}"'
-mac = subprocess.check_output(command, shell=True)
+server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
 
-hostMACAddress = mac # The MAC address of a Bluetooth adapter on the server.
-port = 3
-backlog = 1
-size = 1024
-s = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-s.bind((hostMACAddress, port))
-s.listen(backlog) # Listen for incoming requests
-try:
-    client, clientInfo = s.accept() # This will hang until we are connected
-    while 1:
-        data = client.recv(size)
-        if data:
-            print(data)
-            client.send(data) # Echo back to client
-except:
-    print("Closing socket")
-    client.close()
-    s.close()
+port = 10
+server_sock.bind(("",port))
+server_sock.listen(1)
+
+client_sock,address = server_sock.accept()
+print "Accepted connection from ",address
+
+data = client_sock.recv(1024)
+print "received [%s]" % data
+
+client_sock.close()
+server_sock.close()
