@@ -33,6 +33,10 @@ sudo mv /opt/spokapi/lib/bluetooth /usr/local/include/bluetooth
 sudo mv /opt/spokapi/lib/PyBluez-0.22 /usr/local/PyBluez-0.22
 # Install PyBluez locally
 sudo LD_LIBRARY_PATH=/usr/local/lib pip2.7 install -e /usr/local/PyBluez-0.22
+# Add SDP tool to the library path
+sudo mv /opt/spokapi/lib/sdptool /usr/bin/sdptool
+# Move updated start_bluetoothd.script
+sudo mv /opt/spokapi/lib/start_bluetoothd.sh /usr/bin/start_bluetoothd.sh
 
 # Place the SPOKAPI startup scripts
 sudo cp /opt/spokapi/scripts/spokapi_login.conf /etc/init/
