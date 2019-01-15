@@ -9,6 +9,7 @@ const puppeteer = require('puppeteer');
 const express = require('express');
 const ip = require("ip");
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const Site 	= require('./modules/site');
 const Espn 	= require('./modules/site/espn');
@@ -45,6 +46,12 @@ const NETWORKS = { "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports 
  * @default
  */
 const DIR = 'public';
+/**
+ * @constant
+ * @type {string}
+ * @default
+ */
+const LOGIN_INFO_FILE = 'login-info.txt';
 
 Site.totalNetworks = Object.keys(NETWORKS).length;
 
@@ -98,6 +105,8 @@ app.get("/", async function(request, response) {
         <button id="update-info">Update Information</button>
     </div>
     <div id="break-cache-wrapper">
+        <button id="start-fetching">Start Fetching</button>
+        <button id="stop-fetching">Stop Fetching</button>
         <button id="break-cache">Break Cache</button>
     </div>
     <div id="channels-wrapper">
@@ -144,9 +153,11 @@ app.get('/games', async function(request, response) {
         page = Site.connectedTabs[0];
     }
 
+    // Deep clone the games cache, so we can edit it before responding
+    let gamesResponse = JSON.parse(JSON.stringify(gamesCache));
     if( page ) {
         let url = await page.url();
-        for( let game of gamesCache ) {
+        for( let game of gamesResponse ) {
             let gameUrl = decodeURIComponent( game.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
             if( gameUrl == url ) {
                 game.watching = true;
@@ -155,7 +166,7 @@ app.get('/games', async function(request, response) {
     }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({ status: "success", games: gamesCache }));
+    response.end(JSON.stringify({ status: "success", games: gamesResponse }));
 });
 
 // Endpoint to watch a game
@@ -231,6 +242,9 @@ app.post( '/info', async function(request, response) {
         Site.provider = provider;
     }
 
+    // Save the info for future use
+    fs.writeFileSync( LOGIN_INFO_FILE, JSON.stringify(request.body) );
+
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 } );
@@ -270,6 +284,28 @@ app.get( '/stop-interval', async function(request, response) {
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 } );
+
+// -------------------- Main Program --------------------
+
+// Read file for login data
+if ( fs.existsSync(LOGIN_INFO_FILE) ) { 
+    let contents = fs.readFileSync(LOGIN_INFO_FILE, 'utf8');
+    try {
+        let loginInfo = JSON.parse(contents);
+        if( loginInfo.username ) {
+            Site.username = loginInfo.username;
+        }
+        if( loginInfo.password ) {
+            Site.password = loginInfo.password;
+        }
+        if( loginInfo.provider ) {
+            Site.provider = loginInfo.provider;
+        }
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
 
 app.listen(PORT); // Listen for requests
 

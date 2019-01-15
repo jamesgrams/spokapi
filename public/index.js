@@ -6,6 +6,8 @@ window.addEventListener('load', function() {
     loadBlockedChannels();
     document.getElementById("update-info").addEventListener('click', updateInfo);
     document.getElementById("break-cache").addEventListener('click', breakCache);
+    document.getElementById("start-fetching").addEventListener('click', startFetching);
+    document.getElementById("stop-fetching").addEventListener('click', stopFetching);
     document.getElementById("block-channel").addEventListener('click', addBlockedChannel);
 });
 function clearWatchedGames() {
@@ -121,6 +123,16 @@ function updateInfo() {
 function breakCache() {
     var xhttp = new XMLHttpRequest();
     xhttp.open("GET", "/break", true);
+    xhttp.send();
+}
+function startFetching() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/start-fetching", true);
+    xhttp.send();
+}
+function stopFetching() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/stop-fetching", true);
     xhttp.send();
 }
 function loadBlockedChannels() {
