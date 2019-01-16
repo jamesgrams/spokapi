@@ -8,10 +8,12 @@
 6. Reboot, and go back into a bash terminal (see step 2).
 7. Create a file named `password.txt` and place in `/home/chronos/user/Downloads/spokapi`. The contents of this file should be the password of your account (This will be used to auto-login).
 8. Set the background of the computer to be the Spokapi background image
-9. In Chrome Settings, set to boot to the new tab page each time.
-10. Enable Bluetooth (this setting will persist after reboot).
-11. Remove the write protection on the file system by running `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`, and then running the command that prints out.
-12. Reboot, go back into a bash terminal (see step 2) and make sure you can write to the file system (`touch /etc/test`)
-13. If you can't remove the write protection (happens sometimes) repeat the previous two steps until you can (should take at most 3 times)
-14. At this point, the system is setup where all future steps can be done automatically. Run `/home/chronos/user/Downloads/spokapi/scripts/setup.sh` to setup Spokapi. You may have to input some information (such as typing Y to confirm) while this script runs.
-15. To allow ssh with a password, you may have to set a password for the chronos user.
+9. Set the login picture of the user to be the Spokapi background image
+10. In Chrome Settings, set to boot to the new tab page each time.
+11. Enable Bluetooth (this setting will persist after reboot).
+12. Enable Newblue in `chrome://flags`
+13. Remove the write protection on the file system by running `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`, and then running the command that prints out.
+14. Reboot, go back into a bash terminal (see step 2) and make sure you can write to the file system (`touch /etc/test`)
+15. If you can't remove the write protection (happens sometimes) repeat the previous two steps until you can (should take at most 3 times)
+16. At this point, the system is setup where all future steps can be done automatically. Run `/home/chronos/user/Downloads/spokapi/scripts/setup.sh` to setup Spokapi. You may have to input some information (such as typing Y to confirm) while this script runs.
+17. To allow ssh with a password, you may have to set a password for the chronos user.
