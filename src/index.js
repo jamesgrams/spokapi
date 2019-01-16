@@ -341,10 +341,10 @@ app.post( '/connect', async function(request, response) {
     }
 
     // Enable the network
-    execSync( 'wpa_cli enable_network ' + networkId );
+    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli enable_network ' + networkId + '"' );
 
     // Save the configuration
-    execSync( 'wpa_cli save_config' );
+    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli save_config"' );
 
     // Respond to the user
     response.writeHead(200, {'Content-Type': 'application/json'});
