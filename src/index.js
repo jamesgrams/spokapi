@@ -314,35 +314,64 @@ app.post( '/connect', async function(request, response) {
     // Open a new page
     let page = await watchBrowser.newPage();
     await page.goto("chrome://settings");
-    await page.waitForSelector("settings-section[section='internet']");
+    await page.waitForSelector("settings-ui");
+    // Get the root of most internet settings
+    let internetSettingsRoot = await this.page.evaluateHandle(
+        () => document.querySelector('settings-ui').shadowRoot.querySelector('settings-main').shadowRoot.querySelector('settings-basic-page').shadowRoot.querySelector('settings-internet-page').shadowRoot
+    );
     // Click new connection
-    await page.click("settings-section[section='internet'] .settings-box");
+    let addConnectionButton = await internetSettingsRoot.$("settings-section[section='internet'] .settings-box");
+    await addConnectionButton.click();
     await page.waitFor(100);
     // Click new wifi connection
-    await page.click(".icon-add-wifi button");
+    let wifiButton = await internetSettingsRoot.$(".icon-add-wifi button");
+    await wifiButton.click;
     await page.waitFor(250);
+
+    // Get all the new fields
+    let popupRoot  = await this.page.evaluateHandle(
+        (element) => element.querySelector('internet-config').shadowRoot.querySelector("network-config").shadowRoot,
+        internetSettingsRoot
+    );
+    let ssidRoot = await this.page.evaluateHandle(
+        (element) => element.querySelector('#networkConfig').shadowRoot.querySelector("#ssid").shadowRoot,
+        popupRoot
+    );
+    let selectRoot = await this.page.evaluateHandle(
+        (element) => element.querySelector('network-config-select').shadowRoot,
+        popupRoot
+    );
+    
     // Type the correct ssid
-    await page.click("#input[aria-label='SSID']")
-    await page.focus("#input[aria-label='SSID']");
+    let ssidInput = await ssidRoot.$("#input");
+    await ssidInput.click();
+    await ssidInput.focus();
     await page.keyboard.type( ssid );
+
     // Click the correct security
-    await page.click("network-config-select option[value='" + type + "']");
+    let networkConfigSelect = await selectRoot.$("select");
+    await networkConfigSelect.click();
+    let networkConfigOption = await selectRoot.$("network-config-select option[value='" + type + "']");
+    await networkConfigOption.click();
     await page.waitFor(100);
+
     // Type the password if necessary
     if( type != "None" ) {
-        await page.click("#input[aria-label='Password']");
-        await page.focus("#input[aria-label='Password']");
+        let passwordRoot = await this.page.evaluateHandle(
+            (element) => element.querySelector('network-password-input').shadowRoot.querySelector("#input").shadowRoot,
+            popupRoot
+        );
+        let passwordInput = await passwordRoot.$("#input");
+        
+        await passwordInput.click();
+        await passwordInput.focus();
         await page.keyboard.type( password );
     }
-    // Type username if necessary
-    if ( type == "WPA-EAP" ) {
-        await page.click("#input[aria-label='Input']");
-        await page.focus("#input[aria-label='Input']");
-        await page.keyboard.type( username );
-    }
     await page.waitFor(250);
+
     // Click connect
-    await page.click("internet-config .layout paper-button:nth-child(2)");
+    let connectButton = await popupRoot.$("internet-config .layout paper-button:nth-child(2)");
+    await connectButton.click();
 
     // Close settings
     await page.close();
