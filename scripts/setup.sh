@@ -38,6 +38,11 @@ sudo mv /opt/spokapi/lib/sdptool /usr/bin/sdptool
 # Move updated start_bluetoothd.script
 sudo mv /opt/spokapi/lib/start_bluetoothd.sh /usr/bin/start_bluetoothd.sh
 
+# Allow Wifi to be changed by wpa
+chmod 777 -R /usr/lib/shill/shims/wpa_supplicant.conf
+# Add update_config=1 if not already there
+grep -q -x -F 'update_config=1' /usr/lib/shill/shims/wpa_supplicant.conf || echo 'update_config=1' >> /usr/lib/shill/shims/wpa_supplicant.conf
+
 # Place the SPOKAPI startup scripts
 sudo cp /opt/spokapi/scripts/spokapi_login.conf /etc/init/
 sudo cp /opt/spokapi/scripts/spokapi_desktop.conf /etc/init/

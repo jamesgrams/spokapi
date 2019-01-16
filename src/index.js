@@ -317,100 +317,36 @@ app.get ( '/networks', async function(request, response) {
 
 // Endpoint to connect to a wifi network
 app.post( '/connect', async function(request, response) {
-    // We'll connect using Chrome
-    // We could use wpa-cli, but that locks us out from shill (Chrome's network manager)
-    // Using Chrome, it becomes very easy to use all the nice connection features in Chrome
-    // Ideally, we would want a cli for shill, but this is probably the cleanest and easiest
-    if( !watchBrowser ) {
-        await openBrowser();
-    }
-    
-    // The page to return to after connection
-    let returnPage;
-    if ( Site.PATH_TO_CHROME ) {
-        let pages = await watchBrowser.pages();
-        returnPage = pages[0];
+    let ssid = request.body.ssid;
+    let password = request.body.password;
+    let identity = request.body.identity;
+
+    // Create a network
+    let buffer = execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli add_network"' );
+    let networkId = buffer.toString("utf-8").split("\n")[1];
+
+    // Enter the ssid
+    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' ssid \'\\\"' + ssid + '\\\"\'"' );
+    // Enter the password if there is one
+    if( password ) {
+        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' psk \'\\\"' + password + '\\\"\'"' );
+        // Enter the identity if there is one
+        if( identity ) {
+            execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' identity \'\\\"' + identity + '\\\"\'"' );
+        }
     }
     else {
-        returnPage = Site.connectedTabs[0];
+        // If there is no password, we have to explicity say we have no security
+        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' key_mgmt NONE' );
     }
 
-    // Get the wifi credentials
-    let ssid = request.body.ssid;
-    let username = request.body.username;
-    let password = request.body.password;
-    // Valid types are "None", "PSK" (WPA), "WEP"
-    let type = request.body.type;
+    // Enable the network
+    execSync( 'wpa_cli enable_network ' + networkId );
 
-    // Open a new page
-    let page = await watchBrowser.newPage();
-    await page.goto("chrome://settings");
-    await page.waitForSelector("settings-ui");
-    // Get the root of most internet settings
-    let internetSettingsRoot = await page.evaluateHandle(
-        () => document.querySelector('settings-ui').shadowRoot.querySelector('settings-main').shadowRoot.querySelector('settings-basic-page').shadowRoot.querySelector('settings-internet-page').shadowRoot
-    );
-    // Click new connection
-    let addConnectionButton = await internetSettingsRoot.$("#pages .settings-box");
-    await addConnectionButton.click();
-    await page.waitFor(100);
-    // Click new wifi connection
-    let wifiButton = await internetSettingsRoot.$(".icon-add-wifi");
-    await wifiButton.click();
-    await page.waitFor(250);
+    // Save the configuration
+    execSync( 'wpa_cli save_config' );
 
-    // Get all the new fields
-    let internetConfigRoot = await page.evaluateHandle(
-        (element) => element.querySelector('internet-config').shadowRoot,
-        internetSettingsRoot
-    );
-    let popupRoot  = await page.evaluateHandle(
-        (element) => element.querySelector("network-config").shadowRoot,
-        internetConfigRoot
-    );
-    let ssidRoot = await page.evaluateHandle(
-        (element) => element.querySelector("#ssid").shadowRoot,
-        popupRoot
-    );
-    let selectRoot = await page.evaluateHandle(
-        (element) => element.querySelector('network-config-select').shadowRoot,
-        popupRoot
-    );
-    
-    // Type the correct ssid
-    let ssidInput = await ssidRoot.$("#input");
-    await ssidInput.click();
-    await ssidInput.focus();
-    await page.keyboard.type( ssid );
-
-    // Click the correct security
-    let networkConfigSelect = await selectRoot.$("select");
-    await page.waitFor(250);
-    await networkConfigSelect.type( type );
-    await page.waitFor(100);
-
-    // Type the password if necessary
-    if( type != "None" ) {
-        let passwordRoot = await page.evaluateHandle(
-            (element) => element.querySelector('network-password-input').shadowRoot.querySelector("#input").shadowRoot,
-            popupRoot
-        );
-        let passwordInput = await passwordRoot.$("#input");
-        
-        await passwordInput.click();
-        await passwordInput.focus();
-        await page.keyboard.type( password );
-    }
-    await page.waitFor(250);
-
-    // Click connect
-    let connectButton = await internetConfigRoot.$("#dialog .layout paper-button:nth-child(4)");
-    await connectButton.click();
-
-    // Close settings
-    await page.close();
-    await returnPage.bringToFront();
-
+    // Respond to the user
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 } );
