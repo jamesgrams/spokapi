@@ -316,28 +316,32 @@ app.post( '/connect', async function(request, response) {
     await page.goto("chrome://settings");
     await page.waitForSelector("settings-ui");
     // Get the root of most internet settings
-    let internetSettingsRoot = await this.page.evaluateHandle(
+    let internetSettingsRoot = await page.evaluateHandle(
         () => document.querySelector('settings-ui').shadowRoot.querySelector('settings-main').shadowRoot.querySelector('settings-basic-page').shadowRoot.querySelector('settings-internet-page').shadowRoot
     );
     // Click new connection
-    let addConnectionButton = await internetSettingsRoot.$("settings-section[section='internet'] .settings-box");
+    let addConnectionButton = await internetSettingsRoot.$("#pages .settings-box");
     await addConnectionButton.click();
     await page.waitFor(100);
     // Click new wifi connection
-    let wifiButton = await internetSettingsRoot.$(".icon-add-wifi button");
-    await wifiButton.click;
+    let wifiButton = await internetSettingsRoot.$(".icon-add-wifi");
+    await wifiButton.click();
     await page.waitFor(250);
 
     // Get all the new fields
-    let popupRoot  = await this.page.evaluateHandle(
-        (element) => element.querySelector('internet-config').shadowRoot.querySelector("network-config").shadowRoot,
+    let internetConfigRoot = await page.evaluateHandle(
+        (element) => element.querySelector('internet-config').shadowRoot,
         internetSettingsRoot
     );
-    let ssidRoot = await this.page.evaluateHandle(
-        (element) => element.querySelector('#networkConfig').shadowRoot.querySelector("#ssid").shadowRoot,
+    let popupRoot  = await page.evaluateHandle(
+        (element) => element.querySelector("network-config").shadowRoot,
+        internetConfigRoot
+    );
+    let ssidRoot = await page.evaluateHandle(
+        (element) => element.querySelector("#ssid").shadowRoot,
         popupRoot
     );
-    let selectRoot = await this.page.evaluateHandle(
+    let selectRoot = await page.evaluateHandle(
         (element) => element.querySelector('network-config-select').shadowRoot,
         popupRoot
     );
@@ -350,14 +354,13 @@ app.post( '/connect', async function(request, response) {
 
     // Click the correct security
     let networkConfigSelect = await selectRoot.$("select");
-    await networkConfigSelect.click();
-    let networkConfigOption = await selectRoot.$("network-config-select option[value='" + type + "']");
-    await networkConfigOption.click();
+    await page.waitFor(250);
+    await networkConfigSelect.type( type );
     await page.waitFor(100);
 
     // Type the password if necessary
     if( type != "None" ) {
-        let passwordRoot = await this.page.evaluateHandle(
+        let passwordRoot = await page.evaluateHandle(
             (element) => element.querySelector('network-password-input').shadowRoot.querySelector("#input").shadowRoot,
             popupRoot
         );
@@ -370,7 +373,7 @@ app.post( '/connect', async function(request, response) {
     await page.waitFor(250);
 
     // Click connect
-    let connectButton = await popupRoot.$("internet-config .layout paper-button:nth-child(2)");
+    let connectButton = await internetConfigRoot.$("#dialog .layout paper-button:nth-child(4)");
     await connectButton.click();
 
     // Close settings
