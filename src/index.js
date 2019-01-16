@@ -308,7 +308,7 @@ app.post( '/connect', async function(request, response) {
     let ssid = request.body.ssid;
     let username = request.body.username;
     let password = request.body.password;
-    // Valid types are "None", "WEP-PSK", "WPA-PSK", and "WPA-EAP"
+    // Valid types are "None", "PSK" (WPA), "WEP"
     let type = request.body.type;
 
     // Open a new page
