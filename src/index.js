@@ -10,6 +10,7 @@ const express = require('express');
 const ip = require("ip");
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const execSync = require('child_process').execSync;
 
 const Site 	= require('./modules/site');
 const Espn 	= require('./modules/site/espn');
@@ -286,100 +287,62 @@ app.get( '/stop-interval', async function(request, response) {
 } );
 
 // Endpoint to get available wifi networks
+app.get ( '/networks', async function(request, response) {
+    // Scan for networks
+    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli scan"' );
+    await sleep(5000);
+    // Now, see the results
+    let resultsBuffer = execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli scan_results"' );
+    let results = resultsBuffer.toString("utf-8");
+    
+    // Parse the results
+    let networks = [];
+    let rows = results.split("\n").filter(function(el) {return el.length != 0});
+    // We don't need the first two rows
+    for( let i=2; i<rows.length; i++ ) {
+        let network = {};
+        let row = rows[i];
+        let columns = row.split(/\s/).filter(function(el) {return el.length != 0});
+        network['bssid'] = columns[0];
+        network['frequency'] = columns[1];
+        network['signal'] = columns[2];
+        network['flags'] = columns[3];
+        network['ssid'] = columns[4];
+        networks.push(network);
+    }
 
-// Endpoint to connect to a wifi network (always close tab afterwards!)
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success", "networks":networks}));
+} );
+
+// Endpoint to connect to a wifi network
 app.post( '/connect', async function(request, response) {
-    // We'll connect using Chrome
-    if( !watchBrowser ) {
-        await openBrowser();
-    }
-    
-    // The page to return to after connection
-    let returnPage;
-    if ( Site.PATH_TO_CHROME ) {
-        let pages = await watchBrowser.pages();
-        returnPage = pages[0];
-    }
-    else {
-        returnPage = Site.connectedTabs[0];
-    }
-
-    // Get the wifi credentials
     let ssid = request.body.ssid;
-    let username = request.body.username;
     let password = request.body.password;
-    // Valid types are "None", "PSK" (WPA), "WEP"
-    let type = request.body.type;
+    let identity = request.body.identity;
 
-    // Open a new page
-    let page = await watchBrowser.newPage();
-    await page.goto("chrome://settings");
-    await page.waitForSelector("settings-ui");
-    // Get the root of most internet settings
-    let internetSettingsRoot = await page.evaluateHandle(
-        () => document.querySelector('settings-ui').shadowRoot.querySelector('settings-main').shadowRoot.querySelector('settings-basic-page').shadowRoot.querySelector('settings-internet-page').shadowRoot
-    );
-    // Click new connection
-    let addConnectionButton = await internetSettingsRoot.$("#pages .settings-box");
-    await addConnectionButton.click();
-    await page.waitFor(100);
-    // Click new wifi connection
-    let wifiButton = await internetSettingsRoot.$(".icon-add-wifi");
-    await wifiButton.click();
-    await page.waitFor(250);
+    // Create a network
+    let buffer = execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli add_network"' );
+    let networkId = buffer.toString("utf-8").split("\n")[1];
 
-    // Get all the new fields
-    let internetConfigRoot = await page.evaluateHandle(
-        (element) => element.querySelector('internet-config').shadowRoot,
-        internetSettingsRoot
-    );
-    let popupRoot  = await page.evaluateHandle(
-        (element) => element.querySelector("network-config").shadowRoot,
-        internetConfigRoot
-    );
-    let ssidRoot = await page.evaluateHandle(
-        (element) => element.querySelector("#ssid").shadowRoot,
-        popupRoot
-    );
-    let selectRoot = await page.evaluateHandle(
-        (element) => element.querySelector('network-config-select').shadowRoot,
-        popupRoot
-    );
-    
-    // Type the correct ssid
-    let ssidInput = await ssidRoot.$("#input");
-    await ssidInput.click();
-    await ssidInput.focus();
-    await page.keyboard.type( ssid );
-
-    // Click the correct security
-    let networkConfigSelect = await selectRoot.$("select");
-    await page.waitFor(250);
-    await networkConfigSelect.type( type );
-    await page.waitFor(100);
-
-    // Type the password if necessary
-    if( type != "None" ) {
-        let passwordRoot = await page.evaluateHandle(
-            (element) => element.querySelector('network-password-input').shadowRoot.querySelector("#input").shadowRoot,
-            popupRoot
-        );
-        let passwordInput = await passwordRoot.$("#input");
-        
-        await passwordInput.click();
-        await passwordInput.focus();
-        await page.keyboard.type( password );
+    // Enter the ssid
+    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' ssid \'\\\"' + ssid + '\\\"\'"' );
+    // Enter the password if there is one
+    if( password ) {
+        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' psk \'\\\"' + password + '\\\"\'"' );
     }
-    await page.waitFor(250);
+    // Enter the identity if there is one
+    if( identity ) {
+        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' identity \'\\\"' + identity + '\\\"\'"' );
+    }
 
-    // Click connect
-    let connectButton = await internetConfigRoot.$("#dialog .layout paper-button:nth-child(4)");
-    await connectButton.click();
+    // Enable the network
+    execSync( 'wpa_cli enable_network ' + networkId );
 
-    // Close settings
-    await page.close();
-    await returnPage.bringToFront();
+    // Save the configuration
+    execSync( 'wpa_cli save config' );
 
+    // Respond to the user
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 } );

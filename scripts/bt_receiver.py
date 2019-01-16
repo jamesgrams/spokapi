@@ -28,6 +28,11 @@ server_socket.listen( backlog )
 # See here: https://people.csail.mit.edu/albert/bluez-intro/x290.html
 bluetooth.advertise_service( server_socket, "Spokapi Service", uuid )
 
+# We need urllib2 to use a proxy
+proxy_handler = urllib2.ProxyHandler({})
+opener = urllib2.build_opener(proxy_handler)
+urllib2.install_opener(opener)
+
 # Receive from a client
 def receive( client_socket, address ):
     try:
@@ -38,7 +43,7 @@ def receive( client_socket, address ):
             url = "http://localhost:8080" + data['path']
             if data['request'] == "POST":
                 req = urllib2.Request(url, json.dumps(data['options']), {'Content-Type': 'application/json'})
-                response = urllib2.urlopen(req)
+                response = opener.open(req)
             else:
                 response = urllib.urlopen(url)
             response_data = response.read()
