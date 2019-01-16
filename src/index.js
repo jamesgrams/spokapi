@@ -285,6 +285,73 @@ app.get( '/stop-interval', async function(request, response) {
     response.end(JSON.stringify({"status":"success"}));
 } );
 
+// Endpoint to get available wifi networks
+
+// Endpoint to connect to a wifi network (always close tab afterwards!)
+app.post( '/connect', async function(request, response) {
+    // We'll connect using Chrome
+    if( !watchBrowser ) {
+        await openBrowser();
+    }
+    
+    // The page to return to after connection
+    let returnPage;
+    if ( Site.PATH_TO_CHROME ) {
+        let pages = await watchBrowser.pages();
+        returnPage = pages[0];
+    }
+    else {
+        returnPage = Site.connectedTabs[0];
+    }
+
+    // Get the wifi credentials
+    let ssid = request.body.ssid;
+    let username = request.body.username;
+    let password = request.body.password;
+    // Valid types are "None", "WEP-PSK", "WPA-PSK", and "WPA-EAP"
+    let type = request.body.type;
+
+    // Open a new page
+    let page = await watchBrowser.newPage();
+    await page.goto("chrome://settings");
+    await page.waitForSelector("settings-section[section='internet']");
+    // Click new connection
+    await page.click("settings-section[section='internet'] .settings-box");
+    await page.waitFor(100);
+    // Click new wifi connection
+    await page.click(".icon-add-wifi button");
+    await page.waitFor(250);
+    // Type the correct ssid
+    await page.click("#input[aria-label='SSID']")
+    await page.focus("#input[aria-label='SSID']");
+    await page.keyboard.type( ssid );
+    // Click the correct security
+    await page.click("network-config-select option[value='" + type + "']");
+    await page.waitFor(100);
+    // Type the password if necessary
+    if( type != "None" ) {
+        await page.click("#input[aria-label='Password']");
+        await page.focus("#input[aria-label='Password']");
+        await page.keyboard.type( password );
+    }
+    // Type username if necessary
+    if ( type == "WPA-EAP" ) {
+        await page.click("#input[aria-label='Input']");
+        await page.focus("#input[aria-label='Input']");
+        await page.keyboard.type( username );
+    }
+    await page.waitFor(250);
+    // Click connect
+    await page.click("internet-config .layout paper-button:nth-child(2)");
+
+    // Close settings
+    await page.close();
+    await returnPage.bringToFront();
+
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
+} );
+
 // -------------------- Main Program --------------------
 
 // Read file for login data
