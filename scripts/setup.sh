@@ -39,7 +39,7 @@ sudo mv /opt/spokapi/lib/sdptool /usr/bin/sdptool
 sudo mv /opt/spokapi/lib/start_bluetoothd.sh /usr/bin/start_bluetoothd.sh
 
 # Allow Wifi to be changed by wpa
-chmod 777 -R /usr/lib/shill/shims/wpa_supplicant.conf
+sudo chmod 777 -R /usr/lib/shill/shims/wpa_supplicant.conf
 # Add update_config=1 if not already there
 grep -q -x -F 'update_config=1' /usr/lib/shill/shims/wpa_supplicant.conf || echo 'update_config=1' >> /usr/lib/shill/shims/wpa_supplicant.conf
 
