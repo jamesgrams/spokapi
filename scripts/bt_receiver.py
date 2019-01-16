@@ -37,7 +37,7 @@ def receive( client_socket, address ):
             data = json.loads(message)
             url = "http://localhost:8080" + data['path']
             if data['request'] == "POST":
-                req = urllib2.Request(url, data['options'])
+                req = urllib2.Request(url, json.dumps(data['options']), {'Content-Type': 'application/json'})
                 response = urllib2.urlopen(req)
             else:
                 response = urllib.urlopen(url)
