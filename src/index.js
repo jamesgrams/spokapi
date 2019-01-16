@@ -330,10 +330,14 @@ app.post( '/connect', async function(request, response) {
     // Enter the password if there is one
     if( password ) {
         execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' psk \'\\\"' + password + '\\\"\'"' );
+        // Enter the identity if there is one
+        if( identity ) {
+            execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' identity \'\\\"' + identity + '\\\"\'"' );
+        }
     }
-    // Enter the identity if there is one
-    if( identity ) {
-        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' identity \'\\\"' + identity + '\\\"\'"' );
+    else {
+        // If there is no password, we have to explicity say we have no security
+        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' key_mgmt NONE' );
     }
 
     // Enable the network
