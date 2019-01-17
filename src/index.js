@@ -18,6 +18,7 @@ const WiFi  = require('./modules/wifi.js');
 const Espn 	= require('./modules/site/espn');
 const NbcSports 	= require('./modules/site/nbcsports');
 const FoxSports 	= require('./modules/site/foxsports');
+const AnimalPlanet 	= require('./modules/site/animalplanet');
 
 /**
  * @constant
@@ -36,13 +37,13 @@ const FETCH_INTERVAL = 240000;
  * @type {number}
  * @default
  */
-let MAX_SIMULTANEOUS_FETCHES = 1;
+let MAX_SIMULTANEOUS_FETCHES = 4;
 /**
  * @constant
  * @type {Array.<Object>}
  * @default
  */
-const NETWORKS = { "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports };
+const NETWORKS = { "animalplanet": AnimalPlanet, "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports };
 /**
  * @constant
  * @type {string}
