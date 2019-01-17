@@ -185,15 +185,6 @@ class Site {
                 await page._client.send('Emulation.clearDeviceMetricsOverride');
                 connectedTabs.push(page);
             }
-            connectedTabs[0].bringToFront();
-        }
-
-        // Close all non-connected tabs (helps after reboot/session restore)
-        let pages = await browser.pages();
-        for ( let i = 0; i < pages.length; i++ ) {
-            if( connectedTabs.indexOf(pages[i]) == -1 ) {
-                await pages[i].close();
-            }
         }
 
         return Promise.resolve(browser);
