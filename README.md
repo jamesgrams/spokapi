@@ -62,6 +62,16 @@ Spokapi is an application that simplifies watching sports online (using sites su
     - This starts the regular fetching of games (on an interval)
 - `/stop-interval/`
     - This stops the regular fetching of games (on an interval)
+- `/networks/connect/`
+    - Connect to a wifi network (Chrome OS)
+- `/networks/available`
+    - list available wifi network (Chrome OS)
+- `/networks/connected`
+    - list connected wifi network (Chrome OS)
+- `/networks/disconnect`
+    - Disconnect from a wifi network (Chrome OS)
+- `/update/`
+    - Updates Spokapi (Chrome OS)
 - `/`
     - This will return the Spokapi Client
 

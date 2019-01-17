@@ -122,7 +122,7 @@ class NbcSports extends Site {
         await this.page.waitForSelector(".playerContainer, #video-container", {timeout: Site.STANDARD_TIMEOUT}); // There may be an ad before we go full screen
         // Wait for a play button, sometimes it autoplays though..
         try {
-            await this.page.waitForSelector('.player-wrapper', {timeout: 5000});
+            await this.page.waitForSelector('.player-wrapper', {timeout: 7000}); // Note this is non-standard
             await this.page.click('.player-wrapper');
         }
         // OK to autoplay

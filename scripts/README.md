@@ -12,8 +12,10 @@
 10. In Chrome Settings, set to boot to the new tab page each time.
 11. Enable Bluetooth (this setting will persist after reboot).
 12. Enable Newblue in `chrome://flags`
-13. Remove the write protection on the file system by running `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`, and then running the command that prints out.
-14. Reboot, go back into a bash terminal (see step 2) and make sure you can write to the file system (`touch /etc/test`)
-15. If you can't remove the write protection (happens sometimes) repeat the previous two steps until you can (should take at most 3 times)
-16. At this point, the system is setup where all future steps can be done automatically. Run `/home/chronos/user/Downloads/spokapi/scripts/setup.sh` to setup Spokapi. You may have to input some information (such as typing Y to confirm) while this script runs.
-17. To allow ssh with a password, you may have to set a password for the chronos user.
+13. Disable sleep mode for the Chromebit
+14. Remove the write protection on the file system by running `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`, and then running the command that prints out.
+15. Reboot, go back into a bash terminal (see step 2) and make sure you can write to the file system (`touch /etc/test`)
+16. If you can't remove the write protection (happens sometimes) repeat the previous two steps until you can (should take at most 3 times)
+17. Setup read-only ssh keys to the Spokapi GitHub repository for root user (for the update endpoint)
+18. At this point, the system is setup where all future steps can be done automatically. Run `/home/chronos/user/Downloads/spokapi/scripts/setup.sh` to setup Spokapi. You may have to input some information (such as typing Y to confirm) while this script runs.
+19. To allow ssh with a password, you may have to set a password for the chronos user.

@@ -10,9 +10,11 @@ const express = require('express');
 const ip = require("ip");
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const sleep = require('sleep');
 const execSync = require('child_process').execSync;
 
 const Site 	= require('./modules/site');
+const WiFi  = require('./modules/wifi.js');
 const Espn 	= require('./modules/site/espn');
 const NbcSports 	= require('./modules/site/nbcsports');
 const FoxSports 	= require('./modules/site/foxsports');
@@ -133,7 +135,7 @@ app.get('/games', async function(request, response) {
         // If we are currently fetching games, wait until that is done
         if( fetchGamesLocked ) {
             while( fetchGamesLocked ) {
-                await sleep(1000);
+                await sleep.sleep(1000);
             }
         }
         // Otherwise, go ahead and fetch games
@@ -287,109 +289,55 @@ app.get( '/stop-interval', async function(request, response) {
 } );
 
 // Endpoint to get available wifi networks
-app.get ( '/networks', async function(request, response) {
-    // Scan for networks
-    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli scan"' );
-    await sleep(5000);
-    // Now, see the results
-    let resultsBuffer = execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli scan_results"' );
-    let results = resultsBuffer.toString("utf-8");
-    
-    // Parse the results
-    let networks = [];
-    let rows = results.split("\n").filter(function(el) {return el.length != 0});
-    // We don't need the first two rows
-    for( let i=2; i<rows.length; i++ ) {
-        let network = {};
-        let row = rows[i];
-        let columns = row.split(/\s/).filter(function(el) {return el.length != 0});
-        network['bssid'] = columns[0];
-        network['frequency'] = columns[1];
-        network['signal'] = columns[2];
-        network['flags'] = columns[3];
-        network['ssid'] = columns[4];
-        networks.push(network);
-    }
+app.get ( '/networks/available', async function(request, response) {
+    let networks = await WiFi.availableNetworks();
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success", "networks":networks}));
 } );
 
 // Endpoint to get connected networks
-app.get ( '/connected-networks', async function(request, response) {
-    let networks = getConnectedNetworks();
+app.get ( '/networks/connected', async function(request, response) {
+    let networks = WiFi.connectedNetworks();
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success", "networks":networks}));
 } );
 
 // Endpoint to get disconnect from networks
-app.post ( '/disconnect', async function(request, response) {
+app.post ( '/networks/disconnect', async function(request, response) {
     let ssid = request.body.ssid;
 
-    let networks = getConnectedNetworks();
-
-    for( let network of networks ) {
-        if( network.ssid == ssid ) {
-            // Delete the network
-            execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli remove_network ' + network.id + '"' );
-        }
-    }
+    WiFi.disconnect(ssid);
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success", "networks":networks}));
 } );
 
 // Endpoint to connect to a wifi network
-app.post( '/connect', async function(request, response) {
+app.post( '/networks/connect', async function(request, response) {
     let ssid = request.body.ssid;
     let password = request.body.password;
     let identity = request.body.identity;
 
-    // See if we are already connected
-    let connectedNetworks = getConnectedNetworks();
-
-    let networkId;
-    // See if we already have a connection
-    for ( let connectedNetwork of connectedNetworks ) {
-        if( connectedNetwork.ssid == ssid ) {
-            let networkId = connectedNetwork.id;
-        }
-    }
-
-    // We need to add a network connection
-    // If you had the password wrong, you will have to delete the network and then re-add it (like getting the ssid wrong)
-    if( !networkId ) {
-        // Create a network
-        let buffer = execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli add_network"' );
-        let networkId = buffer.toString("utf-8").split("\n")[1];
-
-        // Enter the ssid
-        execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' ssid \'\\\"' + ssid + '\\\"\'"' );
-        // Enter the password if there is one
-        if( password ) {
-            execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' psk \'\\\"' + password + '\\\"\'"' );
-            // Enter the identity if there is one
-            if( identity ) {
-                execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' identity \'\\\"' + identity + '\\\"\'"' );
-            }
-        }
-        else {
-            // If there is no password, we have to explicity say we have no security
-            execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli set_network ' + networkId + ' key_mgmt NONE' );
-        }
-
-    }
-
-    // Enable the network
-    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli enable_network ' + networkId + '"' );
-
-    // Save the configuration
-    execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli save_config"' );
+    WiFi.connect(ssid, password, identity);
 
     // Respond to the user
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
+} );
+
+// Endpoint to perform an update to spokapi
+// Spokapi will need to be restarted after performing an update
+app.post( '/update', async function(request, response) {
+    execSync("git -C /home/chronos/user/Downloads/spokapi/ pull");
+    execSync("/bin/sh /home/chronos/user/Downloads/spokapi/scripts/setup.sh");
+
+    // Respond to the user
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
+
+    execSync("reboot");
 } );
 
 // -------------------- Main Program --------------------
@@ -530,37 +478,4 @@ async function fetchGames() {
 
     fetchGamesLocked = false;
     return Promise.resolve(true);
-}
-
-/**
- * Get connected wifi networks
- * @returns a list of connected networks
- */
-function getConnectedNetworks() {
-    let connectedBuffer = execSync( 'sudo -H -u wpa /bin/sh -c "wpa_cli list_networks"' );
-    let connected = connectedBuffer.toString("utf-8");
-
-    // Parse the results
-    let networks = [];
-    let rows = connected.split("\n").filter(function(el) {return el.length != 0});
-    // We don't need the first two rows
-    for( let i=2; i<rows.length; i++ ) {
-        let network = {};
-        let row = rows[i];
-        let columns = row.split(/\s/).filter(function(el) {return el.length != 0});
-        network['id'] = columns[0];
-        network['ssid'] = columns[1];
-        network['bssid'] = columns[2];
-        network['flags'] = columns[3];
-        networks.push(network);
-    }
-
-    return networks;
-}
-
-// Sleep helper function
-function sleep(ms) {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
 }
