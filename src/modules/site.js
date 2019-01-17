@@ -185,6 +185,7 @@ class Site {
                 await page._client.send('Emulation.clearDeviceMetricsOverride');
                 connectedTabs.push(page);
             }
+            connectedTabs[0].bringToFront();
         }
 
         return Promise.resolve(browser);
