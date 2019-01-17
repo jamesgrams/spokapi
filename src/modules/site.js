@@ -191,7 +191,7 @@ class Site {
         // Close all non-connected tabs (helps after reboot/session restore)
         let pages = await browser.pages();
         for ( let i = 0; i < pages.length; i++ ) {
-            if( connectedTabs.indexOf(pages[i]) == 1 ) {
+            if( connectedTabs.indexOf(pages[i]) == -1 ) {
                 await pages[i].close();
             }
         }
