@@ -4,7 +4,7 @@
  */
 
 const Site = require('../site');
-const Game 	= require('../../modules/game');
+const Program 	= require('../program');
 
 /**
  * @constant
@@ -29,24 +29,24 @@ class Espn extends Site {
     }
     
     /**
-     * Generate a list of games available on this site.
-     * @returns {Promise<Array.<Game>>}
+     * Generate a list of programs available on this site.
+     * @returns {Promise<Array.<Program>>}
      */
-    async generateGames() {
+    async generatePrograms() {
         if(!this.page) {
             this.page = await this.openPage();
         }
 
-        let games = [];
+        let programs = [];
 
         try {
             await this.page.goto(ESPN_URL, {timeout: Site.STANDARD_TIMEOUT});
             // Wait until the schedule is loaded
             await this.page.waitForSelector('#tabLive a', {timeout: Site.STANDARD_TIMEOUT});
 
-            // Get all the links to games
+            // Get all the links to programs
             let sportTables = await this.page.$$('#tabLive table');
-            // All the games are listed in tables (1 table per SUBSPORT)
+            // All the programs are listed in tables (1 table per SUBSPORT)
             for (let sportTable of sportTables) {
 
                 // Get the sport
@@ -81,18 +81,22 @@ class Espn extends Site {
                     }
 
                     let network = this.constructor.name.toLowerCase();
-                    let subnetwork = await (await (await gameRow.$(".schedule__network img")).getProperty('alt')).jsonValue();
+                    let channel = await (await (await gameRow.$(".schedule__network img")).getProperty('alt')).jsonValue();
 
                     // Make sure the network is not blacklisted
-                    if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(subnetwork) === -1 ) {
-                        games.push( new Game (
+                    if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
+                        programs.push( new Program (
                             await (await (await gameRow.$(".schedule__competitors a")).getProperty('textContent')).jsonValue(),
                             await (await (await gameRow.$(".schedule__competitors a")).getProperty('href')).jsonValue(),
                             await (await (await gameRow.$(".schedule__time")).getProperty('textContent')).jsonValue(),
-                            sport,
-                            network, // This is the network (this class name)
-                            subsport,
-                            subnetwork
+                            null,
+                            network,
+                            channel,
+                            sport + " - " + subsport,
+                            null,
+                            null,
+                            null,
+                            null
                         ) );
                     }
                 }
@@ -101,7 +105,7 @@ class Espn extends Site {
             await this.page.waitFor(100);
         }
         catch(err) { console.log(err); }
-        return Promise.resolve(games);
+        return Promise.resolve(programs);
     }
 
     /**

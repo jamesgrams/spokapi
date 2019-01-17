@@ -23,12 +23,12 @@ Spokapi is an application that simplifies watching sports online (using sites su
     3. You can include this flag when you start Chrome on the command line
     4. On Chrome OS, you can put this flag in `/etc/chrome_dev.conf` (You will have to restart your Chromebook after doing so for changes to take effect)
 12. `npm start`
-13. Some games use flash. Unfortunately, Spokapi can't allow flash automatically. You can set up the Chrome Profile that Spokapi uses to save your flash settings, provided you are not using Chrome above version 68. To do this, do the following:
+13. Some programs use flash. Unfortunately, Spokapi can't allow flash automatically. You can set up the Chrome Profile that Spokapi uses to save your flash settings, provided you are not using Chrome above version 68. To do this, do the following:
     1. `<Path to Google Chrome on your Computer> --user-data-dir=<Path to Spokapi Directory>/userDataDir` (Run this from the Spokapi directory)
     2. Once the browser starts, go to `chrome://flags/`
     3. Set the `Enable Ephemeral Flash Permissions` permission to Disabled.
     4. Restart Chrome.
-    5. When you go to watch a game on Spokapi that needs flash installed, Spokapi will fail to start the game, because Flash is disabled. When this happens, manually click to "Allow Flash" (There may be a link to "Update Flash Player" that you must click). Chrome should now have saved your preference to allow Flash for that site, and you should be able to use Spokapi worry-free now.
+    5. When you go to watch a program on Spokapi that needs flash installed, Spokapi will fail to start the program, because Flash is disabled. When this happens, manually click to "Allow Flash" (There may be a link to "Update Flash Player" that you must click). Chrome should now have saved your preference to allow Flash for that site, and you should be able to use Spokapi worry-free now.
 14. Alternitivelty, to enable flash, you can create a policy to allow flash (tested on Linux and Chrome OS).
     1. `mkdir -p mkdir /etc/opt/chrome/policies/managed`
     2. `touch /etc/opt/chrome/policies/managed/test_policy.json`
@@ -45,23 +45,23 @@ Spokapi is an application that simplifies watching sports online (using sites su
     - Fox Sports
 
 ## Endpoints
-- `/games/`
-    - This will return an array of objects containing a list of available games to watch
+- `/programs/`
+    - This will return an array of objects containing a list of available programs to watch
 - `/watch/`
     - This allows you to control the browser
 - `/stop/`
-    - This stops the game that is currently playing (It directs the browser to a blank page)
+    - This stops the program that is currently playing (It directs the browser to a blank page)
 - `/break/`
-    - This breaks the cache of stored games
+    - This breaks the cache of stored programs
 - `/info/`
     - Post to this endpoint to update provider and login information
 - `/channel/`
     - Post to this endpoint to change what channels you want to include
     - Get this endpoint to get what channels are currently blocked
 - `/start-interval/`
-    - This starts the regular fetching of games (on an interval)
+    - This starts the regular fetching of programs (on an interval)
 - `/stop-interval/`
-    - This stops the regular fetching of games (on an interval)
+    - This stops the regular fetching of programs (on an interval)
 - `/networks/connect/`
     - Connect to a wifi network (Chrome OS)
 - `/networks/available`
@@ -73,6 +73,6 @@ Spokapi is an application that simplifies watching sports online (using sites su
 - `/update/`
     - Updates Spokapi (Chrome OS)
 - `/`
-    - This will return the Spokapi Client
+    - This will return the Spokapi Client (Simple and useful for testing)
 
 ![Spokapi Logo](public/spokapi.png)

@@ -4,7 +4,7 @@
  */
 
 const Site = require('../site');
-const Game 	= require('../../modules/game');
+const Program 	= require('../program');
 
 /**
  * @constant
@@ -29,15 +29,15 @@ class NbcSports extends Site {
     }
     
     /**
-     * Generate a list of games available on this site.
-     * @returns {Promise<Array.<Game>>}
+     * Generate a list of programs available on this site.
+     * @returns {Promise<Array.<Program>>}
      */
-    async generateGames() {
+    async generatePrograms() {
         if(!this.page) {
             this.page = await this.openPage();
         }
 
-        let games = [];
+        let programs = [];
 
         try {
             await this.page.goto(NBC_SPORTS_URL, {timeout: Site.STANDARD_TIMEOUT});
@@ -48,7 +48,7 @@ class NbcSports extends Site {
             }
             // There are no live events
             catch(err) {
-                return Promise.resolve(games);
+                return Promise.resolve(programs);
             }
 
             // Get the live section
@@ -56,21 +56,25 @@ class NbcSports extends Site {
             // Get all the events
             let liveEvents = await liveSection.$$('.live-upcoming-list__event');
 
-            // Generate the games by cycling through live events
+            // Generate the programs by cycling through live events
             for ( let liveEvent of liveEvents ) {
                 let network = this.constructor.name.toLowerCase();
-                let subnetwork = await (await (await liveEvent.$(".live-upcoming-list__event-channel")).getProperty('textContent')).jsonValue();
+                let channel = await (await (await liveEvent.$(".live-upcoming-list__event-channel")).getProperty('textContent')).jsonValue();
 
                 // Make sure the network is not blacklisted
-                if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(subnetwork) === -1 ) {
-                    games.push( new Game (
+                if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
+                    programs.push( new Program (
                         await (await (await liveEvent.$(".live-upcoming-list__event-name")).getProperty('textContent')).jsonValue(),
                         await (await (await liveEvent.$(".link")).getProperty('href')).jsonValue(),
                         await (await (await liveEvent.$(".live-upcoming-list__event-time")).getProperty('textContent')).jsonValue(),
-                        await (await (await liveEvent.$(".live-upcoming-list__event-type")).getProperty('textContent')).jsonValue(),
-                        network, // This is the network (this class name)
                         null,
-                        subnetwork
+                        network,
+                        channel,
+                        await (await (await liveEvent.$(".live-upcoming-list__event-type")).getProperty('textContent')).jsonValue(),
+                        null, 
+                        null,
+                        null,
+                        null
                     ) );
                 }
             }
@@ -78,7 +82,7 @@ class NbcSports extends Site {
             await this.page.waitFor(100);
         }
         catch(err) { console.log(err); }
-        return Promise.resolve(games);
+        return Promise.resolve(programs);
     }
 
     /**
@@ -87,8 +91,8 @@ class NbcSports extends Site {
      */
     async login() {
         // Wait for the sign in initiater
-        await this.page.waitForSelector("#accessEnablerUI", {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.evaluate( () => { document.querySelector('#accessEnablerLogin').click(); } );
+        await this.page.waitForSelector("#temp-pass-login", {timeout: Site.STANDARD_TIMEOUT});
+        await this.page.evaluate( () => { document.querySelector("#temp-pass-login").click(); } );
         // Wait until we have the option to log in
         let providerSelector = "";
         if( Site.provider === "Spectrum" ) {

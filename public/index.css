@@ -17,34 +17,34 @@ h1 > img {
     width: 35px;
     margin-right: 10px;
 }
-.game.watching {
+.program.watching {
     border: 5px solid green;
 }
-.game {
+.program {
     padding: 10px;
     border: 2px solid black;
     margin-top: 5px;
     margin-bottom: 5px;
     cursor: pointer;
 }
-.game-title {
+.program-title {
     font-weight: bold;
     display: inline-block;
 }
-.game-network {
+.program-channel {
     font-style: italic;
     color: grey;
 }
-.game-network:before {
+.program-channel:before {
     content: "|";
     color: black;
     font-style: initial;
     padding: 5px;
 }
-.game-time, .game-network {
+.program-time, .program-channel {
     float: right;
 }
-.game-seperator {
+.program-seperator {
     clear: both;
 }
 #login-wrapper, #break-cache-wrapper, #channels-wrapper {

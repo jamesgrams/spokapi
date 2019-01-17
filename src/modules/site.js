@@ -155,7 +155,7 @@ class Site {
     }
 
     /**
-     * Stop playing a game
+     * Stop playing a program
      * @returns {Promise}
      */
     async stop() {

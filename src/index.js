@@ -30,7 +30,7 @@ const PORT = 8080;
  * @type {number}
  * @default
  */
-const FETCH_GAMES_INTERVAL = 240000;
+const FETCH_INTERVAL = 240000;
 /**
  * @constant
  * @type {number}
@@ -59,8 +59,8 @@ const LOGIN_INFO_FILE = 'login-info.txt';
 Site.totalNetworks = Object.keys(NETWORKS).length;
 
 var watchBrowser;
-var gamesCache;
-var fetchGamesLocked = false;
+var programsCache;
+var fetchLocked = false;
 var fetchInterval;
 
 const app = express();
@@ -94,7 +94,7 @@ app.get("/", async function(request, response) {
 </head>
 <body>
     <h1><img src="/static/spokapi.png"/>Spokapi</h1>
-    <div id="games">
+    <div id="programs">
         Loading...
     </div>
     <div id="login-wrapper">
@@ -127,24 +127,24 @@ app.get("/", async function(request, response) {
     response.end(page);
 });
 
-// Endpoint to get a list of games
-app.get('/games', async function(request, response) {
+// Endpoint to get a list of programs
+app.get('/programs', async function(request, response) {
 
     // There is no cache yet
-    if( !gamesCache ) {
-        // If we are currently fetching games, wait until that is done
-        if( fetchGamesLocked ) {
-            while( fetchGamesLocked ) {
+    if( !programsCache ) {
+        // If we are currently fetching programs, wait until that is done
+        if( fetchLocked ) {
+            while( fetchLocked ) {
                 await sleep.sleep(1000);
             }
         }
-        // Otherwise, go ahead and fetch games
+        // Otherwise, go ahead and fetch programs
         else {
-            await fetchGames();
+            await fetchPrograms();
         }
     }
 
-    // Check to see if the user is currently watching any of the games and indicate so accordingly
+    // Check to see if the user is currently watching any of the programs and indicate so accordingly
     let page;
     if ( Site.PATH_TO_CHROME ) {
         if( watchBrowser ) {
@@ -156,28 +156,28 @@ app.get('/games', async function(request, response) {
         page = Site.connectedTabs[0];
     }
 
-    // Deep clone the games cache, so we can edit it before responding
-    let gamesResponse = JSON.parse(JSON.stringify(gamesCache));
+    // Deep clone the programs cache, so we can edit it before responding
+    let programsResponse = JSON.parse(JSON.stringify(programsCache));
     if( page ) {
         let url = await page.url();
-        for( let game of gamesResponse ) {
-            let gameUrl = decodeURIComponent( game.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
-            if( gameUrl == url ) {
-                game.watching = true;
+        for( let program of programsResponse ) {
+            let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
+            if( programUrl == url ) {
+                program.watching = true;
             }
         }
     }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({ status: "success", games: gamesResponse }));
+    response.end(JSON.stringify({ status: "success", programs: programsResponse }));
 });
 
-// Endpoint to watch a game
+// Endpoint to watch a program
 app.get('/watch', async function(request, response) {
     if( !watchBrowser ) {
         await openBrowser();
     }
-    // The url to watch the game on
+    // The url to watch the program on
     let url = decodeURIComponent(request.query.url);
 
     let page;
@@ -200,7 +200,7 @@ app.get('/watch', async function(request, response) {
     response.end(JSON.stringify({"status":"success"}));
 });
 
-// Endpoint to stop a game
+// Endpoint to stop a program
 app.get('/stop', async function(request, response) {
     if( !watchBrowser ) {
         await openBrowser();
@@ -223,7 +223,7 @@ app.get('/stop', async function(request, response) {
 
 // Endpoint to break the cache
 app.get( '/break', async function(request, response) {
-    gamesCache = null;
+    programsCache = null;
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
@@ -269,17 +269,17 @@ app.get( '/channel', async function(request, response) {
     response.end(JSON.stringify({"status":"success", "channels":Site.unsupportedChannels}));
 } );
 
-// Endpoint to start the regularly occuring process of refetching games
+// Endpoint to start the regularly occuring process of refetching programs
 app.get( '/start-interval', async function(request, response) {
     if( !fetchInterval ) {
-        fetchInterval = setInterval(fetchGames, FETCH_GAMES_INTERVAL); // Fetch every few minutes from this point on
+        fetchInterval = setInterval(fetchPrograms, FETCH_INTERVAL); // Fetch every few minutes from this point on
     }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 } );
 
-// Endpoint to stop the regularly occuring process of refetching games
+// Endpoint to stop the regularly occuring process of refetching programs
 app.get( '/stop-interval', async function(request, response) {
     clearInterval(fetchInterval);
     fetchInterval = null;
@@ -412,15 +412,15 @@ async function watch(page, url, request) {
 }
 
 /**
- * Fetch games and cache the result
- * @returns Promise - true if games where fetched, false if not (the method is locked)
+ * Fetch programs and cache the result
+ * @returns Promise - true if programs where fetched, false if not (the method is locked)
  */
-async function fetchGames() {
-    // Only fetch games if we are not already fetching them and we know we can
-    if( fetchGamesLocked ) {
+async function fetchPrograms() {
+    // Only fetch programs if we are not already fetching them and we know we can
+    if( fetchLocked ) {
         return Promise.resolve(false);
     }
-    fetchGamesLocked = true;
+    fetchLocked = true;
 
     let networks = [];
     if( !Site.PATH_TO_CHROME ) {
@@ -443,7 +443,7 @@ async function fetchGames() {
         }
     }
 
-    // Generate all the games
+    // Generate all the programs
     let values = [];
     for( let i=0; i < networks.length; i += MAX_SIMULTANEOUS_FETCHES ) {
         let currentNetworks = [];
@@ -454,7 +454,7 @@ async function fetchGames() {
         }
         values = values.concat(
             await Promise.all(
-                currentNetworks.map( network => network.generateGames() )
+                currentNetworks.map( network => network.generatePrograms() )
             )
         );
     }
@@ -466,7 +466,7 @@ async function fetchGames() {
     }
 
     // Update the cache
-    gamesCache = joinedValues;
+    programsCache = joinedValues;
 
     // Cleanup
     if( Site.PATH_TO_CHROME ) {
@@ -476,6 +476,6 @@ async function fetchGames() {
         networks.map( network => network.stop() )
     }
 
-    fetchGamesLocked = false;
+    fetchLocked = false;
     return Promise.resolve(true);
 }

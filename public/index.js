@@ -1,8 +1,8 @@
 // JavaScript File to run the Spokapi Client
-var games = {};
+var programs = {};
 var xhttp;
 window.addEventListener('load', function() {
-    loadGames();
+    loadPrograms();
     loadBlockedChannels();
     document.getElementById("update-info").addEventListener('click', updateInfo);
     document.getElementById("break-cache").addEventListener('click', breakCache);
@@ -10,16 +10,16 @@ window.addEventListener('load', function() {
     document.getElementById("stop-fetching").addEventListener('click', stopFetching);
     document.getElementById("block-channel").addEventListener('click', addBlockedChannel);
 });
-function clearWatchedGames() {
-    var gameElements = document.querySelectorAll(".game");
-    for(var i=0; i<gameElements.length; i++) {
-        gameElements[i].className = "game";
+function clearWatchedPrograms() {
+    var programElements = document.querySelectorAll(".program");
+    for(var i=0; i<programElements.length; i++) {
+        programElements[i].className = "program";
     }
 }
-function watchGame(gameElement) {
-    if(!gameElement.className.includes("watching")) {
-        clearWatchedGames();
-        var link = gameElement.getAttribute('data-link');
+function watchProgram(programElement) {
+    if(!programElement.className.includes("watching")) {
+        clearWatchedPrograms();
+        var link = programElement.getAttribute('data-link');
         // clear any existing requests
         if( xhttp ) {
             xhttp.abort;
@@ -27,13 +27,13 @@ function watchGame(gameElement) {
         xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                gameElement.className = "game watching";
+                programElement.className = "program watching";
             }
         };
         xhttp.open("GET", link, true);
         xhttp.send();
     }
-    // Turn off the game
+    // Turn off the program
     else {
         if( xhttp ) {
             xhttp.abort;
@@ -41,69 +41,53 @@ function watchGame(gameElement) {
         xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                gameElement.className = "game";
+                programElement.className = "program";
             }
         };
         xhttp.open("GET", "/stop", true);
         xhttp.send();
     }
 }
-function loadGames() {
+function loadPrograms() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("games").innerHTML = "";
-            games = JSON.parse(this.responseText).games;
-            sortGames();
-            generateGames();
+            document.getElementById("programs").innerHTML = "";
+            programs = JSON.parse(this.responseText).programs;
+            sortPrograms();
+            generatePrograms();
         }
         else if( this.readyState == 4 ) {
-            document.getElementById("games").innerHTML = "An error has occurred.";
+            document.getElementById("programs").innerHTML = "An error has occurred.";
         }
     };
-    xhttp.open("GET", "/games", true);
+    xhttp.open("GET", "/programs", true);
     xhttp.send();
 }
-function sortGames() {
-    games.sort( function(a, b) {
-        if( a.sport.toLowerCase() < b.sport.toLowerCase() ) { return -1 };
-        if( b.sport.toLowerCase() < a.sport.toLowerCase() ) { return 1 };
-        if( a.subsport.toLowerCase() < b.subsport.toLowerCase() ) { return -1 };
-        if( b.subsport.toLowerCase() < a.subsport.toLowerCase() ) { return 1 };
-        if( a.name.toLowerCase() < b.name.toLowerCase() ) { return -1 };
-        if( b.name.toLowerCase() < a.name.toLowerCase() ) { return 1 };
+function sortPrograms() {
+    programs.sort( function(a, b) {
+        if( a.title.toLowerCase() < b.title.toLowerCase() ) { return -1 };
+        if( b.title.toLowerCase() < a.title.toLowerCase() ) { return 1 };
         return 0;
     } );
 }
-function generateGames() {
-    var prevGameSport = "";
-    var prevGameSubsport = "";
-    for(var i=0; i<games.length; i++) {
-        var game = games[i];
-        // Add headings for sports
-        if(game.sport && game.sport.toLowerCase() != prevGameSport) {
-            document.getElementById("games").innerHTML += "<h2>" + game.sport + "</h2>";
-            prevGameSport = game.sport.toLowerCase();
-        }
-        // Add headings for subsports
-        if(game.subsport && game.subsport.toLowerCase() != prevGameSubsport) {
-            document.getElementById("games").innerHTML += "<h3>" + game.subsport + "</h3>";
-            prevGameSubsport = game.subsport.toLowerCase();
-        }
-        game = generateGame(game);
-        document.getElementById("games").innerHTML += game;
+function generatePrograms() {
+    for(var i=0; i<programs.length; i++) {
+        var program = programs[i];
+        program = generateProgram(program);
+        document.getElementById("programs").innerHTML += program;
     }
 }
-function generateGame(game) {
-    var className = 'game';
-    if( game.watching ) {
+function generateProgram(program) {
+    var className = 'program';
+    if( program.watching ) {
         className += " watching";
     }
-    var html = "<div class='" + className + "' onclick='watchGame(this)' data-link='"+game.link+"'>" +
-        "<div class='game-title'>" + game.name + "</div>" +
-        "<div class='game-network'>" + game.network + " (" + game.subnetwork + ")" + "</div>" +
-        "<div class='game-time'>" + game.time + "</div>" +
-        "<div class='game-seperator'></div>"
+    var html = "<div class='" + className + "' onclick='watchProgram(this)' data-link='"+program.link+"'>" +
+        "<div class='program-title'>" + program.title + "</div>" +
+        "<div class='program-channel'>" + program.channel + "</div>" +
+        "<div class='program-time'>" + program.startTime + "</div>" +
+        "<div class='program-seperator'></div>"
         "</div>";
     return html;
 }

@@ -4,7 +4,7 @@
  */
 
 const Site = require('../site');
-const Game 	= require('../../modules/game');
+const Program 	= require('../program');
 
 /**
  * @constant
@@ -36,15 +36,15 @@ class FoxSports extends Site {
     }
     
     /**
-     * Generate a list of games available on this site.
-     * @returns {Promise<Array.<Game>>}
+     * Generate a list of programs available on this site.
+     * @returns {Promise<Array.<Program>>}
      */
-    async generateGames() {
+    async generatePrograms() {
         if(!this.page) {
             this.page = await this.openPage();
         }
 
-        let games = [];
+        let programs = [];
 
         try {
             // We have to go to fox sports, so fox will allow us to access the API
@@ -66,18 +66,22 @@ class FoxSports extends Site {
 
                     let airing = item.airings[0];
                     let network = this.constructor.name.toLowerCase();
-                    let subnetwork = airing.channel_name;
+                    let channel = airing.channel_name;
 
                     // Make sure the network is not blacklisted
-                    if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(subnetwork) === -1 ) {
-                        games.push( new Game (
+                    if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
+                        programs.push( new Program (
                             item.title,
                             FOX_SPORTS_URL + airing.mf_links[0].href.replace("airing/", ""),
                             new Date( Date.parse(item.airing_date) ).toLocaleTimeString(),
-                            item.sport_tag,
-                            network, // This is the network (this class name)
                             null,
-                            subnetwork
+                            network,
+                            channel,
+                            item.sport_tag,
+                            null,
+                            null,
+                            null,
+                            null
                         ) );
                     }
                 }
@@ -86,7 +90,7 @@ class FoxSports extends Site {
             await this.page.waitFor(100);
         }
         catch(err) { console.log(err); }
-        return Promise.resolve(games);
+        return Promise.resolve(programs);
     }
 
     /**
