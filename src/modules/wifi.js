@@ -4,7 +4,6 @@
  */
 
 const execSync = require('child_process').execSync;
-const sleep = require('sleep');
 
 /**
  * @constant
@@ -102,7 +101,7 @@ class WiFi {
     static async availableNetworks() {
         // Scan for networks
         execSync( WPA_USER_PREFIX + '"wpa_cli scan"' );
-        await sleep.sleep(5000);
+        await sleep(5000);
         // Now, see the results
         let resultsBuffer = execSync( WPA_USER_PREFIX + '"wpa_cli scan_results"' );
         let results = resultsBuffer.toString("utf-8");
@@ -206,6 +205,14 @@ class WiFi {
 
         network.connect();
         network.save();
+    }
+
+    /**
+     * Helper function to sleep
+     * @param {number} n - The number of seconds to sleep
+     */
+    static sleep(n) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
     }
 
 };

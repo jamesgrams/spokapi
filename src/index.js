@@ -10,7 +10,6 @@ const express = require('express');
 const ip = require("ip");
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const sleep = require('sleep');
 const execSync = require('child_process').execSync;
 
 const Site 	= require('./modules/site');
@@ -136,7 +135,7 @@ app.get('/programs', async function(request, response) {
         // If we are currently fetching programs, wait until that is done
         if( fetchLocked ) {
             while( fetchLocked ) {
-                await sleep.sleep(1000);
+                await WiFi.sleep(1000);
             }
         }
         // Otherwise, go ahead and fetch programs

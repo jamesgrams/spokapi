@@ -175,11 +175,33 @@ class Site {
         let endpoint = json.webSocketDebuggerUrl;
         let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
 
+        // Remove any closed tabes from connected tabs
+        for( let i=0; i<connectedTabs.length; i++ ) {
+            if( connectedTabs[i].isClosed() ) {
+                connectedTabs.splice(i, 1);
+            }
+        }
+
         // Create the connected chrome tabs
-        if( connectedTabs.length < totalNetworks ) {
+        if( connectedTabs.length < totalNetworks + 1 ) {
+
+            // Connect to an incognito context
+            let incongitoContext;
+            if( !incongitoContext ) {
+                let contexts = browser.browserContexts();
+                for( let context of contexts ) {
+                    if( context.isIncognito() ) {
+                        incongitoContext = context;
+                    }
+                }
+            }
+            if ( !incongitoContext ) {
+                incongitoContext = await browser.createIncognitoBrowserContext();
+            }
+
             // We need a tab for each network plus the watch tab
             for ( let i=connectedTabs.length; i < totalNetworks + 1; i++ ) {
-                let page = await browser.newPage();
+                let page = await incongitoContext.newPage();
                 // This makes the viewport correct
                 // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
                 await page._client.send('Emulation.clearDeviceMetricsOverride');
