@@ -187,12 +187,10 @@ class Site {
 
             // Connect to an incognito context
             let incongitoContext;
-            if( !incongitoContext ) {
-                let contexts = browser.browserContexts();
-                for( let context of contexts ) {
-                    if( context.isIncognito() ) {
-                        incongitoContext = context;
-                    }
+            let contexts = browser.browserContexts();
+            for( let context of contexts ) {
+                if( context.isIncognito() ) {
+                    incongitoContext = context;
                 }
             }
             if ( !incongitoContext ) {
