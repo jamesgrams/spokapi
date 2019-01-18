@@ -129,6 +129,9 @@ class Site {
         if( provider === "Spectrum" ) {
             await this.loginSpectrum();
         }
+        else if( provider === "DIRECTV" ) {
+            await this.loginDIRECTV();
+        }
         return Promise.resolve(1);
     }
 
@@ -151,6 +154,28 @@ class Site {
         await this.page.keyboard.type(password);
         // Login
         await this.page.click('#submint_btn');
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to DIRECTV
+     * @returns {Promise}
+     */
+    async loginDIRECTV() {
+        // Wait until we have the username box
+        await this.page.waitForSelector("#usernameInputId", {timeout: STANDARD_TIMEOUT});
+        // Enter the username and password
+        await this.page.click("#usernameInputId");
+        await this.page.focus("#usernameInputId");
+        await this.page.click("#usernameInputId", {clickCount: 3});
+        await this.page.keyboard.type(username);
+        await this.page.click(".inputFieldPass");
+        await this.page.waitFor(250);
+        await this.page.focus(".inputFieldPass");
+        await this.page.click(".inputFieldPass", {clickCount: 3});
+        await this.page.keyboard.type(password);
+        // Login
+        await this.page.click('#loginSubmitId');
         return Promise.resolve(1);
     }
 

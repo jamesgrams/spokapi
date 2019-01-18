@@ -103,6 +103,7 @@ app.get("/", async function(request, response) {
         <div class="login-row"><label for="provider"><div class="login-label-title">Provider: </div>
             <select id="provider">
                 <option value="Spectrum">Spectrum</option>
+                <option value="DIRECTV">DIRECTV</option>
             </select>
         </label></div>
         <button id="update-info">Update Information</button>

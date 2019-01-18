@@ -103,6 +103,9 @@ class FoxSports extends Site {
         if( Site.provider === "Spectrum" ) {
             providerSelector = ".provider-desktop-image-container:nth-child(5)";
         }
+        else if( Site.provider === "DIRECTV" ) {
+            providerSelector = ".provider-desktop-image-container:nth-child(2)";
+        }
         await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT, visible: true});
         await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
         // We should be on our Provider screen now

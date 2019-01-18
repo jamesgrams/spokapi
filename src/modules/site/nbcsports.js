@@ -98,6 +98,9 @@ class NbcSports extends Site {
         if( Site.provider === "Spectrum" ) {
             providerSelector = "a[provider-id='Charter_Direct']";
         }
+        else if( Site.provider === "DIRECTV" ) {
+            providerSelector = "a[provider-id='DTV']";
+        }
         await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
         // We should be on our Provider screen now
