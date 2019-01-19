@@ -16,8 +16,9 @@ crew install python27
 # Install uinput
 sudo mv /opt/spokapi/lib/python-uinput /usr/local/python-uinput
 # Install PyBluez locally
-sudo python2.7 /usr/local/python-uinput/setup.py build
-sudo python2.7 /usr/local/python-uinput/setup.py install
+cd /usr/local/python-uinput
+sudo python2.7 setup.py build
+sudo python2.7 setup.py install
 
 # Install SPOKAPI
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
