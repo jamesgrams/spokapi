@@ -124,7 +124,7 @@ class NbcSports extends Site {
         // See if we need to log in
         try {
             // Wait for the logout button
-            await this.page.waitForSelector("#accessEnablerLogout", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+            await this.page.waitForSelector("#accessEnablerLogout", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT, visible: true});
         }
         // We need to log in
         catch(err) {
