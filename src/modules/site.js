@@ -185,6 +185,7 @@ class Site {
      */
     async stop() {
         await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+        await this.page.close(); // Try to conserve memory
         return Promise.resolve(1);
     }
 
@@ -221,6 +222,7 @@ class Site {
             if ( !incongitoContext ) {
                 incongitoContext = await browser.createIncognitoBrowserContext();
             }
+            await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
 
             // We need a tab for each network plus the watch tab
             for ( let i=connectedTabs.length; i < totalNetworks + 1; i++ ) {

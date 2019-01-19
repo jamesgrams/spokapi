@@ -18,6 +18,7 @@ const Espn 	= require('./modules/site/espn');
 const NbcSports 	= require('./modules/site/nbcsports');
 const FoxSports 	= require('./modules/site/foxsports');
 const AnimalPlanet 	= require('./modules/site/animalplanet');
+const Cbs           = require('./modules/site/cbs');
 
 /**
  * @constant
@@ -42,7 +43,7 @@ let MAX_SIMULTANEOUS_FETCHES = 1;
  * @type {Array.<Object>}
  * @default
  */
-const NETWORKS = { "animalplanet": AnimalPlanet, "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports };
+const NETWORKS = { "animalplanet": AnimalPlanet, "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports, "cbs": Cbs };
 /**
  * @constant
  * @type {string}
@@ -101,6 +102,8 @@ app.get("/", async function(request, response) {
         <div class="login-row"><label for="username"><div class="login-label-title">Username/Email: </div><input id="username" type="text"/></label></div>
         <div class="login-row"><label for="password"><div class="login-label-title">Password: </div><input id="password" type="password"/></label></div>
         <div class="login-row"><label for="provider"><div class="login-label-title">Provider: </div>
+        <div class="login-row"><label for="cbs-username"><div class="login-label-title">CBS Username/Email: </div><input id="cbs-username" type="text"/></label></div>
+        <div class="login-row"><label for="cbs-password"><div class="login-label-title">CBS Password: </div><input id="cbs-password" type="password"/></label></div>
             <select id="provider">
                 <option value="Spectrum">Spectrum</option>
                 <option value="DIRECTV">DIRECTV</option>
@@ -235,6 +238,8 @@ app.post( '/info', async function(request, response) {
     let username = request.body.username;
     let password = request.body.password;
     let provider = request.body.provider;
+    let cbsUsername = request.body.cbsUsername;
+    let cbsPassword = request.body.cbsPassword;
 
     if( username ) {
         Site.username = username;
@@ -244,6 +249,12 @@ app.post( '/info', async function(request, response) {
     }
     if( provider ) {
         Site.provider = provider;
+    }
+    if( cbsUsername ) {
+        Cbs.cbsUsername = cbsUsername;
+    }
+    if( cbsPassword ) {
+        Cbs.cbsPassword = cbsPassword;
     }
 
     // Save the info for future use
@@ -357,6 +368,12 @@ if ( fs.existsSync(LOGIN_INFO_FILE) ) {
         if( loginInfo.provider ) {
             Site.provider = loginInfo.provider;
         }
+        if( loginInfo.cbsUsername ) {
+            Cbs.cbsUsername = loginInfo.cbsUsername;
+        }
+        if( loginInfo.cbsPassword ) {
+            Cbs.cbsPassword = loginInfo.cbsPassword;
+        }
     }
     catch(e) {
         console.log(e);
@@ -384,6 +401,8 @@ async function openBrowser() {
         // This makes the viewport correct
         // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
         await page._client.send('Emulation.clearDeviceMetricsOverride');
+        let context = watchBrowser.defaultBrowserContext();
+        await context.overridePermissions('https://www.cbs.com', ['geolocation']);
     }
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {

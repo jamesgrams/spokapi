@@ -95,13 +95,17 @@ function updateInfo() {
     var username = document.getElementById("username").value;
     var password = document.getElementById("password").value;
     var provider = document.getElementById("provider").value;
+    var cbsUsername = document.getElementById("cbs-username").value;
+    var cbsPassword = document.getElementById("cbs-password").value;
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/info", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({
         "username": username,
         "password": password,
-        "provider": provider
+        "provider": provider,
+        "cbsUsername": cbsUsername,
+        "cbsPassword": cbsPassword
     }));
 }
 function breakCache() {
