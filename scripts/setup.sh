@@ -55,4 +55,4 @@ sudo touch /etc/opt/chrome/policies/managed/test_policy.json
 echo "{ \"RunAllFlashInAllowMode\": true, \"AllowOutdatedPlugins\": true, \"DefaultPluginsSetting\": 1,\"PluginsAllowedForUrls\": [\"https://*\", \"http://*\"]}" | sudo tee /etc/opt/chrome/policies/managed/test_policy.json
 
 # Allow Chrome remote debugging
-echo -e "--incognito\n--remote-debugging-port=1337" > sudo tee /etc/chrome_dev.conf
+echo -e "--incognito\n--remote-debugging-port=1337" | sudo tee /etc/chrome_dev.conf
