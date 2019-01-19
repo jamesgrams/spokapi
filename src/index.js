@@ -312,7 +312,7 @@ app.post ( '/networks/disconnect', async function(request, response) {
     WiFi.disconnect(ssid);
 
     response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success", "networks":networks}));
+    response.end(JSON.stringify({"status":"success"}));
 } );
 
 // Endpoint to connect to a wifi network
