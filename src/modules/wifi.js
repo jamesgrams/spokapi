@@ -126,7 +126,7 @@ class WiFi {
             networks.push(network);
         }
 
-        return networks;
+        return Promise.resolve(networks);
     }
 
     /**
@@ -161,7 +161,7 @@ class WiFi {
             networks.push(network);
         }
 
-        return networks;
+        return Promise.resolve(networks);
     }
 
     /**
