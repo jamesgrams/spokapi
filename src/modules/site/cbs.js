@@ -84,7 +84,6 @@ class Cbs extends Site {
                 providerSelector = "#grid-section-wrap div:nth-child(8)";
             }
             await this.page.click(providerSelector);
-            await this.page.waitfor(1000);
             // We should be on our Provider screen now
             await this.loginProvider();
         }
@@ -114,6 +113,7 @@ class Cbs extends Site {
      * @returns {Promise}
      */
     async watch() {
+        await this.page.waitFor(5000);
         // See if we need to log in
         try {
             // Wait for the fullscreen indicator (we will use this to know we are logged in)
@@ -123,9 +123,10 @@ class Cbs extends Site {
         // We need to log in
         catch(err) {
             await this.login();
+            await this.page.waitFor(5000);
         }
         // Wait for the full screen button
-        await this.page.waitForSelector("#LIVE_TV_CONTENT", {timeout: Site.STANDARD_TIMEOUT});
+        await this.page.waitForSelector(".controls-bottom-right", {timeout: Site.STANDARD_TIMEOUT});
         // Click the full screen button (it might be hidden, so use evaluate)
         await this.page.evaluate( () => { document.querySelector('#LIVE_TV_CONTENT').requestFullscreen(); } );
         return Promise.resolve(1);
