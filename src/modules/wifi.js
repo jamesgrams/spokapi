@@ -52,10 +52,10 @@ class WiFi {
         // Enter the ssid
         execSync( WPA_USER_PREFIX + '"wpa_cli set_network ' + this.id + ' ssid \'\\\"' + this.ssid + '\\\"\'"' );
         // Enter the password if there is one
-        if( password ) {
+        if( this.password ) {
             execSync( WPA_USER_PREFIX + '"wpa_cli set_network ' + this.id + ' psk \'\\\"' + this.password + '\\\"\'"' );
             // Enter the identity if there is one
-            if( identity ) {
+            if( this.identity ) {
                 execSync( WPA_USER_PREFIX + '"wpa_cli set_network ' + this.id + ' identity \'\\\"' + this.identity + '\\\"\'"' );
             }
         }
