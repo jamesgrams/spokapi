@@ -493,7 +493,7 @@ async function fetchPrograms() {
         networks.map( network => network.browser.close() )
     }
     else {
-        networks.map( network => network.stop() )
+        networks.map( network => { network.stop(); network.page.close(); } ) // Try to conserve memory by closing page
     }
 
     fetchLocked = false;

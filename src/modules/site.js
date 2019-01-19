@@ -185,7 +185,6 @@ class Site {
      */
     async stop() {
         await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
-        await this.page.close(); // Try to conserve memory
         return Promise.resolve(1);
     }
 
