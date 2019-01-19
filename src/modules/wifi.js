@@ -101,7 +101,7 @@ class WiFi {
     static async availableNetworks() {
         // Scan for networks
         execSync( WPA_USER_PREFIX + '"wpa_cli scan"' );
-        await sleep(5000);
+        await WiFi.sleep(5000);
         // Now, see the results
         let resultsBuffer = execSync( WPA_USER_PREFIX + '"wpa_cli scan_results"' );
         let results = resultsBuffer.toString("utf-8");
@@ -144,10 +144,6 @@ class WiFi {
         for( let i=2; i<rows.length; i++ ) {
             let row = rows[i];
             let columns = row.split(/\s/).filter(function(el) {return el.length != 0});
-            network['id'] = columns[0];
-            network['ssid'] = columns[1];
-            network['bssid'] = columns[2];
-            network['flags'] = columns[3];
             let network = new WiFi(
                 columns[1],
                 null,
@@ -161,7 +157,7 @@ class WiFi {
             networks.push(network);
         }
 
-        return Promise.resolve(networks);
+        return networks;
     }
 
     /**
