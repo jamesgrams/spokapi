@@ -165,7 +165,7 @@ class WiFi {
      * @param {string} ssid - The network name to disconnect from
      */
     static disconnect(ssid) {
-        let networks = connectedNetworks();
+        let networks = WiFi.connectedNetworks();
 
         for( let network of networks ) {
             if( network.ssid == ssid ) {
@@ -181,7 +181,7 @@ class WiFi {
      */
     static connect(ssid, password, identity) {
         // See if we are already connected
-        let connectedNetworks = connectedNetworks();
+        let connectedNetworks = WiFi.connectedNetworks();
 
         let networkId;
         // See if we already have a connection
