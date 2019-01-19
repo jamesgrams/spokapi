@@ -14,7 +14,9 @@ nodebrew use 10.15.0
 # Install Python
 crew install python27
 # Install uinput
-pip2.7 install python-uinput
+sudo mv /opt/spokapi/lib/python-uinput /usr/local/python-uinput
+# Install PyBluez locally
+sudo LD_LIBRARY_PATH=/usr/local/lib pip2.7 install -e /usr/local/python-uinput
 
 # Install SPOKAPI
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
