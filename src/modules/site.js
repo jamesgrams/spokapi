@@ -201,7 +201,7 @@ class Site {
         let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
 
         // Remove any closed tabes from connected tabs
-        for( let i=0; i<connectedTabs.length; i++ ) {
+        for( let i=connectedTabs.length-1; i>=0; i-- ) {
             if( connectedTabs[i].isClosed() ) {
                 connectedTabs.splice(i, 1);
             }

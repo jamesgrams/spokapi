@@ -41,19 +41,31 @@ class AnimalPlanet extends Site {
 
         try {
             await this.page.goto(ANIMAL_PLANET_URL, {timeout: Site.STANDARD_TIMEOUT});
-            // Wait until the schedule is loaded
+            // Wait until the live program is loaded
             await this.page.waitForSelector('.headerLiveStream__name', {timeout: Site.STANDARD_TIMEOUT});
+
+            // Wait until the listing of what's on now is listed
+            await this.page.waitForSelector(".liveVideoMetadata__now", {timeout: Site.STANDARD_TIMEOUT});
 
             let network = this.constructor.name.toLowerCase();
             let channel = network;
+            let startTime = await (await this.page.$(".liveVideoMetadata__now .liveVideoMetadata__time")).getProperty('textContent');
+            let endTime = await (await this.page.$(".liveVideoMetadata__next .liveVideoMetadata__time")).getProperty('textContent');
+
+            let timeRegex = /(\d+):(\d+)([AP])/;
+            let startMatch = timeRegex.exec(startTime);
+            let endMatch = timeRegex.exec(endTime);
+            let startDate = new Date(0, 0, 0, startMatch[1] + (startMatch[3] == "P" ? 12 : 0), startMatch[2], 0, 0);
+            let endDate = new Date(0, 0, 0, endMatch[1] + (endMatch[3] == "P" ? 12 : 0), endMatch[2], 0, 0);
+            let runtime = Math.abs(endDate.getTime() - startDate.getTime());
 
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
                     await (await (await this.page.$(".headerLiveStream__name")).getProperty('textContent')).jsonValue(),
                     ANIMAL_PLANET_URL,
-                    null,
-                    null,
+                    startDate,
+                    runtime,
                     network,
                     channel,
                     null,
@@ -75,7 +87,23 @@ class AnimalPlanet extends Site {
      * @returns {Promise}
      */
     async login() {
-        // TODO
+        // Click sign in
+        let signInButton = await this.page.$('.play-button');
+        await signInButton.click();
+        // Wait for the list of providers
+        await this.page.waitForSelector('.affiliateList__preferred', {timeout: Site.STANDARD_TIMEOUT});
+
+        let providerSelector = "";
+        if( Site.provider === "Spectrum" ) {
+            providerSelector = ".affiliateList__preferred ul li:nth-child(9)";
+        }
+        else if( Site.provider === "DIRECTV" ) {
+            providerSelector = ".affiliateList__preferred ul li:nth-child(1)";
+        }
+        await this.page.click(providerSelector);
+        // We should be on our Provider screen now
+        await this.loginProvider();
+        return Promise.resolve(1);
     }
 
     /**
@@ -84,7 +112,21 @@ class AnimalPlanet extends Site {
      * @returns {Promise}
      */
     async watch() {
-        // TODO
+        // See if we need to log in
+        try {
+            // Wait for the fullscreen indicator (we will use this to know we are logged in)
+            await this.page.waitForSelector("button[data-plyr='fullscreen']", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+        }
+        // We need to log in
+        catch(err) {
+            let signInButton = await this.page.$('.play-button');
+            if( signInButton ) {
+                await this.login();
+            }
+        }
+        // Wait for the play button
+        await this.page.waitForSelector("button[data-plyr='fullscreen']", {timeout: Site.STANDARD_TIMEOUT});
+        await this.page.click("button[data-plyr='fullscreen']");
         return Promise.resolve(1);
     }
 

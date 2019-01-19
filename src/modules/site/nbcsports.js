@@ -91,8 +91,13 @@ class NbcSports extends Site {
      */
     async login() {
         // Wait for the sign in initiater
-        await this.page.waitForSelector("#temp-pass-login", {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.evaluate( () => { document.querySelector("#temp-pass-login").click(); } );
+        // We'll favor temp pass login, since that skips temp viewing
+        let initiater = "#accessEnablerLogin";
+        if( await(this.page.$("#temp-pass-login")) ) {
+            initiater = "#temp-pass-login";
+        }
+        await this.page.waitForSelector(initiater, {timeout: Site.STANDARD_TIMEOUT});
+        await this.page.evaluate( (initiater) => { document.querySelector(initiater).click(); }, initiater );
         // Wait until we have the option to log in
         let providerSelector = "";
         if( Site.provider === "Spectrum" ) {
