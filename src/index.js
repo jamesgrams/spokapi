@@ -101,9 +101,9 @@ app.get("/", async function(request, response) {
     <div id="login-wrapper">
         <div class="login-row"><label for="username"><div class="login-label-title">Username/Email: </div><input id="username" type="text"/></label></div>
         <div class="login-row"><label for="password"><div class="login-label-title">Password: </div><input id="password" type="password"/></label></div>
-        <div class="login-row"><label for="provider"><div class="login-label-title">Provider: </div>
         <div class="login-row"><label for="cbs-username"><div class="login-label-title">CBS Username/Email: </div><input id="cbs-username" type="text"/></label></div>
         <div class="login-row"><label for="cbs-password"><div class="login-label-title">CBS Password: </div><input id="cbs-password" type="password"/></label></div>
+        <div class="login-row"><label for="provider"><div class="login-label-title">Provider: </div>
             <select id="provider">
                 <option value="Spectrum">Spectrum</option>
                 <option value="DIRECTV">DIRECTV</option>
