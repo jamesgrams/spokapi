@@ -78,7 +78,7 @@ class WiFi {
     /**
      * Disconnect from a network (This will remove the network from the list of networks)
      */
-    diconnect() {
+    disconnect() {
         // Delete the network
         execSync( WPA_USER_PREFIX + '"wpa_cli remove_network ' + this.id + '"' );
     }
