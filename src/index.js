@@ -178,7 +178,7 @@ app.get('/programs', async function(request, response) {
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        watchBrowser.disconnect();
+        if (watchBrowser) { watchBrowser.disconnect() };
         watchBrowser = null;
     }
 
@@ -205,7 +205,7 @@ app.get('/watch', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = Site.connectedTabs[0];
+        page = await Site.getWatchTab(watchBrowser);
     }
 
     // Ensure the page is focused
@@ -219,7 +219,7 @@ app.get('/watch', async function(request, response) {
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        watchBrowser.disconnect();
+        if (watchBrowser) { watchBrowser.disconnect() };
         watchBrowser = null;
     }
 });
@@ -248,7 +248,7 @@ app.get('/stop', async function(request, response) {
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        watchBrowser.disconnect();
+        if (watchBrowser) { watchBrowser.disconnect() };
         watchBrowser = null;
     }
 

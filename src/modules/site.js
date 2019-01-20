@@ -62,6 +62,10 @@ var totalNetworks;
  * This will allow us to work with these tabs without switching to new ones (happens on creation)
  */
 var connectedTabs = [];
+/**
+ * @type {string}
+ */
+var watchTabId;
 
 /**
  * Class representing a generate Sports Site.
@@ -82,6 +86,8 @@ class Site {
     static set totalNetworks(numNetworks) { totalNetworks = numNetworks; };
     static get connectedTabs() { return connectedTabs };
     static set connectedTabs(tabs) { connectedTabs = tabs };
+    static get watchTab() { return watchTab };
+    static set watchTab(tab) { watchTab = tab };
     static get unsupportedChannels() { return unsupportedChannels };
     static set unsupportedChannels(option) { 
         if( option.type == "allow" ) {
@@ -242,9 +248,28 @@ class Site {
             await page._client.send('Emulation.clearDeviceMetricsOverride');
             Site.connectedTabs.push(page);
         }
-        await Site.connectedTabs[0].bringToFront();
+        await (await Site.getWatchTab(browser)).bringToFront();
 
         return Promise.resolve(browser);
+    }
+
+    /**
+     * Get the watch tab
+     * @param {BrowserContext} browserContext - the watch tab
+     */
+    static async getWatchTab(browser) {
+        let watchTab;
+        let tabs = await browser.pages();
+        for( let tab of tabs ) {
+            if( tab.mainFrame()._id == Site.watchTabId ) {
+                watchTab = tab;
+            }
+        }
+        if( !watchTab ) {
+            watchTab = Site.connectedTabs[0];
+            Site.watchTabId = watchTab.mainFrame()._id;
+        }
+        return Promise.resolve(watchTab);
     }
 
 };
