@@ -157,7 +157,7 @@ app.get('/programs', async function(request, response) {
         }
     }
     else {
-        page = Site.connectedTabs[0];
+        page = (await Site.getConnectedTabs(watchBrowser))[0];
     }
 
     // Deep clone the programs cache, so we can edit it before responding
@@ -179,7 +179,7 @@ app.get('/programs', async function(request, response) {
 // Endpoint to watch a program
 app.get('/watch', async function(request, response) {
     if( !watchBrowser ) {
-        await openBrowser(true);
+        await openBrowser(1);
     }
     // The url to watch the program on
     let url = decodeURIComponent(request.query.url);
@@ -190,7 +190,7 @@ app.get('/watch', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = Site.connectedTabs[0];
+        page = (await Site.getConnectedTabs(watchBrowser))[0];;
     }
 
     // Ensure the page is focused
@@ -207,7 +207,7 @@ app.get('/watch', async function(request, response) {
 // Endpoint to stop a program
 app.get('/stop', async function(request, response) {
     if( !watchBrowser ) {
-        await openBrowser(true);
+        await openBrowser(1);
     }
 
     let page;
@@ -216,7 +216,7 @@ app.get('/stop', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = Site.connectedTabs[0];
+        page = (await Site.getConnectedTabs(watchBrowser))[0];;
     }
     let site = new Site(page);
     await site.stop();
@@ -386,9 +386,9 @@ app.listen(PORT); // Listen for requests
 
 /**
  * Launch the watch browser.
- * @param {boolean} watchOnly - true if only a tab to watch is needed (rather than tabs to fetch); used for non-headless mode to save RAM
+ * @param {number} numTabs - the number of tabs needed (optional); used for non-headless mode to save RAM
  */
-async function openBrowser(watchOnly) {
+async function openBrowser(numTabs) {
     // If there is a Chrome path, we will try to launch chrome
     if ( Site.PATH_TO_CHROME ) {
         watchBrowser = await puppeteer.launch({
@@ -407,9 +407,9 @@ async function openBrowser(watchOnly) {
     }
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {
-        watchBrowser = await Site.connectToChrome(watchOnly);
+        watchBrowser = await Site.connectToChrome(numTabs);
     }
-    watchBrowser.on("disconnected", function(watchOnly) {
+    watchBrowser.on("disconnected", function() {
         watchBrowser = null;
     });
     return Promise.resolve(1);
@@ -445,12 +445,12 @@ async function fetchPrograms() {
 
     let networks = [];
     if( !Site.PATH_TO_CHROME ) {
-        await Site.connectToChrome();
+        watchBrowser = await Site.connectToChrome();
         // Create an instance of each network class
         let index = 1;
         for( let Network of Object.keys(NETWORKS).map( v => NETWORKS[v] ) ) {
             if( Site.unsupportedChannels.indexOf(Network.name.toLowerCase()) === -1 ) {
-                networks.push(new Network(Site.connectedTabs[index]));
+                networks.push(new Network( (await Site.getConnectedTabs(watchBrowser))[index] ));
             }
             index++; // We still want to maintain one tab per network
         }
