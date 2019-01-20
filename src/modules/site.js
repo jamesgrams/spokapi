@@ -259,7 +259,7 @@ class Site {
         let tabs = await browser.pages();
         for( let connectedTabId of connectedTabIds ) {
             for( let tab of tabs ) {
-                if( connectedTabId === tab.mainFrame()._id ) {
+                if( connectedTabId === tab.mainFrame()._id && !tab.isClosed() ) {
                     await tab._client.send('Emulation.clearDeviceMetricsOverride');
                     connectedTabs.push(tab);
                 }
