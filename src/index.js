@@ -173,7 +173,10 @@ app.get('/programs', async function(request, response) {
     }
 
     // Remove watchBrowser from memory
-    watchBrowser = null;
+    if ( !Site.PATH_TO_CHROME ) {
+        watchBrowser.disconnect();
+        watchBrowser = null;
+    }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({ status: "success", programs: programsResponse }));
@@ -204,7 +207,10 @@ app.get('/watch', async function(request, response) {
     watch(page, url, request);
 
     // Remove watchBrowser from memory
-    watchBrowser = null;
+    if ( !Site.PATH_TO_CHROME ) {
+        watchBrowser.disconnect();
+        watchBrowser = null;
+    }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
@@ -228,7 +234,10 @@ app.get('/stop', async function(request, response) {
     await site.stop();
 
     // Remove watchBrowser from memory
-    watchBrowser = null;
+    if ( !Site.PATH_TO_CHROME ) {
+        watchBrowser.disconnect();
+        watchBrowser = null;
+    }
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));

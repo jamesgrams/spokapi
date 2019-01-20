@@ -119,6 +119,7 @@ class Cbs extends Site {
             // Wait for the fullscreen indicator (we will use this to know we are logged in)
             // We have to wait a while because the confirm location call by CBS is slow
             await this.page.waitForSelector(".controls-bottom-right", {timeout: 7000});
+            await this.page.waitFor(10000);
         }
         // We need to log in
         catch(err) {
