@@ -133,6 +133,10 @@ app.get("/", async function(request, response) {
 
 // Endpoint to get a list of programs
 app.get('/programs', async function(request, response) {
+    if( !Site.PATH_TO_CHROME && watchBrowser ) {
+        watchBrowser.disconnect();
+        watchBrowser = null;
+    }
 
     // There is no cache yet
     if( !programsCache ) {
@@ -157,7 +161,7 @@ app.get('/programs', async function(request, response) {
         }
     }
     else {
-        page = (await Site.getConnectedTabs(watchBrowser))[0];
+        page = Site.connectedTabs[0];
     }
 
     // Deep clone the programs cache, so we can edit it before responding
@@ -184,8 +188,13 @@ app.get('/programs', async function(request, response) {
 
 // Endpoint to watch a program
 app.get('/watch', async function(request, response) {
+    if( !Site.PATH_TO_CHROME && watchBrowser ) {
+        watchBrowser.disconnect();
+        watchBrowser = null;
+    }
+
     if( !watchBrowser ) {
-        await openBrowser(1);
+        await openBrowser();
     }
     // The url to watch the program on
     let url = decodeURIComponent(request.query.url);
@@ -196,30 +205,34 @@ app.get('/watch', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = (await Site.getConnectedTabs(watchBrowser))[0];;
+        page = Site.connectedTabs[0];
     }
 
     // Ensure the page is focused
-    page.bringToFront();
+    await page.bringToFront();
 
-    // We don't wait for watching to be done
-    // Browsers can start retrying requests that don't complete - we don't want this
-    watch(page, url, request);
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
+
+    // We don't wait for watching to be done before sending the response
+    await watch(page, url, request);
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
         watchBrowser.disconnect();
         watchBrowser = null;
     }
-
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
 });
 
 // Endpoint to stop a program
 app.get('/stop', async function(request, response) {
+    if( !Site.PATH_TO_CHROME && watchBrowser ) {
+        watchBrowser.disconnect();
+        watchBrowser = null;
+    }
+
     if( !watchBrowser ) {
-        await openBrowser(1);
+        await openBrowser();
     }
 
     let page;
@@ -228,7 +241,7 @@ app.get('/stop', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = (await Site.getConnectedTabs(watchBrowser))[0];;
+        page = Site.connectedTabs[0];;
     }
     let site = new Site(page);
     await site.stop();
@@ -404,9 +417,8 @@ app.listen(PORT); // Listen for requests
 
 /**
  * Launch the watch browser.
- * @param {number} numTabs - the number of tabs needed (optional); used for non-headless mode to save RAM
  */
-async function openBrowser(numTabs) {
+async function openBrowser() {
     // If there is a Chrome path, we will try to launch chrome
     if ( Site.PATH_TO_CHROME ) {
         watchBrowser = await puppeteer.launch({
@@ -425,7 +437,7 @@ async function openBrowser(numTabs) {
     }
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {
-        watchBrowser = await Site.connectToChrome(numTabs);
+        watchBrowser = await Site.connectToChrome();
     }
     watchBrowser.on("disconnected", function() {
         watchBrowser = null;
@@ -468,7 +480,7 @@ async function fetchPrograms() {
         let index = 1;
         for( let Network of Object.keys(NETWORKS).map( v => NETWORKS[v] ) ) {
             if( Site.unsupportedChannels.indexOf(Network.name.toLowerCase()) === -1 ) {
-                networks.push(new Network( (await Site.getConnectedTabs(watchBrowser))[index] ));
+                networks.push(new Network( Site.connectedTabs[index] ));
             }
             index++; // We still want to maintain one tab per network
         }
@@ -512,7 +524,10 @@ async function fetchPrograms() {
         networks.map( network => network.browser.close() )
     }
     else {
-        networks.map( network => { network.stop(); network.page.close(); } ) // Try to conserve memory by closing page
+        // Try to conserve memory by closing pages
+        await Promise.all(
+            networks.map( network => network.stop() )
+        );
     }
 
     fetchLocked = false;

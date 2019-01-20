@@ -61,7 +61,7 @@ var totalNetworks;
  * such as on Chrome OS, we need to keep track of the tabs that we are using. 
  * This will allow us to work with these tabs without switching to new ones (happens on creation)
  */
-var connectedTabIds = [];
+var connectedTabs = [];
 
 /**
  * Class representing a generate Sports Site.
@@ -80,7 +80,8 @@ class Site {
     static set provider(prov) { provider = prov };
     static get totalNetworks() { return totalNetworks };
     static set totalNetworks(numNetworks) { totalNetworks = numNetworks; };
-    static get connectedTabIds() { return connectedTabIds };
+    static get connectedTabs() { return connectedTabs };
+    static set connectedTabs(tabs) { connectedTabs = tabs };
     static get unsupportedChannels() { return unsupportedChannels };
     static set unsupportedChannels(option) { 
         if( option.type == "allow" ) {
@@ -190,83 +191,60 @@ class Site {
 
     /**
      * Connect to a pre-running instance of Chrome
-     * @param {boolean} numTabs - the number of tabs needed (defaults to totalNetworks + 1 [for watch])
      * @returns {Promise<Browser>}
      */
-    static async connectToChrome(numTabs) {
-        //Get the number of needed tabs
+    static async connectToChrome() {
+        // The number of needed tabs
         let neededTabs = totalNetworks + 1;
-        if( numTabs ) {
-            neededTabs = numTabs;
-        }
 
         // First, get the ID of the running chrome instance (it must have remote debugging enabled on port 1337)
         let response = await fetch('http://localhost:1337/json/version');
         let json = await response.json();
          // Now, we can connect to chrome
         let endpoint = json.webSocketDebuggerUrl;
+        
         let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
 
-        let connectedTabs = await Site.getConnectedTabs(browser);
-
-        // Remove any closed tabes from connected tabs
-        for( let i=connectedTabs.length-1; i>=0; i-- ) {
-            if( connectedTabs[i].isClosed() ) {
-                connectedTabs.splice(i, 1);
-                connectedTabIds.splice(i, 1);
-            }
-        }
-
         // Create the connected chrome tabs
-        if( connectedTabs.length < neededTabs ) {
-
-            // Connect to an incognito context
-            let incongitoContext;
-            let contexts = browser.browserContexts();
-            for( let context of contexts ) {
-                if( context.isIncognito() ) {
-                    incongitoContext = context;
-                }
+        // Connect to an incognito context
+        let incongitoContext;
+        let contexts = browser.browserContexts();
+        for( let context of contexts ) {
+            if( context.isIncognito() ) {
+                incongitoContext = context;
             }
-            if ( !incongitoContext ) {
-                incongitoContext = await browser.createIncognitoBrowserContext();
-            }
-            await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
-
-            // We need a tab for each network plus the watch tab
-            for ( let i=connectedTabs.length; i < neededTabs; i++ ) {
-                let page = await incongitoContext.newPage();
-                // This makes the viewport correct
-                // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
-                await page._client.send('Emulation.clearDeviceMetricsOverride');
-                connectedTabs.push(page);
-                connectedTabIds.push(page.mainFrame()._id);
-            }
-            connectedTabs[0].bringToFront();
         }
+        if ( !incongitoContext ) {
+            incongitoContext = await browser.createIncognitoBrowserContext();
+        }
+        await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
+
+        // First, check to see if there are tabs open we can use
+        // tab (first one means watching) (we "reconnect" to these)
+        // Close all other open tabs too
+        Site.connectedTabs = [];
+        let tabs = await incongitoContext.pages();
+        if( tabs.length > 0 ) {
+            for(let i=0; i<tabs.length; i++ ) {
+                Site.connectedTabs.push(tabs[i]);
+                await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
+            }
+            for(let i=Site.connectedTabs.length; i<tabs.length; i++) {
+                await tabs[i].close();
+            }
+        } 
+
+        // We need a tab for each network plus the watch tab
+        for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
+            let page = await incongitoContext.newPage();
+            // This makes the viewport correct
+            // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
+            await page._client.send('Emulation.clearDeviceMetricsOverride');
+            Site.connectedTabs.push(page);
+        }
+        await Site.connectedTabs[0].bringToFront();
 
         return Promise.resolve(browser);
-    }
-    
-    /**
-     * Get connected tabs
-     * @param {Browser} browser - the open browser object
-     * @returns {Promise<Array<Page>>}
-     */
-    static async getConnectedTabs(browser) {
-        // Get connected tabs base on id
-        let connectedTabs = [];
-        let tabs = await browser.pages();
-        for( let connectedTabId of connectedTabIds ) {
-            for( let tab of tabs ) {
-                if( connectedTabId === tab.mainFrame()._id && !tab.isClosed() ) {
-                    await tab._client.send('Emulation.clearDeviceMetricsOverride');
-                    connectedTabs.push(tab);
-                }
-            }
-        }
-
-        return Promise.resolve(connectedTabs);
     }
 
 };
