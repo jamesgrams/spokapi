@@ -179,7 +179,7 @@ app.get('/programs', async function(request, response) {
 // Endpoint to watch a program
 app.get('/watch', async function(request, response) {
     if( !watchBrowser ) {
-        await openBrowser();
+        await openBrowser(true);
     }
     // The url to watch the program on
     let url = decodeURIComponent(request.query.url);
@@ -207,7 +207,7 @@ app.get('/watch', async function(request, response) {
 // Endpoint to stop a program
 app.get('/stop', async function(request, response) {
     if( !watchBrowser ) {
-        await openBrowser();
+        await openBrowser(true);
     }
 
     let page;
@@ -386,8 +386,9 @@ app.listen(PORT); // Listen for requests
 
 /**
  * Launch the watch browser.
+ * @param {boolean} watchOnly - true if only a tab to watch is needed (rather than tabs to fetch); used for non-headless mode to save RAM
  */
-async function openBrowser() {
+async function openBrowser(watchOnly) {
     // If there is a Chrome path, we will try to launch chrome
     if ( Site.PATH_TO_CHROME ) {
         watchBrowser = await puppeteer.launch({
@@ -406,9 +407,9 @@ async function openBrowser() {
     }
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {
-        watchBrowser = await Site.connectToChrome();
+        watchBrowser = await Site.connectToChrome(watchOnly);
     }
-    watchBrowser.on("disconnected", function() {
+    watchBrowser.on("disconnected", function(watchOnly) {
         watchBrowser = null;
     });
     return Promise.resolve(1);

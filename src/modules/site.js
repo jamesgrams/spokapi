@@ -190,9 +190,16 @@ class Site {
 
     /**
      * Connect to a pre-running instance of Chrome
+     * @param {boolean} watchOnly - true if only a tab to watch is needed (rather than tabs to fetch)
      * @returns {Promise<Browser>}
      */
-    static async connectToChrome() {
+    static async connectToChrome(watchOnly) {
+        //Get the number of needed tabs
+        let neededTabs = totalNetworks + 1;
+        if( watchOnly ) {
+            neededTabs = 1;
+        }
+
         // First, get the ID of the running chrome instance (it must have remote debugging enabled on port 1337)
         let response = await fetch('http://localhost:1337/json/version');
         let json = await response.json();
@@ -208,7 +215,7 @@ class Site {
         }
 
         // Create the connected chrome tabs
-        if( connectedTabs.length < totalNetworks + 1 ) {
+        if( connectedTabs.length < neededTabs ) {
 
             // Connect to an incognito context
             let incongitoContext;
@@ -224,7 +231,7 @@ class Site {
             await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
 
             // We need a tab for each network plus the watch tab
-            for ( let i=connectedTabs.length; i < totalNetworks + 1; i++ ) {
+            for ( let i=connectedTabs.length; i < neededTabs; i++ ) {
                 let page = await incongitoContext.newPage();
                 // This makes the viewport correct
                 // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
