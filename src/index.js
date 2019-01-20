@@ -172,6 +172,9 @@ app.get('/programs', async function(request, response) {
         }
     }
 
+    // Remove watchBrowser from memory
+    watchBrowser = null;
+
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({ status: "success", programs: programsResponse }));
 });
@@ -200,6 +203,9 @@ app.get('/watch', async function(request, response) {
     // Browsers can start retrying requests that don't complete - we don't want this
     watch(page, url, request);
 
+    // Remove watchBrowser from memory
+    watchBrowser = null;
+
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 });
@@ -220,6 +226,9 @@ app.get('/stop', async function(request, response) {
     }
     let site = new Site(page);
     await site.stop();
+
+    // Remove watchBrowser from memory
+    watchBrowser = null;
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));

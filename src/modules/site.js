@@ -61,7 +61,7 @@ var totalNetworks;
  * such as on Chrome OS, we need to keep track of the tabs that we are using. 
  * This will allow us to work with these tabs without switching to new ones (happens on creation)
  */
-var connectedTabs = [];
+var connectedTabIds = [];
 
 /**
  * Class representing a generate Sports Site.
@@ -80,7 +80,7 @@ class Site {
     static set provider(prov) { provider = prov };
     static get totalNetworks() { return totalNetworks };
     static set totalNetworks(numNetworks) { totalNetworks = numNetworks; };
-    static get connectedTabs() { return connectedTabs };
+    static get connectedTabIds() { return connectedTabIds };
     static get unsupportedChannels() { return unsupportedChannels };
     static set unsupportedChannels(option) { 
         if( option.type == "allow" ) {
@@ -190,14 +190,14 @@ class Site {
 
     /**
      * Connect to a pre-running instance of Chrome
-     * @param {boolean} watchOnly - true if only a tab to watch is needed (rather than tabs to fetch)
+     * @param {boolean} numTabs - the number of tabs needed (defaults to totalNetworks + 1 [for watch])
      * @returns {Promise<Browser>}
      */
-    static async connectToChrome(watchOnly) {
+    static async connectToChrome(numTabs) {
         //Get the number of needed tabs
         let neededTabs = totalNetworks + 1;
-        if( watchOnly ) {
-            neededTabs = 1;
+        if( numTabs ) {
+            neededTabs = numTabs;
         }
 
         // First, get the ID of the running chrome instance (it must have remote debugging enabled on port 1337)
@@ -207,10 +207,13 @@ class Site {
         let endpoint = json.webSocketDebuggerUrl;
         let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
 
+        let connectedTabs = await Site.getConnectedTabs(browser);
+
         // Remove any closed tabes from connected tabs
         for( let i=connectedTabs.length-1; i>=0; i-- ) {
             if( connectedTabs[i].isClosed() ) {
                 connectedTabs.splice(i, 1);
+                connectedTabIds.splice(i, 1);
             }
         }
 
@@ -237,11 +240,33 @@ class Site {
                 // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
                 await page._client.send('Emulation.clearDeviceMetricsOverride');
                 connectedTabs.push(page);
+                connectedTabIds.push(page.mainFrame()._id);
             }
             connectedTabs[0].bringToFront();
         }
 
         return Promise.resolve(browser);
+    }
+    
+    /**
+     * Get connected tabs
+     * @param {Browser} browser - the open browser object
+     * @returns {Promise<Array<Page>>}
+     */
+    static async getConnectedTabs(browser) {
+        // Get connected tabs base on id
+        let connectedTabs = [];
+        let tabs = await browser.pages();
+        for( let connectedTabId of connectedTabIds ) {
+            for( let tab of tabs ) {
+                if( connectedTabId === tab.mainFrame()._id ) {
+                    await tab._client.send('Emulation.clearDeviceMetricsOverride');
+                    connectedTabs.push(tab);
+                }
+            }
+        }
+
+        return Promise.resolve(connectedTabs);
     }
 
 };
