@@ -139,7 +139,7 @@ app.get('/programs', async function(request, response) {
     }
 
     // There is no cache yet
-    if( !programsCache ) {
+    if( !programsCache || request.query.networks ) {
         // If we are currently fetching programs, wait until that is done
         if( fetchLocked ) {
             while( fetchLocked ) {
@@ -148,7 +148,11 @@ app.get('/programs', async function(request, response) {
         }
         // Otherwise, go ahead and fetch programs
         else {
-            await fetchPrograms();
+            let fetchNetworks;
+            if( request.query.networks ) {
+                fetchNetworks = request.query.networks.split(",");
+            }
+            await fetchPrograms(fetchNetworks);
         }
     }
 
@@ -205,7 +209,7 @@ app.get('/watch', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = await Site.getWatchTab(watchBrowser);
+        page = Site.connectedTabs[0];
     }
 
     // Ensure the page is focused
@@ -241,7 +245,7 @@ app.get('/stop', async function(request, response) {
         page = pages[0];
     }
     else {
-        page = Site.connectedTabs[0];;
+        page = Site.connectedTabs[0];
     }
     let site = new Site(page);
     await site.stop();
@@ -464,21 +468,26 @@ async function watch(page, url, request) {
 
 /**
  * Fetch programs and cache the result
+ * @param {Array<String>} fetchNetworks - A list of networks to fetch only (result will be joined with pre-existing cache)
  * @returns Promise - true if programs where fetched, false if not (the method is locked)
  */
-async function fetchPrograms() {
+async function fetchPrograms(fetchNetworks) {
     // Only fetch programs if we are not already fetching them and we know we can
     if( fetchLocked ) {
         return Promise.resolve(false);
     }
     fetchLocked = true;
 
-    let networks = [];
+    if( !fetchNetworks ) {
+        fetchNetworks = Object.keys(NETWORKS);
+    }
+
+    networks = [];
     if( !Site.PATH_TO_CHROME ) {
         watchBrowser = await Site.connectToChrome();
         // Create an instance of each network class
         let index = 1;
-        for( let Network of Object.keys(NETWORKS).map( v => NETWORKS[v] ) ) {
+        for( let Network of fetchNetworks.map( v => NETWORKS[v] ) ) {
             if( Site.unsupportedChannels.indexOf(Network.name.toLowerCase()) === -1 ) {
                 networks.push(new Network( Site.connectedTabs[index] ));
             }
@@ -487,7 +496,7 @@ async function fetchPrograms() {
     }
     else {
         // Create an instance of each network class
-        for( let Network of Object.keys(NETWORKS).map( v => NETWORKS[v] ) ) {
+        for( let Network of fetchNetworks.map( v => NETWORKS[v] ) ) {
             if( Site.unsupportedChannels.indexOf(Network.name.toLowerCase()) === -1 ) {
                 networks.push(new Network());
             }
@@ -514,6 +523,19 @@ async function fetchPrograms() {
     let joinedValues = [];
     for (let value of values) {
         joinedValues = joinedValues.concat(value);
+    }
+
+    // If we didn't fetch the network, try to use the cached value
+    if( programsCache ) {
+        for( let network of Object.keys(NETWORKS) ) {
+            if( fetchNetworks.indexOf(network) == -1 ) {
+                for( let cachedProgram of programsCache ) {
+                    if( cachedProgram.network == network ) {
+                        joinedValues.push(cachedProgram);
+                    }
+                }
+            }
+        }
     }
 
     // Update the cache

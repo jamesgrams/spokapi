@@ -83,6 +83,7 @@ function generateProgram(program) {
     if( program.watching ) {
         className += " watching";
     }
+    program.startTime = new Date(program.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     var html = "<div class='" + className + "' onclick='watchProgram(this)' data-link='"+program.link+"'>" +
         "<div class='program-title'>" + program.title + "</div>" +
         "<div class='program-channel'>" + program.channel + "</div>" +

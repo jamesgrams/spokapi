@@ -86,8 +86,8 @@ class Site {
     static set totalNetworks(numNetworks) { totalNetworks = numNetworks; };
     static get connectedTabs() { return connectedTabs };
     static set connectedTabs(tabs) { connectedTabs = tabs };
-    static get watchTab() { return watchTab };
-    static set watchTab(tab) { watchTab = tab };
+    static get watchTabId() { return watchTabId };
+    static set watchTabId(id) { watchTabId = id };
     static get unsupportedChannels() { return unsupportedChannels };
     static set unsupportedChannels(option) { 
         if( option.type == "allow" ) {
@@ -248,27 +248,37 @@ class Site {
             await page._client.send('Emulation.clearDeviceMetricsOverride');
             Site.connectedTabs.push(page);
         }
-        await (await Site.getWatchTab(browser)).bringToFront();
+        await Site.makeWatchTabFirst(browser);
+        await Site.connectedTabs[0].bringToFront();
+        await Site.connectedTabs[0]._client.send('Emulation.clearDeviceMetricsOverride');
 
         return Promise.resolve(browser);
     }
 
     /**
-     * Get the watch tab
-     * @param {BrowserContext} browserContext - the watch tab
+     * Make the watch tab the first tab on the list of connected tabs
+     * @param {BrowserContext} browserContext - the browser context
      */
-    static async getWatchTab(browser) {
+    static async makeWatchTabFirst(browser) {
         let watchTab;
-        let tabs = await browser.pages();
-        for( let tab of tabs ) {
+        let watchTabIndex = 0;
+        Site.connectedTabs;
+        for( let i=0; i<Site.connectedTabs.length; i++ ) {
+            let tab = Site.connectedTabs[i];
             if( tab.mainFrame()._id == Site.watchTabId ) {
                 watchTab = tab;
+                watchTabIndex = i;
+                break;
             }
         }
         if( !watchTab ) {
             watchTab = Site.connectedTabs[0];
             Site.watchTabId = watchTab.mainFrame()._id;
         }
+        // Switch the element currently first with watchTab
+        Site.connectedTabs[watchTabIndex] = Site.connectedTabs[0];
+        Site.connectedTabs[0] = watchTab;
+        
         return Promise.resolve(watchTab);
     }
 

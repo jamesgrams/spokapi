@@ -73,7 +73,7 @@ class FoxSports extends Site {
                         programs.push( new Program (
                             item.title,
                             FOX_SPORTS_URL + airing.mf_links[0].href.replace("airing/", ""),
-                            new Date( Date.parse(item.airing_date) ).toLocaleTimeString(),
+                            new Date( Date.parse(item.airing_date) ),
                             null,
                             network,
                             channel,
@@ -109,7 +109,11 @@ class FoxSports extends Site {
         await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT, visible: true});
         await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
         // We should be on our Provider screen now
-        await this.loginProvider();
+        // Sometimes, it doesnt ask us to login
+        try {
+            await this.loginProvider();
+        }
+        catch (err) {}
         // Make sure we are now logged in
         await this.page.waitForSelector(".fsg-header__mvpd-logo", {timeout: Site.STANDARD_TIMEOUT});
         return Promise.resolve(1);

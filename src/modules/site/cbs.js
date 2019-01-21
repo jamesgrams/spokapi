@@ -55,10 +55,10 @@ class Cbs extends Site {
             programs.push( new Program (
                 "CBS",
                 CBS_URL,
-                null,
+                Date.now(),
                 null,
                 network,
-                null,
+                network,
                 null,
                 null,
                 null,
