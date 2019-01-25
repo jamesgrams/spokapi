@@ -146,7 +146,7 @@ class Cbs extends Site {
         // Wait for the drop down arrow to log out
         await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_TIMEOUT});
         // Click the full screen button (it might be hidden, so use evaluate)
-        await this.page.evaluate( () => { document.querySelector('#LIVE_TV_CONTENT').requestWebkitFullscreen(); } );
+        await this.page.evaluate( () => { document.querySelector('#LIVE_TV_CONTENT').webkitRequestFullScreen(); } );
         return Promise.resolve(1);
     }
 
