@@ -39,10 +39,13 @@ Spokapi is an application that simplifies watching sports online (using sites su
 ## Current Support
 - Providers
     - Spectrum
+    - DIRECTV
 - Channels
     - ESPN
     - NBC Sports
     - Fox Sports
+    - CBS
+    - Animal Planet
 
 ## Endpoints
 - `/programs/`
