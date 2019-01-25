@@ -55,8 +55,8 @@ class AnimalPlanet extends Site {
             let timeRegex = /(\d+):(\d+)([AP])/;
             let startMatch = timeRegex.exec(startTime);
             let endMatch = timeRegex.exec(endTime);
-            let startDate = new Date(0, 0, 0, startMatch[1] + (startMatch[3] == "P" ? 12 : 0), startMatch[2], 0, 0);
-            let endDate = new Date(0, 0, 0, endMatch[1] + (endMatch[3] == "P" ? 12 : 0), endMatch[2], 0, 0);
+            let startDate = new Date(0, 0, 0, parseInt(startMatch[1]) + (startMatch[3] == "P" ? 12 : 0), parseInt(startMatch[2]), 0, 0);
+            let endDate = new Date(0, 0, 0, parseInt(endMatch[1]) + (endMatch[3] == "P" ? 12 : 0), parseInt(endMatch[2]), 0, 0);
             let runtime = Math.abs(endDate.getTime() - startDate.getTime());
 
             // Make sure the network is not blacklisted

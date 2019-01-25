@@ -65,7 +65,7 @@ class NbcSports extends Site {
                 let startTime = await (await (await liveEvent.$(".live-upcoming-list__event-time")).getProperty('textContent')).jsonValue();
                 let timeRegex = /(\d+):(\d+)\s([ap])/;
                 let startMatch = timeRegex.exec(startTime);
-                let startDate = new Date(0, 0, 0, startMatch[1] + (startMatch[3] == "P" ? 12 : 0), startMatch[2], 0, 0);
+                let startDate = new Date(0, 0, 0, parseInt(startMatch[1]) + (startMatch[3] == "P" ? 12 : 0), parseInt(startMatch[2]), 0, 0);
 
                 // Make sure the network is not blacklisted
                 if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {

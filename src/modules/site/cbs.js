@@ -71,7 +71,7 @@ class Cbs extends Site {
     }
 
     /**
-     * Login to CBS.
+     * Login to CBS (Cable Provider).
      * @returns {Promise}
      */
     async login() {
@@ -84,25 +84,38 @@ class Cbs extends Site {
                 providerSelector = "#grid-section-wrap div:nth-child(8)";
             }
             await this.page.click(providerSelector);
+            await this.page.waitFor(1000);
             // We should be on our Provider screen now
             await this.loginProvider();
         }
         // It doesn't want our TV Provider
-        catch (err) {}
-        
-        // Login to CBS Account
-        await this.page.waitForSelector("#mvpd-signin", {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.waitFor(1000);
-        // Click login
-        await this.page.evaluate( () => { document.querySelector('#mvpd-signin').click(); } );
-        // Wait until we have the username box
-        await this.page.waitForSelector("#j_username", {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.waitFor(1000);
-        // Enter the username and password
-        await this.page.evaluate( (cbsUsername) => { document.querySelector('#j_username').value =cbsUsername; }, cbsUsername );
-        await this.page.evaluate( (cbsPassword) => { document.querySelector('#j_password').value =cbsPassword; }, cbsPassword );
-        // Login
-        await this.page.click('#submit-btn');
+        catch (err) { console.log(err); }
+
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to CBS (CBS)
+     * @returns {Promise}
+     */
+    async loginCbs() {
+        try {
+            // Login to CBS Account
+            await this.page.waitForSelector("#mvpd-signin", {timeout: Site.STANDARD_TIMEOUT});
+            await this.page.waitFor(1000);
+            // Click login
+            await this.page.evaluate( () => { document.querySelector('#mvpd-signin').click(); } );
+            // Wait until we have the username box
+            await this.page.waitForSelector("#j_username", {timeout: Site.STANDARD_TIMEOUT});
+            await this.page.waitFor(1000);
+            // Enter the username and password
+            await this.page.evaluate( (cbsUsername) => { document.querySelector('#j_username').value =cbsUsername; }, cbsUsername );
+            await this.page.evaluate( (cbsPassword) => { document.querySelector('#j_password').value =cbsPassword; }, cbsPassword );
+            // Login
+            await this.page.click('#submit-btn');
+        }
+        // We didn't actually have to sign in
+        catch (err) { console.log(err); }
 
         return Promise.resolve(1);
     }
@@ -113,19 +126,23 @@ class Cbs extends Site {
      * @returns {Promise}
      */
     async watch() {
-        await this.page.waitFor(5000);
-        // See if we need to log in
-        try {
-            // Wait for the fullscreen indicator (we will use this to know we are logged in)
-            // We have to wait a while because the confirm location call by CBS is slow
-            await this.page.waitForSelector(".controls-bottom-right", {timeout: 7000});
-            await this.page.waitFor(10000);
-        }
-        // We need to log in
-        catch(err) {
+        // This means the page should be ready
+        await this.page.waitForSelector("#flashcontent", {timeout: Site.STANDARD_TIMEOUT});
+        // See what we need to do
+        await this.page.waitForSelector(".controls-bottom-right, #mvpd-signin, .providers__grid-view", {timeout: Site.STANDARD_TIMEOUT});
+        let actionElement = await this.page.$(".controls-bottom-right, #mvpd-signin, .providers__grid-view");
+        
+        let actionClassName = await (await actionElement.getProperty("className")).jsonValue();
+        // We need to login to Spectrum
+        if( actionClassName.indexOf("providers__grid-view") != -1 ) {
             await this.login();
-            await this.page.waitFor(5000);
+            await this.loginCbs();
         }
+        // We need to login to CBS
+        else if( await (await actionElement.getProperty("id")).jsonValue() == "#mvpd-signin" ) {
+            await this.loginCbs();
+        }
+        // We don't need to login to anything!
         // Wait for the full screen button
         await this.page.waitForSelector(".controls-bottom-right", {timeout: Site.STANDARD_TIMEOUT});
         // Click the full screen button (it might be hidden, so use evaluate)
