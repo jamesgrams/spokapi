@@ -84,7 +84,6 @@ class Cbs extends Site {
                 providerSelector = "#grid-section-wrap div:nth-child(8)";
             }
             await this.page.click(providerSelector);
-            await this.page.waitFor(1000);
             // We should be on our Provider screen now
             await this.loginProvider();
         }
@@ -129,9 +128,10 @@ class Cbs extends Site {
         // This means the page should be ready
         await this.page.waitForSelector("#flashcontent", {timeout: Site.STANDARD_TIMEOUT});
         // See what we need to do
-        await this.page.waitForSelector(".controls-bottom-right, #mvpd-signin, .providers__grid-view", {timeout: Site.STANDARD_TIMEOUT});
-        let actionElement = await this.page.$(".controls-bottom-right, #mvpd-signin, .providers__grid-view");
-        
+        await this.page.waitFor(1500);
+        await this.page.waitForSelector("#LIVE_TV_CONTENT, #mvpd-signin, .providers__grid-view", {timeout: Site.STANDARD_TIMEOUT});
+
+        let actionElement = await this.page.$("#LIVE_TV_CONTENT, #mvpd-signin, .providers__grid-view");
         let actionClassName = await (await actionElement.getProperty("className")).jsonValue();
         // We need to login to Spectrum
         if( actionClassName.indexOf("providers__grid-view") != -1 ) {
@@ -143,8 +143,8 @@ class Cbs extends Site {
             await this.loginCbs();
         }
         // We don't need to login to anything!
-        // Wait for the full screen button
-        await this.page.waitForSelector(".controls-bottom-right", {timeout: Site.STANDARD_TIMEOUT});
+        // Wait for the drop down arrow to log out
+        await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_TIMEOUT});
         // Click the full screen button (it might be hidden, so use evaluate)
         await this.page.evaluate( () => { document.querySelector('#LIVE_TV_CONTENT').requestFullscreen(); } );
         return Promise.resolve(1);

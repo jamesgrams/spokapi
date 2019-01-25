@@ -95,7 +95,7 @@ class AnimalPlanet extends Site {
 
         let providerSelector = "";
         if( Site.provider === "Spectrum" ) {
-            providerSelector = ".affiliateList__preferred ul li:nth-child(9)";
+            providerSelector = ".affiliateList__preferred ul li:nth-child(11)";
         }
         else if( Site.provider === "DIRECTV" ) {
             providerSelector = ".affiliateList__preferred ul li:nth-child(1)";

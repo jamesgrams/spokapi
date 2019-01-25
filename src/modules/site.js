@@ -143,24 +143,45 @@ class Site {
     }
 
     /**
+     * Standard method to log into a provider
+     * @param {string} usernameSelector - the selector for the username input
+     * @param {string} passwordSelector - the selector for the password input
+     * @param {string} submitSelector - the selector for the submit input
+     * @returns {Promise}
+     */
+    async loginStandardProvider(usernameSelector, passwordSelector, submitSelector) {
+        // Wait until we have the username box
+        await this.page.waitForSelector(usernameSelector, {timeout: STANDARD_TIMEOUT});
+        // Enter the username and password (evalute allows for this to occur in bg tab)
+        await this.page.waitFor(250);
+        await this.page.evaluate( (usernameSelector) => { 
+            document.querySelector(usernameSelector).focus();
+            document.querySelector(usernameSelector).click();
+            document.querySelector(usernameSelector).click();
+            document.querySelector(usernameSelector).click();
+        }, usernameSelector );
+        await this.page.keyboard.type(username);
+        await this.page.waitFor(250);
+        await this.page.evaluate( (passwordSelector) => {
+            document.querySelector(passwordSelector).focus();
+            document.querySelector(passwordSelector).click();
+            document.querySelector(passwordSelector).click();
+            document.querySelector(passwordSelector).click();
+        }, passwordSelector );
+        await this.page.keyboard.type(password);
+        // Login
+        await this.page.evaluate( (submitSelector) => {
+            document.querySelector(submitSelector).click();
+        }, submitSelector );
+        return Promise.resolve(1);
+    } 
+
+    /**
      * Login to Spectrum
      * @returns {Promise}
      */
     async loginSpectrum() {
-        // Wait until we have the username box
-        await this.page.waitForSelector("#IDToken1", {timeout: STANDARD_TIMEOUT});
-        // Enter the username and password
-        await this.page.click("#IDToken1");
-        await this.page.focus("#IDToken1");
-        await this.page.click("#IDToken1", {clickCount: 3});
-        await this.page.keyboard.type(username);
-        await this.page.click("#IDToken2");
-        await this.page.waitFor(250);
-        await this.page.focus("#IDToken2");
-        await this.page.click("#IDToken2", {clickCount: 3});
-        await this.page.keyboard.type(password);
-        // Login
-        await this.page.click('#submint_btn');
+        await this.loginStandardProvider("#IDToken1", "#IDToken2", "#submint_btn");
         return Promise.resolve(1);
     }
 
@@ -169,20 +190,7 @@ class Site {
      * @returns {Promise}
      */
     async loginDIRECTV() {
-        // Wait until we have the username box
-        await this.page.waitForSelector("#usernameInputId", {timeout: STANDARD_TIMEOUT});
-        // Enter the username and password
-        await this.page.click("#usernameInputId");
-        await this.page.focus("#usernameInputId");
-        await this.page.click("#usernameInputId", {clickCount: 3});
-        await this.page.keyboard.type(username);
-        await this.page.click(".inputFieldPass");
-        await this.page.waitFor(250);
-        await this.page.focus(".inputFieldPass");
-        await this.page.click(".inputFieldPass", {clickCount: 3});
-        await this.page.keyboard.type(password);
-        // Login
-        await this.page.click('#loginSubmitId');
+        await this.loginStandardProvider("#usernameInputId", ".inputFieldPass", "#loginSubmitId");
         return Promise.resolve(1);
     }
 
@@ -210,6 +218,7 @@ class Site {
         let endpoint = json.webSocketDebuggerUrl;
         
         let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
+        this.browser = browser; // Important that browser be defined for later usage (if a site needs to rearrange tabs)
 
         // Create the connected chrome tabs
         // Connect to an incognito context

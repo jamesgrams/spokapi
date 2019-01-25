@@ -106,14 +106,14 @@ class FoxSports extends Site {
         else if( Site.provider === "DIRECTV" ) {
             providerSelector = ".provider-desktop-image-container:nth-child(2)";
         }
-        await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT, visible: true});
+        await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
         // We should be on our Provider screen now
         // Sometimes, it doesnt ask us to login
         try {
             await this.loginProvider();
         }
-        catch (err) {}
+        catch (err) { console.log(err) }
         // Make sure we are now logged in
         await this.page.waitForSelector(".fsg-header__mvpd-logo", {timeout: Site.STANDARD_TIMEOUT});
         return Promise.resolve(1);

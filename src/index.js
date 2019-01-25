@@ -37,7 +37,7 @@ const FETCH_INTERVAL = 240000;
  * @type {number}
  * @default
  */
-let MAX_SIMULTANEOUS_FETCHES = 1;
+let MAX_SIMULTANEOUS_FETCHES = 2;
 /**
  * @constant
  * @type {Array.<Object>}
