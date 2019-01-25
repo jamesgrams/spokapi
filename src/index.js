@@ -89,9 +89,11 @@ app.get("/", async function(request, response) {
 <title>Spokapi</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="/static/index.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/index.css">
-<link href="https://fonts.googleapis.com/css?family=Noto+Sans+JP" rel="stylesheet"> 
+<link href="https://fonts.googleapis.com/css?family=Noto+Sans+JP" rel="stylesheet">
+<link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
     <h1><img src="/static/spokapi.png"/>Spokapi</h1>
