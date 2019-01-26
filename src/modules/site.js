@@ -259,6 +259,8 @@ class Site {
         }
         await Site.makeWatchTabFirst(browser);
         await Site.connectedTabs[0].bringToFront();
+        // Sometime watching video doesn't work well unless we have a correct user agent
+        await Site.connectedTabs[0].setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
         await Site.connectedTabs[0]._client.send('Emulation.clearDeviceMetricsOverride');
 
         return Promise.resolve(browser);
