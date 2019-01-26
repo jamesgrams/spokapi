@@ -1,31 +1,28 @@
 /**
- * @file    Animal Planet Site for Spokapi
+ * @file    Abstract Discovery Site for Spokapi
  * @author  James Grams
+ * Discovery owns several channels (Discovery, Animal Planet, Investigation Discovery, etc.)
+ * They all use a similar streaming portal
  */
 
 const Site = require('../site');
 const Program 	= require('../program');
 
 /**
- * @constant
- * @type {string}
- * @default
+ * Abstract class representing a Discovery Site.
  */
-const ANIMAL_PLANET_URL = "https://www.animalplanet.com/watch/animal-planet";
+class DiscoverySite extends Site {
 
-/**
- * Class representing an Animal Planet Site.
- */
-class AnimalPlanet extends Site {
-
-    static get ANIMAL_PLANET_URL() { return ANIMAL_PLANET_URL; };
+    static get DISCOVERY_URL() { return DISCOVERY_URL; };
 
     /**
     * Constructor.
     * @param {string} page - The Puppeteer page object to use for this site.
+    * @param {string} url - The watch url for this discovery site
     */
-    constructor(page) {
+    constructor(page, url) {
         super(page);
+        this.url = url;
     }
     
     /**
@@ -40,7 +37,7 @@ class AnimalPlanet extends Site {
         let programs = [];
 
         try {
-            await this.page.goto(ANIMAL_PLANET_URL, {timeout: Site.STANDARD_TIMEOUT});
+            await this.page.goto(this.url, {timeout: Site.STANDARD_TIMEOUT});
             // Wait until the live program is loaded
             await this.page.waitForSelector('.headerLiveStream__name', {timeout: Site.STANDARD_TIMEOUT});
 
@@ -63,7 +60,7 @@ class AnimalPlanet extends Site {
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
                     await (await (await this.page.$(".headerLiveStream__name")).getProperty('textContent')).jsonValue(),
-                    ANIMAL_PLANET_URL,
+                    this.url,
                     startDate,
                     runtime,
                     network,
@@ -83,7 +80,7 @@ class AnimalPlanet extends Site {
     }
 
     /**
-     * Login to Animal Planet.
+     * Login to Discovery.
      * @returns {Promise}
      */
     async login() {
@@ -107,7 +104,7 @@ class AnimalPlanet extends Site {
     }
 
     /**
-     * Begin watching something on Animal Planet.
+     * Begin watching something on Discovery.
      * Note: You should already be at the correct url
      * @returns {Promise}
      */
@@ -132,4 +129,4 @@ class AnimalPlanet extends Site {
 
 };
 
-module.exports = AnimalPlanet;
+module.exports = DiscoverySite;

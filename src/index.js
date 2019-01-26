@@ -17,7 +17,19 @@ const WiFi  = require('./modules/wifi.js');
 const Espn 	= require('./modules/site/espn');
 const NbcSports 	= require('./modules/site/nbcsports');
 const FoxSports 	= require('./modules/site/foxsports');
-const AnimalPlanet 	= require('./modules/site/animalplanet');
+const AnimalPlanet 	= require('./modules/site/discoverysite/animalplanet');
+const Discovery 	= require('./modules/site/discoverysite/discovery');
+const InvestigationDiscovery 	= require('./modules/site/discoverysite/investigationdiscovery');
+const FoodNetwork 	= require('./modules/site/discoverysite/foodnetwork');
+const Hgtv 	= require('./modules/site/discoverysite/hgtv');
+const Tlc 	= require('./modules/site/discoverysite/tlc');
+const TravelChannel 	= require('./modules/site/discoverysite/travelchannel');
+const ScienceChannel 	= require('./modules/site/discoverysite/sciencechannel');
+const DiscoveryLife 	= require('./modules/site/discoverysite/discoverylife');
+const CookingChannel 	= require('./modules/site/discoverysite/cookingchannel');
+const Ahc 	= require('./modules/site/discoverysite/ahc');
+const DiyNetwork 	= require('./modules/site/discoverysite/diynetwork');
+const DestinationAmerica 	= require('./modules/site/discoverysite/destinationamerica');
 const Cbs           = require('./modules/site/cbs');
 
 /**
@@ -43,7 +55,25 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @type {Array.<Object>}
  * @default
  */
-const NETWORKS = { "animalplanet": AnimalPlanet, "espn": Espn, "nbcsports": NbcSports, "foxsports": FoxSports, "cbs": Cbs };
+const NETWORKS = { 
+    "animalplanet": AnimalPlanet, 
+    "discovery": Discovery, 
+    "investigationdiscovery": InvestigationDiscovery, 
+    "foodnetwork": FoodNetwork, 
+    "hgtv": Hgtv, 
+    "tlc": Tlc,
+    "travelchannel": TravelChannel, 
+    "sciencechannel": ScienceChannel,
+    "discoverylife": DiscoveryLife,
+    "cookingchannel": CookingChannel,
+    "ahc": Ahc,
+    "diynetwork": DiyNetwork,
+    "destinationamerica": DestinationAmerica,
+    "espn": Espn, 
+    "nbcsports": NbcSports, 
+    "foxsports": FoxSports, 
+    "cbs": Cbs
+};
 /**
  * @constant
  * @type {string}
