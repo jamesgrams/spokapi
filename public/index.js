@@ -52,10 +52,16 @@ function loadPrograms() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("programs").innerHTML = "";
-            programs = JSON.parse(this.responseText).programs;
-            sortPrograms();
-            generatePrograms();
+            var status = JSON.parse(this.responseText).status;
+            if( status === "success" ) {
+                document.getElementById("programs").innerHTML = "";
+                programs = JSON.parse(this.responseText).programs;
+                sortPrograms();
+                generatePrograms();
+            }
+            else {
+                document.getElementById("programs").innerHTML = "Still loading...";
+            }
         }
         else if( this.readyState == 4 ) {
             document.getElementById("programs").innerHTML = "An error has occurred.";

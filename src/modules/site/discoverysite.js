@@ -91,13 +91,15 @@ class DiscoverySite extends Site {
         await this.page.waitForSelector('.affiliateList__preferred', {timeout: Site.STANDARD_TIMEOUT});
 
         let providerSelector = "";
-        if( Site.provider === "Spectrum" ) {
-            providerSelector = ".affiliateList__preferred ul li:nth-child(11)";
+        if( Site.provider === "Spectrum" || Site.provider === "DIRECTV" ) {
+            providerSelector = Site.provider;
         }
-        else if( Site.provider === "DIRECTV" ) {
-            providerSelector = ".affiliateList__preferred ul li:nth-child(1)";
-        }
-        await this.page.click(providerSelector);
+        providerSelector = '//span[contains(@class,"affiliateList__item")][contains(text(),"'+providerSelector+'")]';
+        // Wait for the provider selector to be visible
+        await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
+        // Click the provider selector
+        let providerElements = await this.page.$x(providerSelector);
+        await providerElements[0].click();
         // We should be on our Provider screen now
         await this.loginProvider();
         return Promise.resolve(1);

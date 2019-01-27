@@ -165,65 +165,46 @@ app.get("/", async function(request, response) {
 
 // Endpoint to get a list of programs
 app.get('/programs', async function(request, response) {
-    if( !Site.PATH_TO_CHROME && watchBrowser ) {
-        watchBrowser.disconnect();
-        watchBrowser = null;
-    }
 
-    // There is no cache yet
+    // There is no cache yet or there is a request for specific networks
     if( !programsCache || request.query.networks ) {
-        // If we are currently fetching programs, wait until that is done
-        if( fetchLocked ) {
-            while( fetchLocked ) {
-                await WiFi.sleep(1000);
+        response.writeHead(200, {'Content-Type': 'application/json'});
+        response.end(JSON.stringify({ status: "loading" }));
+
+        // Start fetching programs
+        if( !fetchLocked ) {
+
+            // Disconnect the current session
+            if( !Site.PATH_TO_CHROME && watchBrowser ) {
+                watchBrowser.disconnect();
+                watchBrowser = null;
             }
-        }
-        // Otherwise, go ahead and fetch programs
-        else {
+
             let fetchNetworks;
             if( request.query.networks ) {
                 fetchNetworks = request.query.networks.split(",");
             }
             await fetchPrograms(fetchNetworks);
-        }
-    }
 
-    // Check to see if the user is currently watching any of the programs and indicate so accordingly
-    let page;
-    if ( Site.PATH_TO_CHROME ) {
-        if( watchBrowser ) {
-            let pages = await watchBrowser.pages();
-            page = pages[0];
-        }
-    }
-    else {
-        page = Site.connectedTabs[0];
-    }
-
-    // Deep clone the programs cache, so we can edit it before responding
-    let programsResponse = JSON.parse(JSON.stringify(programsCache));
-    if( page ) {
-        let url = await page.url();
-        for( let program of programsResponse ) {
-            let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
-            if( programUrl == url ) {
-                program.watching = true;
+            // Remove watchBrowser from memory
+            if ( !Site.PATH_TO_CHROME ) {
+                if (watchBrowser) { watchBrowser.disconnect() };
+                watchBrowser = null;
             }
         }
-    }
 
-    // Remove watchBrowser from memory
-    if ( !Site.PATH_TO_CHROME ) {
-        if (watchBrowser) { watchBrowser.disconnect() };
-        watchBrowser = null;
     }
-
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({ status: "success", programs: programsResponse }));
+    else {
+        response.writeHead(200, {'Content-Type': 'application/json'});
+        response.end(JSON.stringify({ status: "success", programs: programsCache }));
+    }
 });
 
 // Endpoint to watch a program
 app.get('/watch', async function(request, response) {
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
+
     if( !Site.PATH_TO_CHROME && watchBrowser ) {
         watchBrowser.disconnect();
         watchBrowser = null;
@@ -247,8 +228,18 @@ app.get('/watch', async function(request, response) {
     // Ensure the page is focused
     await page.bringToFront();
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
+    // Set watching to true on the program
+    if( programsCache ) {
+        for( let program of programsCache ) {
+            let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
+            if( programUrl == url ) {
+                program.watching = true;
+            }
+            else {
+                program.watching = false;
+            }
+        }
+    }
 
     // We don't wait for watching to be done before sending the response
     await watch(page, url, request);
@@ -262,6 +253,9 @@ app.get('/watch', async function(request, response) {
 
 // Endpoint to stop a program
 app.get('/stop', async function(request, response) {
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
+
     if( !Site.PATH_TO_CHROME && watchBrowser ) {
         watchBrowser.disconnect();
         watchBrowser = null;
@@ -282,14 +276,17 @@ app.get('/stop', async function(request, response) {
     let site = new Site(page);
     await site.stop();
 
+    // All programs are not being watched now
+    for( let program of programsCache ) {
+        program.watching = false;
+    }
+
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
         if (watchBrowser) { watchBrowser.disconnect() };
         watchBrowser = null;
     }
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
 });
 
 // Endpoint to break the cache
