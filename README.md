@@ -1,6 +1,6 @@
 # Spokapi Application
 
-Spokapi is an application that simplifies watching sports online (using sites such as WatchESPN) by providing an interface as simple as a TV remote that can be accessed on your smartphone.
+Spokapi is an application that simplifies watching TV online (using sites such as WatchESPN) by providing an interface as simple as a TV remote that can be accessed on your smartphone.
 
 ## Usage Overview
 1. Connect a computer to your TV and the internet.
