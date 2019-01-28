@@ -31,6 +31,7 @@ const Ahc 	= require('./modules/site/discoverysite/ahc');
 const DiyNetwork 	= require('./modules/site/discoverysite/diynetwork');
 const DestinationAmerica 	= require('./modules/site/discoverysite/destinationamerica');
 const Cbs           = require('./modules/site/cbs');
+const PbsKids           = require('./modules/site/pbskids');
 
 /**
  * @constant
@@ -72,7 +73,8 @@ const NETWORKS = {
     "espn": Espn, 
     "nbcsports": NbcSports, 
     "foxsports": FoxSports, 
-    "cbs": Cbs
+    "cbs": Cbs,
+    "pbskids": PbsKids
 };
 /**
  * @constant
