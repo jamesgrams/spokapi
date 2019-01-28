@@ -24,7 +24,7 @@ class Tlc extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, TLC_URL);
+        super(page, TLC_URL, "TLC");
     }
 
 };

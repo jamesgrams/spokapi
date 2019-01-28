@@ -45,7 +45,7 @@ class PbsKids extends Site {
             await this.page.waitForSelector('.stream-program-title', {timeout: Site.STANDARD_TIMEOUT});
 
             let network = this.constructor.name.toLowerCase();
-            let channel = network;
+            let channel = "PBS KIDS";
             let startDate = Date.now();
 
             // Make sure the network is not blacklisted

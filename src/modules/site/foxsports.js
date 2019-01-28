@@ -68,13 +68,17 @@ class FoxSports extends Site {
                     let network = this.constructor.name.toLowerCase();
                     let channel = airing.channel_name;
 
+                    let startDate = new Date( Date.parse(item.airing_date) );
+                    let endDate = new Date( Date.parse(item.airing_enddate) );
+                    let runtime = Math.abs(endDate.getTime() - startDate.getTime());
+
                     // Make sure the network is not blacklisted
                     if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                         programs.push( new Program (
                             item.title,
                             FOX_SPORTS_URL + airing.mf_links[0].href.replace("airing/", ""),
-                            new Date( Date.parse(item.airing_date) ),
-                            null,
+                            startDate,
+                            runtime,
                             network,
                             channel,
                             item.sport_tag,

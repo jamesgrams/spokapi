@@ -24,7 +24,7 @@ class DestinationAmerica extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, DESTINATION_AMERICA_URL);
+        super(page, DESTINATION_AMERICA_URL, "Destination America");
     }
 
 };

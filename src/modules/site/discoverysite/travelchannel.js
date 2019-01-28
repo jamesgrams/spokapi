@@ -24,7 +24,7 @@ class TravelChannel extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, TRAVEL_CHANNEL_URL);
+        super(page, TRAVEL_CHANNEL_URL, "Travel Channel");
     }
 
 };

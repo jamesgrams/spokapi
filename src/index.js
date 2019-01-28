@@ -57,13 +57,13 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @default
  */
 const NETWORKS = { 
-    "animalplanet": AnimalPlanet, 
+    "animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
     "hgtv": Hgtv, 
     "tlc": Tlc,
-    "travelchannel": TravelChannel, 
+    "travelchannel": TravelChannel,
     "sciencechannel": ScienceChannel,
     "discoverylife": DiscoveryLife,
     "cookingchannel": CookingChannel,

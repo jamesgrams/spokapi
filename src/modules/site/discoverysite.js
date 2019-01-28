@@ -19,10 +19,12 @@ class DiscoverySite extends Site {
     * Constructor.
     * @param {string} page - The Puppeteer page object to use for this site.
     * @param {string} url - The watch url for this discovery site
+    * @param {string} channelName - The channel name to display
     */
-    constructor(page, url) {
+    constructor(page, url, channelName) {
         super(page);
         this.url = url;
+        this.channelName = channelName;
     }
     
     /**
@@ -45,7 +47,7 @@ class DiscoverySite extends Site {
             await this.page.waitForSelector(".liveVideoMetadata__now", {timeout: Site.STANDARD_TIMEOUT});
 
             let network = this.constructor.name.toLowerCase();
-            let channel = network;
+            let channel = this.channelName ? this.channelName : network;
             let startTime = await (await this.page.$(".liveVideoMetadata__now .liveVideoMetadata__time")).getProperty('textContent');
             let endTime = await (await this.page.$(".liveVideoMetadata__next .liveVideoMetadata__time")).getProperty('textContent');
 

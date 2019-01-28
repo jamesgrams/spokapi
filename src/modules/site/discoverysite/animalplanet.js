@@ -24,7 +24,7 @@ class AnimalPlanet extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, ANIMAL_PLANET_URL);
+        super(page, ANIMAL_PLANET_URL, "Animal Planet");
     }
 
 };

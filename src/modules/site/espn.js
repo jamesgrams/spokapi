@@ -82,6 +82,7 @@ class Espn extends Site {
 
                     let network = this.constructor.name.toLowerCase();
                     let channel = await (await (await gameRow.$(".schedule__network img")).getProperty('alt')).jsonValue();
+                    channel = channel.toUpperCase();
 
                     // Format the time properly into a date object
                     let startTime = await (await (await gameRow.$(".schedule__time")).getProperty('textContent')).jsonValue();

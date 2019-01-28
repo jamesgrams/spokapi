@@ -24,7 +24,7 @@ class Hgtv extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, HGTV_URL);
+        super(page, HGTV_URL, "HGTV");
     }
 
 };

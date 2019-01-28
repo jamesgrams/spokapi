@@ -24,7 +24,7 @@ class InvestigationDiscovery extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, INVESITGATION_DISCOVERY_URL);
+        super(page, INVESITGATION_DISCOVERY_URL, "Investigation Discovery");
     }
 
 };

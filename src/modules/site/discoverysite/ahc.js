@@ -24,7 +24,7 @@ class Ahc extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, AHC_URL);
+        super(page, AHC_URL, "AHC");
     }
 
 };

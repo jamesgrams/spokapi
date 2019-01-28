@@ -58,7 +58,7 @@ class Cbs extends Site {
                 Date.now(),
                 null,
                 network,
-                network,
+                "CBS",
                 null,
                 null,
                 null,

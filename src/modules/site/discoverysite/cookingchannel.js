@@ -24,7 +24,7 @@ class CookingChannel extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, COOKING_CHANNEL_URL);
+        super(page, COOKING_CHANNEL_URL, "Cooking Channel");
     }
 
 };

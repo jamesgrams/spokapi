@@ -24,7 +24,7 @@ class FoodNetwork extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, FOOD_NETWORK_URL);
+        super(page, FOOD_NETWORK_URL, "Food Network");
     }
 
 };

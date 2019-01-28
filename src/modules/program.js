@@ -12,8 +12,8 @@ class Program {
     * Constructor.
     * @param {string} title                 - The title of the program.
     * @param {string} link                  - The link to watch the program (this will be converted to a link within the Spokapi application).
-    * @param {string} startTime             - The time of the program.
-    * @param {string} runTime               - The runtime of the program.
+    * @param {Date} startTime               - The time of the program.
+    * @param {number} runTime               - The runtime of the program (milliseconds).
     * @param {string} network               - The network the program is on. (General: e.g. ESPN)
     * @param {string} channel               - The channel the program is on. (Specific: e.g. ESPN2)
     * @param {string} description           - The description of the program.
@@ -25,8 +25,8 @@ class Program {
 	constructor(title, link, startTime, runTime, network, channel, description, season, episode, episodeTitle, episodeThumbnailUrl) {
 		this.title 		           = title ? title : "";
         this.link	               = link ? link : "";
-        this.startTime             = startTime ? startTime : "";
-        this.runTime		       = runTime ? runTime : "";
+        this.startTime             = startTime ? startTime : new Date();
+        this.runTime		       = runTime ? runTime : 0;
         this.network                = network ? network : "";
         this.channel               = channel ? channel : "";
         this.description           = description ? description : "";

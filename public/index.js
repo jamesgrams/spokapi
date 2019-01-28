@@ -90,11 +90,16 @@ function generateProgram(program) {
     if( program.watching ) {
         className += " watching";
     }
+    program.endTime = new Date( new Date(program.startTime).getTime() + parseInt(program.runTime) ).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     program.startTime = new Date(program.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    var displayTime = program.startTime;
+    if( program.runTime ) {
+        displayTime = program.startTime + " - " + program.endTime;
+    }
     var html = "<div class='" + className + "' onclick='watchProgram(this)' data-link='"+program.link+"'>" +
         "<div class='program-title'>" + program.title + "</div>" +
         "<div class='program-channel'>" + program.channel + "</div>" +
-        "<div class='program-time'>" + program.startTime + "</div>" +
+        "<div class='program-time'>" + displayTime + "</div>" +
         "<div class='program-seperator'></div>"
         "</div>";
     return html;

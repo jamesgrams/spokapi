@@ -24,7 +24,7 @@ class DiyNetwork extends DiscoverySite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, DIY_NETWORK_URL);
+        super(page, DIY_NETWORK_URL, "DIY Network");
     }
 
 };
