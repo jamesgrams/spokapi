@@ -121,14 +121,34 @@ class Espn extends Site {
     async login() {
         // Wait until we have the option to log in
         let providerSelector = "";
-        if( Site.provider === "Spectrum" ) {
-            providerSelector = "img[alt='Charter Spectrum']";
+        if( Site.provider === "DIRECTV" ||
+            Site.provider === "Verizon Fios" ||
+            Site.provider === "Xfinity" ||
+            Site.provider === "DISH" ||
+            Site.provider === "AT&T U-verse" ||
+            Site.provider === "Cox" ||
+            Site.provider === "Optimum" ||
+            Site.provider === "Sling TV" ||
+            Site.provider === "DIRECTV NOW" ||
+            Site.provider === "Hulu" ||
+            Site.provider === "Suddenlink" ||
+            Site.provider === "Frontier Communications" ||
+            Site.provider === "Mediacom" ) {
+            providerSelector = Site.provider;
         }
-        else if( Site.provider === "DIRECTV" ) {
-            providerSelector = "img[alt='DIRECTV']";
+        else if( Site.provider === "Spectrum" ) {
+            providerSelector = "Charter Spectrum";
         }
-        await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
+        else { // Provider unsupported
+            this.stop();
+            return Promise.resolve(1);
+        }
+        providerSelector = '//ul[contains(@class,"watchProvider__list-items")]//a[contains(text(),"'+providerSelector+'")]';
+        // Wait for the provider selector to be visible
+        await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
+        // Click the provider selector
+        let providerElements = await this.page.$x(providerSelector);
+        await this.page.evaluate( (providerElement) => providerElement.click(), providerElements[0] );
         // We should be on our Provider screen now
         await this.loginProvider();
         return Promise.resolve(1);

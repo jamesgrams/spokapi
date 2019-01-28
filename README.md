@@ -38,14 +38,39 @@ Spokapi is an application that simplifies watching sports online (using sites su
 
 ## Current Support
 - Providers
-    - Spectrum
+    - AT&T U-verse
+    - Cox
     - DIRECTV
+    - DIRECTV NOW
+    - DISH
+    - Frontier Communications
+    - Hulu
+    - Mediacom
+    - Optimum
+    - Sling TV
+    - Spectrum
+    - Suddenlink
+    - Verizon Fios
+    - Xfinity
+    
 - Channels
-    - ESPN
-    - NBC Sports
-    - Fox Sports
-    - CBS
+    - AHC (American History Channel)
     - Animal Planet
+    - CBS
+    - Cooking Channel
+    - Destination America
+    - Discovery
+    - Discovery Life
+    - DIY Network
+    - ESPN (+ subsidiaries)
+    - Food Network
+    - Fox Sports (+ subsidiaries)
+    - HGTV
+    - Investigation Discovery
+    - NBC Sports (+ subsidiaries)
+    - Science Channel
+    - TLC
+    - Travel Channel
 
 ## Endpoints
 - `/programs/`

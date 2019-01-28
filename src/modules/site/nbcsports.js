@@ -104,16 +104,41 @@ class NbcSports extends Site {
         }
         await this.page.waitForSelector(initiater, {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( (initiater) => { document.querySelector(initiater).click(); }, initiater );
-        // Wait until we have the option to log in
+        
         let providerSelector = "";
-        if( Site.provider === "Spectrum" ) {
-            providerSelector = "a[provider-id='Charter_Direct']";
+        if( Site.provider === "Spectrum" || 
+            Site.provider === "DIRECTV" ||
+            Site.provider === "Xfinity" ||
+            Site.provider === "DISH" ||
+            Site.provider === "Cox" ||
+            Site.provider === "Optimum" ||
+            Site.provider === "Sling TV" ||
+            Site.provider === "DIRECTV NOW" ||
+            Site.provider === "Hulu" ||
+            Site.provider === "Suddenlink" ||
+            Site.provider === "Mediacom" ) {
+            providerSelector = Site.provider;
         }
-        else if( Site.provider === "DIRECTV" ) {
-            providerSelector = "a[provider-id='DTV']";
+        else if( Site.provider === "Verizon Fios" ) {
+            providerSelector = "Verizon FIOS";
         }
-        await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
+        else if( Site.provider === "AT&T U-verse" ) {
+            providerSelector = "AT&T";
+        }
+        else if( Site.provider === "Frontier Communications" ) {
+            providerSelector = "FRONTIER";
+        }
+        else { // Provider unsupported
+            this.stop();
+            return Promise.resolve(1);
+        }
+        providerSelector = '//a[contains(@class,"selectboxit-option-anchor")][contains(text(),"'+providerSelector+'")]';
+        // Wait for the provider selector to be visible
+        await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
+        // Click the provider selector
+        let providerElements = await this.page.$x(providerSelector);
+        await this.page.evaluate( (providerElement) => providerElement.click(), providerElements[0] );
+
         // We should be on our Provider screen now
         await this.loginProvider();
         return Promise.resolve(1);

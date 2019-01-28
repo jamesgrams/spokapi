@@ -91,8 +91,25 @@ class DiscoverySite extends Site {
         await this.page.waitForSelector('.affiliateList__preferred', {timeout: Site.STANDARD_TIMEOUT});
 
         let providerSelector = "";
-        if( Site.provider === "Spectrum" || Site.provider === "DIRECTV" ) {
+        if( Site.provider === "Spectrum" || 
+            Site.provider === "DIRECTV" || 
+            Site.provider === "Verizon Fios" ||
+            Site.provider === "Xfinity" ||
+            Site.provider === "DISH" ||
+            Site.provider === "Cox" ||
+            Site.provider === "Optimum" ||
+            Site.provider === "Hulu" ||
+            Site.provider === "Suddenlink" ||
+            Site.provider === "Frontier Communications" ||
+            Site.provider === "Mediacom" ) {
             providerSelector = Site.provider;
+        }
+        else if( Site.provider === "AT&T U-verse") {
+            providerSelector = "AT&T U-Verse";
+        }
+        else { // Provider unsupported
+            this.stop();
+            return Promise.resolve(1);
         }
         providerSelector = '//span[contains(@class,"affiliateList__item")][contains(text(),"'+providerSelector+'")]';
         // Wait for the provider selector to be visible

@@ -80,10 +80,33 @@ class Cbs extends Site {
             await this.page.waitForSelector('.providers__grid-view', {timeout: 7000});
 
             let providerSelector = "";
-            if( Site.provider === "Spectrum" ) {
-                providerSelector = "#grid-section-wrap div:nth-child(8)";
+            if( Site.provider === "Spectrum" || 
+                Site.provider === "Verizon Fios" ||
+                Site.provider === "DISH" ||
+                Site.provider === "Optimum" ||
+                Site.provider === "Hulu" ||
+                Site.provider === "Suddenlink" ||
+                Site.provider === "Frontier Communications" ||
+                Site.provider === "Mediacom" ) {
+                providerSelector = Site.provider;
             }
-            await this.page.click(providerSelector);
+            else { // Provider unsupported
+                this.stop();
+                return Promise.resolve(1);
+            }
+            // Click the "More Providers" button
+            await this.page.evaluate( () => document.querySelector(".button--cta").click() );
+            await this.page.waitForSelector( 'div[data-provider-id="'+providerSelector+'"]', {timeout: Site.STANDARD_TIMEOUT} );
+            // Click the input field
+            await this.page.focus(".providers__search-field");
+            await this.page.keyboard.type(providerSelector);
+            await this.page.waitFor(250);
+            await this.page.keyboard.press("ArrowDown");
+            await this.page.keyboard.press("Enter");
+            
+            // Click the sign in button
+            await this.page.evaluate( () => document.querySelectorAll(".button--cta")[1].click() );
+
             // We should be on our Provider screen now
             await this.loginProvider();
         }

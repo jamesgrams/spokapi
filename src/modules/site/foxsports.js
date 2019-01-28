@@ -100,14 +100,39 @@ class FoxSports extends Site {
     async login() {
         // Wait until we have the option to log in
         let providerSelector = "";
-        if( Site.provider === "Spectrum" ) {
-            providerSelector = ".provider-desktop-image-container:nth-child(5)";
+        if( Site.provider === "DIRECTV" || 
+            Site.provider === "Verizon Fios" ||
+            Site.provider === "Xfinity" ||
+            Site.provider === "DISH" ||
+            Site.provider === "AT&T U-verse" ||
+            Site.password === "Cox" ||
+            Site.provider === "DIRECTV NOW" ||
+            Site.provider === "Hulu" ||
+            Site.provider === "Suddenlink" ||
+            Site.provider === "Frontier Communications" ||
+            Site.provider === "Mediacom" ) {
+            providerSelector = Site.provider;
         }
-        else if( Site.provider === "DIRECTV" ) {
-            providerSelector = ".provider-desktop-image-container:nth-child(2)";
+        else if( Site.provider === "Spectrum" ) {
+            providerSelector = "Charter Spectrum";
         }
-        await this.page.waitForSelector(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.evaluate( (providerSelector) => document.querySelector(providerSelector).click(), providerSelector );
+        else if( Site.provider === "Optimum" ) {
+            providerSelector = "Optimum (Cablevision)";
+        }
+        else if( Site.provider === "Sling TV" ) {
+            providerSelector = "Sling Television";
+        }
+        else { // Provider unsupported
+            this.stop();
+            return Promise.resolve(1);
+        }
+        providerSelector = '//div[contains(@class,"provider-row")][contains(text(),"'+providerSelector+'")]';
+        // Wait for the provider selector to be visible
+        await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
+        // Click the provider selector
+        let providerElements = await this.page.$x(providerSelector);
+        await this.page.evaluate( (providerElement) => providerElement.click(), providerElements[0] );
+        
         // We should be on our Provider screen now
         // Sometimes, it doesnt ask us to login
         try {

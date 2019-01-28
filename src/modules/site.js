@@ -139,6 +139,42 @@ class Site {
         else if( provider === "DIRECTV" ) {
             await this.loginDIRECTV();
         }
+        else if( provider === "Verizon Fios" ) {
+            await this.loginVerizon();
+        }
+        else if( provider === "Xfinity" ) {
+            await this.loginXfinity();
+        }
+        else if( provider === "DISH" ) {
+            await this.loginDISH();
+        }
+        else if( provider === "AT&T U-verse" ) {
+            await this.loginATT();
+        }
+        else if( provider === "Cox" ) {
+            await this.loginCox();
+        }
+        else if( provider === "Optimum" ) {
+            await this.loginOptimum();
+        }
+        else if( provider === "Sling TV" ) {
+            await this.loginSling();
+        }
+        else if( provider === "DIRECTV NOW" ) {
+            await this.loginDIRECTVNOW();
+        }
+        else if( provider === "Hulu" ) {
+            await this.loginHulu();
+        }
+        else if( provider === "Suddenlink" ) {
+            await this.loginSuddenlink();
+        }
+        else if( provider === "Frontier Communications" ) {
+            await this.loginFrontier();
+        }
+        else if( provider === "Mediacom" ) {
+            await this.loginMediacom();
+        }
         return Promise.resolve(1);
     }
 
@@ -191,6 +227,114 @@ class Site {
      */
     async loginDIRECTV() {
         await this.loginStandardProvider("#usernameInputId", ".inputFieldPass", "#loginSubmitId");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Verizon
+     * @returns {Promise}
+     */
+    async loginVerizon() {
+        await this.loginStandardProvider("#IDToken1", "#IDToken2", "#tvloginsignin");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Xfinity
+     * @returns {Promise}
+     */
+    async loginXfinity() {
+        await this.loginStandardProvider("#user", "#passwd", "#sign_in");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to DISH
+     * @returns {Promise}
+     */
+    async loginDISH() {
+        await this.loginStandardProvider("#username", "#password", "#login");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to AT&T U-verse
+     * @returns {Promise}
+     */
+    async loginATT() {
+        await this.loginStandardProvider("#nameBox", "#pwdBox", "#submitLogin");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Cox
+     * @returns {Promise}
+     */
+    async loginCox() {
+        await this.loginStandardProvider("input[name='username']", "input[name='password']", "input[alt='Sign In']");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Optimum
+     * @returns {Promise}
+     */
+    async loginOptimum() {
+        await this.loginStandardProvider("#IDToken1", "#IDToken2", "#signin_button");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Sling
+     * @returns {Promise}
+     */
+    async loginSling() {
+        await this.loginStandardProvider("#username", "#password", "#login");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to DIRECTV NOw
+     * @returns {Promise}
+     */
+    async loginDIRECTVNOW() {
+        await this.loginStandardProvider("#userName", "#password", "#loginButton-lgwgLoginButton");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Hulu
+     * @returns {Promise}
+     */
+    async loginHulu() {
+        await this.loginStandardProvider("input[name='email']", "input[name='password']", ".login-button");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Sudddenlink
+     * @returns {Promise}
+     */
+    async loginSuddenlink() {
+        await this.loginStandardProvider("#username", "#password", "#login");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Frontier Communications
+     * @returns {Promise}
+     */
+    async loginFrontier() {
+        await this.loginStandardProvider("#username", "#password", "#submit");
+        return Promise.resolve(1);
+    }
+
+    /**
+     * Login to Mediacom
+     * @returns {Promise}
+     */
+    async loginMediacom() {
+        await this.loginStandardProvider("#username", "#password", "a[title='Login']");
         return Promise.resolve(1);
     }
 

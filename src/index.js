@@ -137,8 +137,20 @@ app.get("/", async function(request, response) {
         <div class="login-row"><label for="cbs-password"><div class="login-label-title">CBS Password: </div><input id="cbs-password" type="password"/></label></div>
         <div class="login-row"><label for="provider"><div class="login-label-title">Provider: </div>
             <select id="provider">
-                <option value="Spectrum">Spectrum</option>
+                <option value="AT&T U-verse">AT&T U-verse</option>
+                <option value="Cox">Cox</option>
                 <option value="DIRECTV">DIRECTV</option>
+                <option value="DIRECTV NOW">DIRECTV NOW</option>
+                <option value="DISH">DISH</option>
+                <option value="Frontier Communications">Frontier Communications</option>
+                <option value="Hulu">Hulu</option>
+                <option value="Mediacom">Mediacom</option>
+                <option value="Optimum">Optimum</option>
+                <option value="Sling TV">Sling TV</option>
+                <option value="Spectrum">Spectrum</option>
+                <option value="Spectrum">Suddenlink</option>
+                <option value="Verizon Fios">Verizon Fios</option>
+                <option value="Xfinity">Xfinity</option>
             </select>
         </label></div>
         <button id="update-info">Update Information</button>
@@ -277,8 +289,10 @@ app.get('/stop', async function(request, response) {
     await site.stop();
 
     // All programs are not being watched now
-    for( let program of programsCache ) {
-        program.watching = false;
+    if( programsCache ) {
+        for( let program of programsCache ) {
+            program.watching = false;
+        }
     }
 
     // Remove watchBrowser from memory

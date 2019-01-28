@@ -61,6 +61,7 @@ function loadPrograms() {
             }
             else {
                 document.getElementById("programs").innerHTML = "Still loading...";
+                window.setTimeout( loadPrograms, 2000 );
             }
         }
         else if( this.readyState == 4 ) {
