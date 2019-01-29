@@ -1,7 +1,7 @@
 /**
- * @file    Abstract Discovery Site for Spokapi
+ * @file    Abstract Fox Site for Spokapi
  * @author  James Grams
- * Discovery owns several channels (Discovery, Animal Planet, Investigation Discovery, etc.)
+ * Fox owns several channels (Fox, Fox News, National Geographic, etc.)
  * They all use a similar streaming portal
  */
 
@@ -9,14 +9,14 @@ const Site = require('../site');
 const Program 	= require('../program');
 
 /**
- * Abstract class representing a Discovery Site.
+ * Abstract class representing a Fox Site.
  */
-class DiscoverySite extends Site {
+class FoxSite extends Site {
 
     /**
     * Constructor.
     * @param {string} page - The Puppeteer page object to use for this site.
-    * @param {string} url - The watch url for this discovery site
+    * @param {string} url - The watch url for this fox site
     * @param {string} channelName - The channel name to display
     */
     constructor(page, url, channelName) {
@@ -38,8 +38,10 @@ class DiscoverySite extends Site {
 
         try {
             await this.page.goto(this.url, {timeout: Site.STANDARD_TIMEOUT});
+
             // Wait until the live program is loaded
-            await this.page.waitForSelector('.headerLiveStream__name', {timeout: Site.STANDARD_TIMEOUT});
+            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]';
+            await this.page.waitForXPath(liveSelector, {timeout: Site.STANDARD_TIMEOUT});
 
             // Wait until the listing of what's on now is listed
             await this.page.waitForSelector(".liveVideoMetadata__now", {timeout: Site.STANDARD_TIMEOUT});
