@@ -63,10 +63,21 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - Discovery Life
     - DIY Network
     - ESPN (+ subsidiaries)
+    - FBN (Fox Business Network)
     - Food Network
+    - Fox
+    - Fox News
     - Fox Sports (+ subsidiaries)
+    - FX
+    - FX West
+    - FXM
+    - FXX
+    - FXX West
     - HGTV
     - Investigation Discovery
+    - Nat Geo WILD
+    - National Geographic
+    - National Geographic West
     - NBC Sports (+ subsidiaries)
     - PBS KIDS
     - Science Channel
