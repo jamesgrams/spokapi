@@ -24,7 +24,7 @@ class NationalGeographicWest extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, NATIONAL_GEOGRAPHIC_WEST_URL, "National Geographic West");
+        super(page, NATIONAL_GEOGRAPHIC_WEST_URL, "National Geographic West", "NGCW");
     }
 
 };

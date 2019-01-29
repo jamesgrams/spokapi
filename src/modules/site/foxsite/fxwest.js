@@ -24,7 +24,7 @@ class FxWest extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, FX_WEST_URL, "FX West");
+        super(page, FX_WEST_URL, "FX West", "FXW");
     }
 
 };

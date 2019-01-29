@@ -119,6 +119,8 @@ var programsCache;
 var fetchLocked = false;
 var fetchInterval;
 
+process.setMaxListeners(Infinity);
+
 const app = express();
 
 // -------------------- Endpoints --------------------
@@ -612,16 +614,19 @@ async function fetchPrograms(fetchNetworks) {
     // Update the cache
     programsCache = joinedValues;
 
-    // Cleanup
-    if( Site.PATH_TO_CHROME ) {
-        networks.map( network => network.browser.close() )
+    try {
+        // Cleanup
+        if( Site.PATH_TO_CHROME ) {
+            networks.map( network => { try {network.browser.close()} catch(err) { console.log(err);} } )
+        }
+        else {
+            // Try to conserve memory by closing pages
+            await Promise.all(
+                networks.map( network => network.stop() )
+            );
+        }
     }
-    else {
-        // Try to conserve memory by closing pages
-        await Promise.all(
-            networks.map( network => network.stop() )
-        );
-    }
+    catch (err) { console.log(err) }
 
     fetchLocked = false;
     return Promise.resolve(true);

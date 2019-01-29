@@ -59,7 +59,7 @@ class FoxSite extends Site {
             }
 
             // Wait until the live program is loaded
-            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]//*[contains(@class,"ScheduleItem_current")]';
+            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]//*[contains(@class,"ScheduleItem_scheduleItem_1Cppt")]';
             if( this.altSelector ) {
                 liveSelector = '//img[contains(@class,"Live_networkLogo")][@alt="'+this.altSelector+'"]/../..//*[contains(@data-test,"scheduleitem-item")]';
             }
@@ -69,7 +69,7 @@ class FoxSite extends Site {
             // Get the element telling what's playing
             let liveElement = (await this.page.$x(liveSelector))[0];
 
-            // Get the live info
+            // Get the live info (Will throw an error if no title)
             let liveInfo = await (await liveElement.getProperty("title")).jsonValue();
             
             let network = this.constructor.name.toLowerCase();
@@ -155,7 +155,7 @@ class FoxSite extends Site {
         let browserContext = await this.page._target.browserContext();
 
         // Get all the current pages (So we can tell which page the popup is)
-        let allPages = await browser.pages();
+        let allPages = await browserContext.pages();
         let oldPages = allPages;
         let oldPageCount = allPages.length;
 
@@ -168,9 +168,11 @@ class FoxSite extends Site {
 
         // Wait until we have a new page
         // Note: Waiting until we have a new page causes a race condition if other new pages popup
-        while( allPages.length == oldPageCount ) {
+        let count = 0;
+        while( allPages.length == oldPageCount && count < 20 ) {
             allPages = await browserContext.pages();
             await this.page.waitFor(1000); // We're just sleeping here...
+            count ++;
         }
         // Find which is the new page
         let newPages = allPages.filter( page => !oldPages.includes(page) );
@@ -178,8 +180,11 @@ class FoxSite extends Site {
         // Temporarily switch the site's page
         let watchPage = this.page;
         this.page = newPages[0];
-                
-        await this.loginProvider();
+        
+        try {
+            await this.loginProvider();
+        }
+        catch(err) {console.log(err);}
 
         this.page = watchPage;
         return Promise.resolve(1);

@@ -24,7 +24,7 @@ class Fbn extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, FBN_URL, "FBN");
+        super(page, FBN_URL, "FBN", "FBN");
     }
 
 };

@@ -24,7 +24,7 @@ class Fxm extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, FXM_URL, "FXM");
+        super(page, FXM_URL, "FXM", "FXM");
     }
 
 };

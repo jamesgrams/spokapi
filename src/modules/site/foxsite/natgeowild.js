@@ -24,7 +24,7 @@ class NatGeoWild extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, NAT_GEO_WILD_URL, "Nat Geo WILD");
+        super(page, NAT_GEO_WILD_URL, "Nat Geo WILD", "NGEOWILD");
     }
 
 };

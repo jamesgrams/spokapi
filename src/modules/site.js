@@ -420,9 +420,9 @@ class Site {
 
     /**
      * Make the watch tab the first tab on the list of connected tabs
-     * @param {BrowserContext} browserContext - the browser context
+     * @returns {Promise}
      */
-    static async makeWatchTabFirst(browser) {
+    static async makeWatchTabFirst() {
         let watchTab;
         let watchTabIndex = 0;
         Site.connectedTabs;

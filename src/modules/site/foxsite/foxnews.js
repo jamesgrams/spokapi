@@ -24,7 +24,7 @@ class FoxNews extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, FOX_NEWS_URL, "Fox News");
+        super(page, FOX_NEWS_URL, "Fox News", "FNC");
     }
 
 };

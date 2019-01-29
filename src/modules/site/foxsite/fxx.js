@@ -24,7 +24,7 @@ class Fxx extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, FXX_URL, "FXX");
+        super(page, FXX_URL, "FXX", "FXX");
     }
 
 };
