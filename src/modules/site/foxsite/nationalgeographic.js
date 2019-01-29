@@ -24,7 +24,7 @@ class NationalGeographic extends FoxSite {
     * @param {string} page - The Puppeteer page object to use for this site.
     */
     constructor(page) {
-        super(page, NATIONAL_GEOGRAPHIC_URL, "National Geographic");
+        super(page, NATIONAL_GEOGRAPHIC_URL, "National Geographic", "NGC");
     }
 
 };

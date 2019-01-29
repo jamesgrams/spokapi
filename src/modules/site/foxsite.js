@@ -18,11 +18,13 @@ class FoxSite extends Site {
     * @param {string} page - The Puppeteer page object to use for this site.
     * @param {string} url - The watch url for this fox site
     * @param {string} channelName - The channel name to display
+    * @param {string} altSelector - A selector to identify the alt tag on the image of this row (useful for reusing selectors)
     */
-    constructor(page, url, channelName) {
+    constructor(page, url, channelName, altSelector) {
         super(page);
         this.url = url;
         this.channelName = channelName;
+        this.altSelector = altSelector;
     }
     
     /**
@@ -36,11 +38,32 @@ class FoxSite extends Site {
 
         let programs = [];
 
+        let originalPage = this.page;
+
         try {
-            await this.page.goto(this.url, {timeout: Site.STANDARD_TIMEOUT});
+
+            // See if we can find an already existing Fox page to latch onto
+            let browserContext = await this.page._target.browserContext();
+            let pages = await browserContext.pages();
+            let foundPage = false;
+            for( let page of pages ) {
+                if( page.url().match(/www\.fox\.com/i) ) {
+                    this.page = page;
+                    foundPage = true;
+                    break;
+                }
+            }
+
+            if(!foundPage) {
+                await this.page.goto(this.url, {timeout: Site.STANDARD_TIMEOUT});
+            }
 
             // Wait until the live program is loaded
             let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]//*[contains(@class,"ScheduleItem_current")]';
+            if( this.altSelector ) {
+                liveSelector = '//img[contains(@class,"Live_networkLogo")][@alt="'+this.altSelector+'"]/../..//*[contains(@data-test,"scheduleitem-item")]';
+            }
+            
             await this.page.waitForXPath(liveSelector, {timeout: Site.STANDARD_TIMEOUT});
 
             // Get the element telling what's playing
@@ -79,6 +102,9 @@ class FoxSite extends Site {
             await this.page.waitFor(100);
         }
         catch(err) { console.log(err); }
+
+        this.page = originalPage;
+
         return Promise.resolve(programs);
     }
 
@@ -126,7 +152,7 @@ class FoxSite extends Site {
         // Click the provider selector
         // For some reason Fox opens the login in a new page
         // https://github.com/GoogleChrome/puppeteer/issues/386
-        let browser = await this.page.browser();
+        let browserContext = await this.page._target.browserContext();
 
         // Get all the current pages (So we can tell which page the popup is)
         let allPages = await browser.pages();
@@ -143,7 +169,7 @@ class FoxSite extends Site {
         // Wait until we have a new page
         // Note: Waiting until we have a new page causes a race condition if other new pages popup
         while( allPages.length == oldPageCount ) {
-            allPages = await browser.pages();
+            allPages = await browserContext.pages();
             await this.page.waitFor(1000); // We're just sleeping here...
         }
         // Find which is the new page

@@ -12,27 +12,38 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const execSync = require('child_process').execSync;
 
-const Site 	= require('./modules/site');
-const WiFi  = require('./modules/wifi.js');
-const Espn 	= require('./modules/site/espn');
-const NbcSports 	= require('./modules/site/nbcsports');
-const FoxSports 	= require('./modules/site/foxsports');
-const AnimalPlanet 	= require('./modules/site/discoverysite/animalplanet');
-const Discovery 	= require('./modules/site/discoverysite/discovery');
+const Site 	                    = require('./modules/site');
+const WiFi                      = require('./modules/wifi.js');
+const Espn 	                    = require('./modules/site/espn');
+const NbcSports 	            = require('./modules/site/nbcsports');
+const FoxSports 	            = require('./modules/site/foxsports');
+const AnimalPlanet 	            = require('./modules/site/discoverysite/animalplanet');
+const Discovery 	            = require('./modules/site/discoverysite/discovery');
 const InvestigationDiscovery 	= require('./modules/site/discoverysite/investigationdiscovery');
-const FoodNetwork 	= require('./modules/site/discoverysite/foodnetwork');
-const Hgtv 	= require('./modules/site/discoverysite/hgtv');
-const Tlc 	= require('./modules/site/discoverysite/tlc');
-const TravelChannel 	= require('./modules/site/discoverysite/travelchannel');
-const ScienceChannel 	= require('./modules/site/discoverysite/sciencechannel');
-const DiscoveryLife 	= require('./modules/site/discoverysite/discoverylife');
-const CookingChannel 	= require('./modules/site/discoverysite/cookingchannel');
-const Ahc 	= require('./modules/site/discoverysite/ahc');
-const DiyNetwork 	= require('./modules/site/discoverysite/diynetwork');
-const DestinationAmerica 	= require('./modules/site/discoverysite/destinationamerica');
-const Cbs           = require('./modules/site/cbs');
-const PbsKids           = require('./modules/site/pbskids');
-const NationalGeographic           = require('./modules/site/foxsite/nationalgeographic');
+const FoodNetwork 	            = require('./modules/site/discoverysite/foodnetwork');
+const Hgtv 	                    = require('./modules/site/discoverysite/hgtv');
+const Tlc 	                    = require('./modules/site/discoverysite/tlc');
+const TravelChannel 	        = require('./modules/site/discoverysite/travelchannel');
+const ScienceChannel 	        = require('./modules/site/discoverysite/sciencechannel');
+const DiscoveryLife 	        = require('./modules/site/discoverysite/discoverylife');
+const CookingChannel 	        = require('./modules/site/discoverysite/cookingchannel');
+const Ahc 	                    = require('./modules/site/discoverysite/ahc');
+const DiyNetwork 	            = require('./modules/site/discoverysite/diynetwork');
+const DestinationAmerica 	    = require('./modules/site/discoverysite/destinationamerica');
+const Cbs                       = require('./modules/site/cbs');
+const PbsKids                   = require('./modules/site/pbskids');
+const NationalGeographic        = require('./modules/site/foxsite/nationalgeographic');
+const NationalGeographicWest    = require('./modules/site/foxsite/nationalgeographicwest');
+const Fbn                       = require('./modules/site/foxsite/fbn');
+const Fox                       = require('./modules/site/foxsite/fox');
+const FoxNews                   = require('./modules/site/foxsite/foxnews');
+const Fx                        = require('./modules/site/foxsite/fx');
+const FxWest                    = require('./modules/site/foxsite/fxwest');
+const Fxm                       = require('./modules/site/foxsite/fxm');
+const Fxx                       = require('./modules/site/foxsite/fxx');
+const FxxWest                   = require('./modules/site/foxsite/fxxwest');
+const NatGeoWild                = require('./modules/site/foxsite/natgeowild');
+
 
 /**
  * @constant
@@ -76,7 +87,17 @@ const NETWORKS = {
     "foxsports": FoxSports, 
     "cbs": Cbs,
     "pbskids": PbsKids,
-    "nationalgeographic": NationalGeographic
+    "fox": Fox,
+    "nationalgeographic": NationalGeographic,
+    "nationalgeographicwest": NationalGeographicWest,
+    "fbn": Fbn,
+    "foxnews": FoxNews,
+    "fx": Fx,
+    "fxwest": FxWest,
+    "fxm": Fxm,
+    "fxx": Fxx,
+    "fxxwest": FxxWest,
+    "natgeowild": NatGeoWild
 };
 /**
  * @constant
