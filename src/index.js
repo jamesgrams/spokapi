@@ -32,6 +32,7 @@ const DiyNetwork 	= require('./modules/site/discoverysite/diynetwork');
 const DestinationAmerica 	= require('./modules/site/discoverysite/destinationamerica');
 const Cbs           = require('./modules/site/cbs');
 const PbsKids           = require('./modules/site/pbskids');
+const NationalGeographic           = require('./modules/site/foxsite/nationalgeographic');
 
 /**
  * @constant
@@ -57,7 +58,7 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @default
  */
 const NETWORKS = { 
-    "animalplanet": AnimalPlanet,
+    /*"animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -74,7 +75,8 @@ const NETWORKS = {
     "nbcsports": NbcSports, 
     "foxsports": FoxSports, 
     "cbs": Cbs,
-    "pbskids": PbsKids
+    "pbskids": PbsKids,*/
+    "nationalgeographic": NationalGeographic
 };
 /**
  * @constant
@@ -478,11 +480,14 @@ async function openBrowser() {
         });
         let pages = await watchBrowser.pages();
         let page = pages[0];
+        let location = await Site.getLocation();
         // This makes the viewport correct
         // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
         await page._client.send('Emulation.clearDeviceMetricsOverride');
+        await page.setGeolocation(location);
         let context = watchBrowser.defaultBrowserContext();
         await context.overridePermissions('https://www.cbs.com', ['geolocation']);
+        await context.overridePermissions('https://www.fox.com', ['geolocation']);
     }
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {

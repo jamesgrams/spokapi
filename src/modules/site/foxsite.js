@@ -40,28 +40,29 @@ class FoxSite extends Site {
             await this.page.goto(this.url, {timeout: Site.STANDARD_TIMEOUT});
 
             // Wait until the live program is loaded
-            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]';
+            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]//*[contains(@class,"ScheduleItem_current")]';
             await this.page.waitForXPath(liveSelector, {timeout: Site.STANDARD_TIMEOUT});
 
-            // Wait until the listing of what's on now is listed
-            await this.page.waitForSelector(".liveVideoMetadata__now", {timeout: Site.STANDARD_TIMEOUT});
+            // Get the element telling what's playing
+            let liveElement = (await this.page.$x(liveSelector))[0];
 
+            // Get the live info
+            let liveInfo = await (await liveElement.getProperty("title")).jsonValue();
+            
             let network = this.constructor.name.toLowerCase();
             let channel = this.channelName ? this.channelName : network;
-            let startTime = await (await this.page.$(".liveVideoMetadata__now .liveVideoMetadata__time")).getProperty('textContent');
-            let endTime = await (await this.page.$(".liveVideoMetadata__next .liveVideoMetadata__time")).getProperty('textContent');
 
-            let timeRegex = /(\d+):(\d+)([AP])/;
-            let startMatch = timeRegex.exec(startTime);
-            let endMatch = timeRegex.exec(endTime);
-            let startDate = new Date(0, 0, 0, parseInt(startMatch[1]) + (startMatch[3] == "P" ? 12 : 0), parseInt(startMatch[2]), 0, 0);
-            let endDate = new Date(0, 0, 0, parseInt(endMatch[1]) + (endMatch[3] == "P" ? 12 : 0), parseInt(endMatch[2]), 0, 0);
+            let liveInfoRegex = /(.*)\s\((\d+):(\d+)\s([AP])M\s-\s(\d+):(\d+)\s([AP])M\)$/
+            let liveInfoMatch = liveInfoRegex.exec(liveInfo);
+            let title = liveInfoMatch[1];
+            let startDate = new Date(0, 0, 0, parseInt(liveInfoMatch[2]) + (liveInfoMatch[4] == "P" ? 12 : 0), parseInt(liveInfoMatch[3]), 0, 0);
+            let endDate = new Date(0, 0, 0, parseInt(liveInfoMatch[5]) + (liveInfoMatch[7] == "P" ? 12 : 0), parseInt(liveInfoMatch[6]), 0, 0);
             let runtime = Math.abs(endDate.getTime() - startDate.getTime());
 
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
-                    await (await (await this.page.$(".headerLiveStream__name")).getProperty('textContent')).jsonValue(),
+                    title,
                     this.url,
                     startDate,
                     runtime,
@@ -82,72 +83,129 @@ class FoxSite extends Site {
     }
 
     /**
-     * Login to Discovery.
+     * Login to Fox.
      * @returns {Promise}
      */
     async login() {
-        // Click sign in
-        let signInButton = await this.page.$('.play-button');
-        await signInButton.click();
-        // Wait for the list of providers
-        await this.page.waitForSelector('.affiliateList__preferred', {timeout: Site.STANDARD_TIMEOUT});
+        // Wait to see all providers and then click it
+        await this.page.waitForSelector("div[class^='AuthMVPDStart_provider']:last-child > a[class^='AuthMVPDStart_provider']", {timeout: Site.STANDARD_TIMEOUT});
+        await this.page.waitFor(1000); // Some JS may still need to load
+        await (await this.page.$("div[class^='AuthMVPDStart_provider']:last-child > a[class^='AuthMVPDStart_provider']")).click();
+
+        // Focus on the place to type providers
+        await this.page.waitForSelector("*[class^='AuthMVPDSearch_input'] > input", {timeout: Site.STANDARD_TIMEOUT});
+        await (await this.page.$("*[class^='AuthMVPDSearch_input'] > input")).focus();
 
         let providerSelector = "";
         if( Site.provider === "Spectrum" || 
             Site.provider === "DIRECTV" || 
             Site.provider === "Verizon Fios" ||
             Site.provider === "Xfinity" ||
+            Site.provider === "AT&T U-verse" ||
             Site.provider === "DISH" ||
             Site.provider === "Cox" ||
             Site.provider === "Optimum" ||
+            Site.provider === "Sling TV" ||
+            Site.provider === "DIRECTV NOW" || 
             Site.provider === "Hulu" ||
             Site.provider === "Suddenlink" ||
             Site.provider === "Frontier Communications" ||
             Site.provider === "Mediacom" ) {
             providerSelector = Site.provider;
         }
-        else if( Site.provider === "AT&T U-verse") {
-            providerSelector = "AT&T U-Verse";
-        }
         else { // Provider unsupported
             this.stop();
             return Promise.resolve(1);
         }
-        providerSelector = '//span[contains(@class,"affiliateList__item")][contains(text(),"'+providerSelector+'")]';
+
+        // Type the provider
+        await this.page.keyboard.type(providerSelector);
         // Wait for the provider selector to be visible
-        await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
+        await this.page.waitForSelector("*[class^='AuthMVPDSearch_providerContainer']", {timeout: Site.STANDARD_TIMEOUT});
+        
         // Click the provider selector
-        let providerElements = await this.page.$x(providerSelector);
-        await providerElements[0].click();
+        // For some reason Fox opens the login in a new page
+        // https://github.com/GoogleChrome/puppeteer/issues/386
+        let browser = await this.page.browser();
+
+        // Get all the current pages (So we can tell which page the popup is)
+        let allPages = await browser.pages();
+        let oldPages = allPages;
+        let oldPageCount = allPages.length;
+
+        // The new page will open in a popup
+        await this.page.click("*[class^='AuthMVPDSearch_providerContainer'] a");
+        
         // We should be on our Provider screen now
+        // It'll be on a different tab though, so we have to switch to that
+        await this.page.waitFor(1000);
+
+        // Wait until we have a new page
+        // Note: Waiting until we have a new page causes a race condition if other new pages popup
+        while( allPages.length == oldPageCount ) {
+            allPages = await browser.pages();
+            await this.page.waitFor(1000); // We're just sleeping here...
+        }
+        // Find which is the new page
+        let newPages = allPages.filter( page => !oldPages.includes(page) );
+
+        // Temporarily switch the site's page
+        let watchPage = this.page;
+        this.page = newPages[0];
+                
         await this.loginProvider();
+
+        this.page = watchPage;
         return Promise.resolve(1);
     }
 
     /**
-     * Begin watching something on Discovery.
+     * Begin watching something on Fox.
      * Note: You should already be at the correct url
      * @returns {Promise}
      */
     async watch() {
-        // See if we need to log in
-        try {
-            // Wait for the fullscreen indicator (we will use this to know we are logged in)
-            await this.page.waitForSelector("button[data-plyr='fullscreen']", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+        // See what we need to do
+        await this.page.waitForSelector("*[class^='AuthPlaybackError_primaryAction'],*[class^='VideoContainer_previewPassLoginLink'],*[class^='AuthSignIn_button'],*[class^='AuthMVPDStart_provider'],.fullscreenButton", {timeout: Site.STANDARD_TIMEOUT});
+
+        let actionElement = await this.page.$("*[class^='AuthPlaybackError_primaryAction'],*[class^='VideoContainer_previewPassLoginLink'] a,*[class^='AuthSignIn_button'],*[class^='AuthMVPDStart_provider'],.fullscreenButton");
+        let actionClassName = await (await actionElement.getProperty("className")).jsonValue();
+
+        // The link won't have the class name, of course.
+        if( !actionClassName ) {
+            actionClassName = "VideoContainer_previewPassLoginLink";
         }
-        // We need to log in
-        catch(err) {
-            let signInButton = await this.page.$('.play-button');
-            if( signInButton ) {
-                await this.login();
+
+        // We need to click ok for location
+        if( actionClassName.indexOf("AuthPlaybackError_primaryAction") != -1 ) {
+            await actionElement.click();
+            await this.watch(); // We basically just want to start again after clicking OK for location.
+            return Promise.resolve(1);
+        }
+        // We're in preview mode or it's asking us to login
+        // Sometimes it will take us straight to the providers
+        // In this case it looks like it still hits the previewPassLoginLink
+        if( actionClassName.indexOf("VideoContainer_previewPassLoginLink") != -1 || actionClassName.indexOf("AuthSignIn_button") != -1 ) {
+            await this.page.waitFor(700);
+            await actionElement.click();
+            if ( actionClassName.indexOf("VideoContainer_previewPassLoginLink") != -1 ) {
+                try {
+                    // Click Sign in again if necessary
+                    await this.page.waitFor(700);
+                    await this.page.waitForSelector("*[class^='AuthSignIn_button']", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+                    await this.page.click("*[class^='AuthSignIn_button']"); 
+                }
+                catch (err) { console.log(err); }
             }
+            await this.login();
         }
+
         // Wait for the play button
-        await this.page.waitForSelector("button[data-plyr='fullscreen']", {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.click("button[data-plyr='fullscreen']");
+        await this.page.waitForSelector("video", {timeout: (Site.STANDARD_TIMEOUT * 2)});
+        await this.page.evaluate( () => document.querySelector("video").webkitRequestFullScreen() );
         return Promise.resolve(1);
     }
 
 };
 
-module.exports = DiscoverySite;
+module.exports = FoxSite;

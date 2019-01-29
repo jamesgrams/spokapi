@@ -5,6 +5,8 @@
 
 const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
+const publicIp = require('public-ip');
+const iplocation = require("iplocation").default;
 
 /**
  * @constant
@@ -17,7 +19,7 @@ const STOP_URL = "about:blank";
  * @type {number}
  * @default
  */
-const STANDARD_TIMEOUT = 40000;
+const STANDARD_TIMEOUT = 60000;
 /**
  * @constant
  * @type {number}
@@ -377,6 +379,10 @@ class Site {
             incongitoContext = await browser.createIncognitoBrowserContext();
         }
         await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
+        await incongitoContext.overridePermissions('https://www.fox.com', ['geolocation']);
+
+        // Get the location
+        let location = await Site.getLocation();
 
         // First, check to see if there are tabs open we can use
         // tab (first one means watching) (we "reconnect" to these)
@@ -387,6 +393,7 @@ class Site {
             for(let i=0; i<tabs.length; i++ ) {
                 Site.connectedTabs.push(tabs[i]);
                 await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
+                await tabs[i].setGeolocation(location);
             }
             for(let i=Site.connectedTabs.length; i<tabs.length; i++) {
                 await tabs[i].close();
@@ -399,6 +406,7 @@ class Site {
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');
+            await page.setGeolocation(location);
             Site.connectedTabs.push(page);
         }
         await Site.makeWatchTabFirst(browser);
@@ -435,6 +443,19 @@ class Site {
         Site.connectedTabs[0] = watchTab;
         
         return Promise.resolve(watchTab);
+    }
+
+    /**
+     * Get the location by ip
+     * @returns {Promise<object>} - A promise containing the longitude and latitude ready for Puppeteer
+     */
+    static async getLocation() {
+        let ipAddress = await publicIp.v4();
+        let location = await iplocation(ipAddress, []);
+        return Promise.resolve({
+            "latitude": location.latitude,
+            "longitude": location.longitude
+        });
     }
 
 };
