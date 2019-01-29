@@ -58,7 +58,7 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @default
  */
 const NETWORKS = { 
-    /*"animalplanet": AnimalPlanet,
+    "animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -75,7 +75,7 @@ const NETWORKS = {
     "nbcsports": NbcSports, 
     "foxsports": FoxSports, 
     "cbs": Cbs,
-    "pbskids": PbsKids,*/
+    "pbskids": PbsKids,
     "nationalgeographic": NationalGeographic
 };
 /**
