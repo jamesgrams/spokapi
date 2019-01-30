@@ -223,7 +223,7 @@ class FoxSite extends Site {
                 try {
                     // Click Sign in again if necessary
                     await this.page.waitFor(700);
-                    await this.page.waitForSelector("*[class^='AuthSignIn_button']", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+                    await this.page.waitForSelector("*[class^='AuthSignIn_button']", {timeout: (Site.STANDARD_WAIT_OK_TIMEOUT * 2)});
                     await this.page.click("*[class^='AuthSignIn_button']"); 
                 }
                 catch (err) { console.log(err); }
