@@ -18,6 +18,29 @@ const FOX_SPORTS_URL = "https://www.foxsportsgo.com";
  * @default
  */
 const FOX_SPORTS_API_URL = "https://media-api.foxsportsgo.com/epg/ws/live/all";
+/**
+ * @constant
+ * @type {Object<string,string>}
+ * These are lowercase class names and values to be used in the 
+ * selector when finding the provider link if different from the 
+ * provider default name
+ */
+const VALID_PROVIDERS = {
+    "directv": "",
+    "verizonfios": "",
+    "xfinity": "",
+    "dish": "",
+    "attuverse": "",
+    "cox": "",
+    "directvnow": "",
+    "hulu": "",
+    "suddenlink": "",
+    "frontiercommunications": "",
+    "mediacom": "",
+    "spectrum": "Charter Spectrum",
+    "optimum": "Optimum",
+    "slingtv": "Sling Television"
+};
 
 /**
  * Class representing an Fox Sports Site.
@@ -26,6 +49,7 @@ class FoxSports extends Site {
 
     static get FOX_SPORTS_URL() { return FOX_SPORTS_URL; };
     static get FOX_SPORTS_API_URL() { return FOX_SPORTS_API_URL; };
+    static get VALID_PROVIDERS() { return VALID_PROVIDERS; };
 
     /**
     * Constructor.
@@ -103,34 +127,13 @@ class FoxSports extends Site {
      */
     async login() {
         // Wait until we have the option to log in
-        let providerSelector = "";
-        if( Site.provider === "DIRECTV" || 
-            Site.provider === "Verizon Fios" ||
-            Site.provider === "Xfinity" ||
-            Site.provider === "DISH" ||
-            Site.provider === "AT&T U-verse" ||
-            Site.password === "Cox" ||
-            Site.provider === "DIRECTV NOW" ||
-            Site.provider === "Hulu" ||
-            Site.provider === "Suddenlink" ||
-            Site.provider === "Frontier Communications" ||
-            Site.provider === "Mediacom" ) {
-            providerSelector = Site.provider;
+        let provider = this.constructor.getProvider();
+        if( !provider ) { // Provider unsupported
+            await this.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+            return Promise.resolve(0);
         }
-        else if( Site.provider === "Spectrum" ) {
-            providerSelector = "Charter Spectrum";
-        }
-        else if( Site.provider === "Optimum" ) {
-            providerSelector = "Optimum (Cablevision)";
-        }
-        else if( Site.provider === "Sling TV" ) {
-            providerSelector = "Sling Television";
-        }
-        else { // Provider unsupported
-            this.stop();
-            return Promise.resolve(1);
-        }
-        providerSelector = '//div[contains(@class,"provider-row")][contains(text(),"'+providerSelector+'")]';
+
+        let providerSelector = '//div[contains(@class,"provider-row")][contains(text(),"'+provider.name+'")]';
         // Wait for the provider selector to be visible
         await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         // Click the provider selector
@@ -140,7 +143,7 @@ class FoxSports extends Site {
         // We should be on our Provider screen now
         // Sometimes, it doesnt ask us to login
         try {
-            await this.loginProvider();
+            await provider.login(this.page, Site.STANDARD_TIMEOUT);
         }
         catch (err) { console.log(err) }
         // Make sure we are now logged in
@@ -165,7 +168,8 @@ class FoxSports extends Site {
                 await this.page.evaluate( () => document.querySelector(".fsg-header__tv-sign-in").click() );
             }
 
-            await this.login();
+            let returnVal = await this.login();
+            if( !returnVal ) return Promise.resolve(1);
         }
         return Promise.resolve(1);
     }

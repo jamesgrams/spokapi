@@ -12,6 +12,28 @@ const Program 	= require('../program');
  * @default
  */
 const ESPN_URL = "http://www.espn.com/watch/schedule/";
+/**
+ * @constant
+ * @type {Object<string,string>}
+ * These are lowercase class names and values to be used in the 
+ * selector when finding the provider link if different from the 
+ * provider default name
+ */
+const VALID_PROVIDERS = {
+    "directv": "",
+    "verizonfios": "",
+    "dish": "",
+    "attuverse": "",
+    "cox": "",
+    "optimum": "",
+    "slingtv": "",
+    "directvnow": "",
+    "hulu": "",
+    "suddenlink": "",
+    "frontiercommunications": "",
+    "mediacom": "",
+    "spectrum": "Charter Spectrum",
+}
 
 /**
  * Class representing an ESPN Site.
@@ -19,6 +41,7 @@ const ESPN_URL = "http://www.espn.com/watch/schedule/";
 class Espn extends Site {
 
     static get ESPN_URL() { return ESPN_URL; };
+    static get VALID_PROVIDERS() { return VALID_PROVIDERS; };
 
     /**
     * Constructor.
@@ -88,14 +111,14 @@ class Espn extends Site {
                     let startTime = await (await (await gameRow.$(".schedule__time")).getProperty('textContent')).jsonValue();
                     let timeRegex = /(\d+):(\d+)\s([AP])/;
                     let startMatch = timeRegex.exec(startTime);
-                    let startDate = new Date(0, 0, 0, parseInt(startMatch[1]) + (startMatch[3] == "P" ? 12 : 0), parseInt(startMatch[2]), 0, 0);
+                    let times = Site.makeTimes(startMatch[1], startMatch[2], startMatch[3]);
 
                     // Make sure the network is not blacklisted
                     if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                         programs.push( new Program (
                             await (await (await gameRow.$(".schedule__competitors a")).getProperty('textContent')).jsonValue(),
                             await (await (await gameRow.$(".schedule__competitors a")).getProperty('href')).jsonValue(),
-                            startDate,
+                            times.start,
                             null,
                             network,
                             channel,
@@ -121,37 +144,19 @@ class Espn extends Site {
      */
     async login() {
         // Wait until we have the option to log in
-        let providerSelector = "";
-        if( Site.provider === "DIRECTV" ||
-            Site.provider === "Verizon Fios" ||
-            Site.provider === "Xfinity" ||
-            Site.provider === "DISH" ||
-            Site.provider === "AT&T U-verse" ||
-            Site.provider === "Cox" ||
-            Site.provider === "Optimum" ||
-            Site.provider === "Sling TV" ||
-            Site.provider === "DIRECTV NOW" ||
-            Site.provider === "Hulu" ||
-            Site.provider === "Suddenlink" ||
-            Site.provider === "Frontier Communications" ||
-            Site.provider === "Mediacom" ) {
-            providerSelector = Site.provider;
+        let provider = this.constructor.getProvider();
+        if (!provider) { // Provider unsupported
+            await this.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+            return Promise.resolve(0);
         }
-        else if( Site.provider === "Spectrum" ) {
-            providerSelector = "Charter Spectrum";
-        }
-        else { // Provider unsupported
-            this.stop();
-            return Promise.resolve(1);
-        }
-        providerSelector = '//ul[contains(@class,"watchProvider__list-items")]//a[contains(text(),"'+providerSelector+'")]';
+        let providerSelector = '//ul[contains(@class,"watchProvider__list-items")]//a[contains(text(),"'+provider.name+'")]';
         // Wait for the provider selector to be visible
         await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         // Click the provider selector
         let providerElements = await this.page.$x(providerSelector);
         await this.page.evaluate( (providerElement) => providerElement.click(), providerElements[0] );
         // We should be on our Provider screen now
-        await this.loginProvider();
+        await provider.login(this.page, Site.STANDARD_TIMEOUT);
         return Promise.resolve(1);
     }
 
@@ -170,7 +175,8 @@ class Espn extends Site {
         catch(err) {
             let modalPresented = await this.page.$('.watch-provider-modal');
             if( modalPresented ) {
-                await this.login();
+                let returnVal = await this.login();
+                if( !returnVal ) return Promise.resolve(1);
             }
         }
         // Wait for the play button

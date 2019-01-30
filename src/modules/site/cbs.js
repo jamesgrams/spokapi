@@ -22,6 +22,23 @@ var cbsPassword = process.env.SPOKAPI_CBS_PASSWORD;
  * @default
  */
 const CBS_URL = "https://www.cbs.com/live-tv/stream/tveverywhere/";
+/**
+ * @constant
+ * @type {Object<string,string>}
+ * These are lowercase class names and values to be used in the 
+ * selector when finding the provider link if different from the 
+ * provider default name
+ */
+const VALID_PROVIDERS = {
+    "spectrum": "",
+    "dish": "",
+    "hulu": "",
+    "mediacom": "",
+    "suddenlink": "",
+    "optimum": "",
+    "frontiercommunications": "",
+    "verizonfios": ""
+};
 
 /**
  * Class representing a CBS Site.
@@ -33,6 +50,7 @@ class Cbs extends Site {
     static get cbsPassword() { return cbsPassword };
     static set cbsPassword(pass) { cbsPassword = pass };
     static get CBS_URL() { return CBS_URL; };
+    static get VALID_PROVIDERS() { return VALID_PROVIDERS; };
 
     /**
     * Constructor.
@@ -79,27 +97,19 @@ class Cbs extends Site {
         try {
             await this.page.waitForSelector('.providers__grid-view', {timeout: 7000});
 
-            let providerSelector = "";
-            if( Site.provider === "Spectrum" || 
-                Site.provider === "Verizon Fios" ||
-                Site.provider === "DISH" ||
-                Site.provider === "Optimum" ||
-                Site.provider === "Hulu" ||
-                Site.provider === "Suddenlink" ||
-                Site.provider === "Frontier Communications" ||
-                Site.provider === "Mediacom" ) {
-                providerSelector = Site.provider;
+            // Wait until we have the option to log in
+            let provider = this.constructor.getProvider();
+            if( !provider ) { // Provider unsupported
+                await this.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+                return Promise.resolve(0);
             }
-            else { // Provider unsupported
-                this.stop();
-                return Promise.resolve(1);
-            }
+
             // Click the "More Providers" button
             await this.page.evaluate( () => document.querySelector(".button--cta").click() );
-            await this.page.waitForSelector( 'div[data-provider-id="'+providerSelector+'"]', {timeout: Site.STANDARD_TIMEOUT} );
+            await this.page.waitForSelector( 'div[data-provider-id="'+provider.name+'"]', {timeout: Site.STANDARD_TIMEOUT} );
             // Click the input field
             await this.page.focus(".providers__search-field");
-            await this.page.keyboard.type(providerSelector);
+            await this.page.keyboard.type(provider.name);
             await this.page.waitFor(250);
             await this.page.keyboard.press("ArrowDown");
             await this.page.keyboard.press("Enter");
@@ -108,7 +118,10 @@ class Cbs extends Site {
             await this.page.evaluate( () => document.querySelectorAll(".button--cta")[1].click() );
 
             // We should be on our Provider screen now
-            await this.loginProvider();
+            try {
+                await provider.login(this.page, Site.STANDARD_TIMEOUT);
+            }
+            catch (err) { console.log(err); }
         }
         // It doesn't want our TV Provider
         catch (err) { console.log(err); }
@@ -158,7 +171,8 @@ class Cbs extends Site {
         let actionClassName = await (await actionElement.getProperty("className")).jsonValue();
         // We need to login to Spectrum
         if( actionClassName.indexOf("providers__grid-view") != -1 ) {
-            await this.login();
+            let returnVal = await this.login();
+            if( !returnVal ) return Promise.resolve(1);
             await this.loginCbs();
         }
         // We need to login to CBS

@@ -12,6 +12,29 @@ const Program 	= require('../program');
  * @default
  */
 const NBC_SPORTS_URL = "https://www.nbcsports.com/live";
+/**
+ * @constant
+ * @type {Object<string,string>}
+ * These are lowercase class names and values to be used in the 
+ * selector when finding the provider link if different from the 
+ * provider default name
+ */
+const VALID_PROVIDERS = {
+    "directv": "",
+    "spectrum": "",
+    "xfinity": "",
+    "dish": "",
+    "cox": "",
+    "directvnow": "",
+    "hulu": "",
+    "mediacom": "",
+    "suddenlink": "",
+    "optimum": "Optimum",
+    "slingtv": "Sling Television",
+    "frontiercommunications": "FRONTIER",
+    "verizonfios": "Verizon FIOS",
+    "attuverse": "AT&T"
+};
 
 /**
  * Class representing an NBC Sports Site.
@@ -19,6 +42,7 @@ const NBC_SPORTS_URL = "https://www.nbcsports.com/live";
 class NbcSports extends Site {
 
     static get NBC_SPORTS_URL() { return NBC_SPORTS_URL; };
+    static get VALID_PROVIDERS() { return VALID_PROVIDERS; };
 
     /**
     * Constructor.
@@ -65,14 +89,14 @@ class NbcSports extends Site {
                 let startTime = await (await (await liveEvent.$(".live-upcoming-list__event-time")).getProperty('textContent')).jsonValue();
                 let timeRegex = /(\d+):(\d+)\s([ap])/;
                 let startMatch = timeRegex.exec(startTime);
-                let startDate = new Date(0, 0, 0, parseInt(startMatch[1]) + (startMatch[3] == "p" ? 12 : 0), parseInt(startMatch[2]), 0, 0);
+                let times = Site.makeTimes(startMatch[1], startMatch[2], startMatch[3]);
 
                 // Make sure the network is not blacklisted
                 if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                     programs.push( new Program (
                         await (await (await liveEvent.$(".live-upcoming-list__event-name")).getProperty('textContent')).jsonValue(),
                         await (await (await liveEvent.$(".link")).getProperty('href')).jsonValue(),
-                        startDate,
+                        times.start,
                         null,
                         network,
                         channel,
@@ -105,34 +129,14 @@ class NbcSports extends Site {
         await this.page.waitForSelector(initiater, {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( (initiater) => { document.querySelector(initiater).click(); }, initiater );
         
-        let providerSelector = "";
-        if( Site.provider === "Spectrum" || 
-            Site.provider === "DIRECTV" ||
-            Site.provider === "Xfinity" ||
-            Site.provider === "DISH" ||
-            Site.provider === "Cox" ||
-            Site.provider === "Optimum" ||
-            Site.provider === "Sling TV" ||
-            Site.provider === "DIRECTV NOW" ||
-            Site.provider === "Hulu" ||
-            Site.provider === "Suddenlink" ||
-            Site.provider === "Mediacom" ) {
-            providerSelector = Site.provider;
+        // Wait until we have the option to log in
+        let provider = this.constructor.getProvider();
+        if( !provider ) { // Provider unsupported
+            await this.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+            return Promise.resolve(0);
         }
-        else if( Site.provider === "Verizon Fios" ) {
-            providerSelector = "Verizon FIOS";
-        }
-        else if( Site.provider === "AT&T U-verse" ) {
-            providerSelector = "AT&T";
-        }
-        else if( Site.provider === "Frontier Communications" ) {
-            providerSelector = "FRONTIER";
-        }
-        else { // Provider unsupported
-            this.stop();
-            return Promise.resolve(1);
-        }
-        providerSelector = '//a[contains(@class,"selectboxit-option-anchor")][contains(text(),"'+providerSelector+'")]';
+
+        let providerSelector = '//a[contains(@class,"selectboxit-option-anchor")][contains(text(),"'+provider.name+'")]';
         // Wait for the provider selector to be visible
         await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         // Click the provider selector
@@ -140,7 +144,10 @@ class NbcSports extends Site {
         await this.page.evaluate( (providerElement) => providerElement.click(), providerElements[0] );
 
         // We should be on our Provider screen now
-        await this.loginProvider();
+        try {
+            await provider.login(this.page, Site.STANDARD_TIMEOUT);
+        }
+        catch (err) { console.log(err); }
         return Promise.resolve(1);
     }
 
@@ -159,7 +166,8 @@ class NbcSports extends Site {
         }
         // We need to log in
         catch(err) {
-            await this.login();
+            let returnVal = await this.login();
+            if( !returnVal ) return Promise.resolve(1);
         }
         // Wait for the container
         await this.page.waitForSelector(".playerContainer, #video-container", {timeout: Site.STANDARD_TIMEOUT}); // There may be an ad before we go full screen

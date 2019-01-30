@@ -46,14 +46,13 @@ class PbsKids extends Site {
 
             let network = this.constructor.name.toLowerCase();
             let channel = "PBS KIDS";
-            let startDate = Date.now();
 
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
                     await (await (await this.page.$(".stream-program-title")).getProperty('textContent')).jsonValue(),
                     PBS_KIDS_URL,
-                    startDate,
+                    Date.now(),
                     null,
                     network,
                     channel,

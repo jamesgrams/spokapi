@@ -9,9 +9,33 @@ const Site = require('../site');
 const Program 	= require('../program');
 
 /**
+ * @constant
+ * @type {Object<string,string>}
+ * These are lowercase class names and values to be used in the 
+ * selector when finding the provider link if different from the 
+ * provider default name
+ */
+const VALID_PROVIDERS = {
+    "directv": "",
+    "spectrum": "",
+    "xfinity": "",
+    "dish": "",
+    "cox": "",
+    "hulu": "",
+    "mediacom": "",
+    "suddenlink": "",
+    "optimum": "",
+    "frontiercommunications": "",
+    "verizonfios": "",
+    "attuverse": "AT&T U-Verse"
+}
+
+/**
  * Abstract class representing a Discovery Site.
  */
 class DiscoverySite extends Site {
+
+    static get VALID_PROVIDERS() { return VALID_PROVIDERS; };
 
     /**
     * Constructor.
@@ -52,17 +76,15 @@ class DiscoverySite extends Site {
             let timeRegex = /(\d+):(\d+)([AP])/;
             let startMatch = timeRegex.exec(startTime);
             let endMatch = timeRegex.exec(endTime);
-            let startDate = new Date(0, 0, 0, parseInt(startMatch[1]) + (startMatch[3] == "P" ? 12 : 0), parseInt(startMatch[2]), 0, 0);
-            let endDate = new Date(0, 0, 0, parseInt(endMatch[1]) + (endMatch[3] == "P" ? 12 : 0), parseInt(endMatch[2]), 0, 0);
-            let runtime = Math.abs(endDate.getTime() - startDate.getTime());
+            let times = Site.makeTimes(startMatch[1], startMatch[2], startMatch[3], endMatch[1], endMatch[2], endMatch[3]);
 
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
                     await (await (await this.page.$(".headerLiveStream__name")).getProperty('textContent')).jsonValue(),
                     this.url,
-                    startDate,
-                    runtime,
+                    times.start,
+                    times.run,
                     network,
                     channel,
                     null,
@@ -90,35 +112,24 @@ class DiscoverySite extends Site {
         // Wait for the list of providers
         await this.page.waitForSelector('.affiliateList__preferred', {timeout: Site.STANDARD_TIMEOUT});
 
-        let providerSelector = "";
-        if( Site.provider === "Spectrum" || 
-            Site.provider === "DIRECTV" || 
-            Site.provider === "Verizon Fios" ||
-            Site.provider === "Xfinity" ||
-            Site.provider === "DISH" ||
-            Site.provider === "Cox" ||
-            Site.provider === "Optimum" ||
-            Site.provider === "Hulu" ||
-            Site.provider === "Suddenlink" ||
-            Site.provider === "Frontier Communications" ||
-            Site.provider === "Mediacom" ) {
-            providerSelector = Site.provider;
+        // Wait until we have the option to log in
+        let provider = this.constructor.getProvider();
+        if( !provider ) { // Provider unsupported
+            await this.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+            return Promise.resolve(0);
         }
-        else if( Site.provider === "AT&T U-verse") {
-            providerSelector = "AT&T U-Verse";
-        }
-        else { // Provider unsupported
-            this.stop();
-            return Promise.resolve(1);
-        }
-        providerSelector = '//span[contains(@class,"affiliateList__item")][contains(text(),"'+providerSelector+'")]';
+
+        let providerSelector = '//span[contains(@class,"affiliateList__item")][contains(text(),"'+provider.name+'")]';
         // Wait for the provider selector to be visible
         await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         // Click the provider selector
         let providerElements = await this.page.$x(providerSelector);
         await providerElements[0].click();
         // We should be on our Provider screen now
-        await this.loginProvider();
+        try {
+            await provider.login(this.page, Site.STANDARD_TIMEOUT);
+        }
+        catch (err) { console.log(err); }
         return Promise.resolve(1);
     }
 
@@ -137,7 +148,8 @@ class DiscoverySite extends Site {
         catch(err) {
             let signInButton = await this.page.$('.play-button');
             if( signInButton ) {
-                await this.login();
+                let returnVal = await this.login();
+                if( !returnVal ) return Promise.resolve(1);
             }
         }
         // Wait for the play button

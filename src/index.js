@@ -13,6 +13,7 @@ const fs = require('fs');
 const execSync = require('child_process').execSync;
 
 const Site 	                    = require('./modules/site');
+const Provider 	                = require('./modules/provider');
 const WiFi                      = require('./modules/wifi.js');
 const Espn 	                    = require('./modules/site/espn');
 const NbcSports 	            = require('./modules/site/nbcsports');
@@ -285,7 +286,7 @@ app.get('/watch', async function(request, response) {
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        if (watchBrowser) { watchBrowser.disconnect() };
+        if (watchBrowser) { try { watchBrowser.disconnect() } catch (err) { console.log(err) } };
         watchBrowser = null;
     }
 });
@@ -347,13 +348,13 @@ app.post( '/info', async function(request, response) {
     let cbsPassword = request.body.cbsPassword;
 
     if( username ) {
-        Site.username = username;
+        Provider.username = username;
     }
     if( password ) {
-        Site.password = password;
+        Provider.password = password;
     }
     if( provider ) {
-        Site.provider = provider;
+        Site.providerName = provider;
     }
     if( cbsUsername ) {
         Cbs.cbsUsername = cbsUsername;
@@ -363,7 +364,7 @@ app.post( '/info', async function(request, response) {
     }
 
     // Save the info for future use
-    fs.writeFileSync( LOGIN_INFO_FILE, JSON.stringify(request.body) );
+    updateLoginInfo( request.body );
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
@@ -374,7 +375,9 @@ app.post( '/channel', async function(request, response) {
     let channel = request.body.channel;
     let type = request.body.type;
 
-    Site.unsupportedChannels = { "channel": channel, "type": type };
+    Site.addUnsupportedChannel({ "channel": channel, "type": type });
+
+    updateLoginInfo( { "unsupportedChannels": Site.unsupportedChannels } );
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
@@ -465,19 +468,22 @@ if ( fs.existsSync(LOGIN_INFO_FILE) ) {
     try {
         let loginInfo = JSON.parse(contents);
         if( loginInfo.username ) {
-            Site.username = loginInfo.username;
+            Provider.username = loginInfo.username;
         }
         if( loginInfo.password ) {
-            Site.password = loginInfo.password;
+            Provider.password = loginInfo.password;
         }
         if( loginInfo.provider ) {
-            Site.provider = loginInfo.provider;
+            Site.providerName = loginInfo.provider;
         }
         if( loginInfo.cbsUsername ) {
             Cbs.cbsUsername = loginInfo.cbsUsername;
         }
         if( loginInfo.cbsPassword ) {
             Cbs.cbsPassword = loginInfo.cbsPassword;
+        }
+        if( loginInfo.unsupportedChannels ) {
+            Site.unsupportedChannels = loginInfo.unsupportedChannels;
         }
     }
     catch(e) {
@@ -630,4 +636,20 @@ async function fetchPrograms(fetchNetworks) {
 
     fetchLocked = false;
     return Promise.resolve(true);
+}
+
+/**
+ * Update the Login Info file
+ */
+function updateLoginInfo( newData ) {
+    let contents = fs.readFileSync(LOGIN_INFO_FILE, 'utf8');
+    let data = JSON.parse(contents);
+
+    for( let key of Object.keys(newData) ) {
+        if( newData[key] ) {
+            data[key] = newData[key];
+        }
+    }
+
+    fs.writeFileSync(LOGIN_INFO_FILE, JSON.stringify(data));
 }

@@ -9,9 +9,35 @@ const Site = require('../site');
 const Program 	= require('../program');
 
 /**
+ * @constant
+ * @type {Object<string,string>}
+ * These are lowercase class names and values to be used in the 
+ * selector when finding the provider link if different from the 
+ * provider default name
+ */
+const VALID_PROVIDERS = {
+    "spectrum": "",
+    "directv": "",
+    "verizonfios": "",
+    "xfinity": "",
+    "attuverse": "",
+    "dish": "",
+    "cox": "",
+    "optimum": "",
+    "slingtv": "",
+    "directvnow": "",
+    "frontiercommunications": "",
+    "hulu": "",
+    "suddenlink": "",
+    "mediacom": ""
+}
+
+/**
  * Abstract class representing a Fox Site.
  */
 class FoxSite extends Site {
+
+    static get VALID_PROVIDERS() { return VALID_PROVIDERS; };
 
     /**
     * Constructor.
@@ -78,17 +104,15 @@ class FoxSite extends Site {
             let liveInfoRegex = /(.*)\s\((\d+):(\d+)\s([AP])M\s-\s(\d+):(\d+)\s([AP])M\)$/
             let liveInfoMatch = liveInfoRegex.exec(liveInfo);
             let title = liveInfoMatch[1];
-            let startDate = new Date(0, 0, 0, parseInt(liveInfoMatch[2]) + (liveInfoMatch[4] == "P" ? 12 : 0), parseInt(liveInfoMatch[3]), 0, 0);
-            let endDate = new Date(0, 0, 0, parseInt(liveInfoMatch[5]) + (liveInfoMatch[7] == "P" ? 12 : 0), parseInt(liveInfoMatch[6]), 0, 0);
-            let runtime = Math.abs(endDate.getTime() - startDate.getTime());
+            let times = Site.makeTimes(liveInfoMatch[2], liveInfoMatch[3], liveInfoMatch[4], liveInfoMatch[5], liveInfoMatch[6], liveInfoMatch[7]);
 
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
                     title,
                     this.url,
-                    startDate,
-                    runtime,
+                    times.start,
+                    times.run,
                     network,
                     channel,
                     null,
@@ -122,30 +146,14 @@ class FoxSite extends Site {
         await this.page.waitForSelector("*[class^='AuthMVPDSearch_input'] > input", {timeout: Site.STANDARD_TIMEOUT});
         await (await this.page.$("*[class^='AuthMVPDSearch_input'] > input")).focus();
 
-        let providerSelector = "";
-        if( Site.provider === "Spectrum" || 
-            Site.provider === "DIRECTV" || 
-            Site.provider === "Verizon Fios" ||
-            Site.provider === "Xfinity" ||
-            Site.provider === "AT&T U-verse" ||
-            Site.provider === "DISH" ||
-            Site.provider === "Cox" ||
-            Site.provider === "Optimum" ||
-            Site.provider === "Sling TV" ||
-            Site.provider === "DIRECTV NOW" || 
-            Site.provider === "Hulu" ||
-            Site.provider === "Suddenlink" ||
-            Site.provider === "Frontier Communications" ||
-            Site.provider === "Mediacom" ) {
-            providerSelector = Site.provider;
-        }
-        else { // Provider unsupported
-            this.stop();
-            return Promise.resolve(1);
+        let provider = this.constructor.getProvider();
+        if( !provider ) { // Provider unsupported
+            await this.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+            return Promise.resolve(0);
         }
 
         // Type the provider
-        await this.page.keyboard.type(providerSelector);
+        await this.page.keyboard.type(provider.name);
         // Wait for the provider selector to be visible
         await this.page.waitForSelector("*[class^='AuthMVPDSearch_providerContainer']", {timeout: Site.STANDARD_TIMEOUT});
         
@@ -182,7 +190,7 @@ class FoxSite extends Site {
         this.page = newPages[0];
         
         try {
-            await this.loginProvider();
+            await provider.login(this.page, Site.STANDARD_TIMEOUT);
         }
         catch(err) {console.log(err);}
 
@@ -228,7 +236,8 @@ class FoxSite extends Site {
                 }
                 catch (err) { console.log(err); }
             }
-            await this.login();
+            let returnVal = await this.login();
+            if( !returnVal ) return Promise.resolve(1);
         }
 
         // Wait for the play button

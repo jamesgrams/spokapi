@@ -8,6 +8,21 @@ const fetch = require('node-fetch');
 const publicIp = require('public-ip');
 const iplocation = require("iplocation").default;
 
+const AttUverse = require("./provider/attuverse");
+const Cox = require("./provider/cox");
+const DirecTv = require("./provider/directv");
+const DirecTvNow = require("./provider/directvnow");
+const Dish = require("./provider/dish");
+const FrontierCommunications = require("./provider/frontiercommunications");
+const Hulu = require("./provider/hulu");
+const Mediacom = require("./provider/mediacom");
+const Optimum = require("./provider/optimum");
+const SlingTv = require("./provider/slingtv");
+const Spectrum = require("./provider/spectrum");
+const Suddenlink = require("./provider/suddenlink");
+const VerizonFios = require("./provider/verizonfios");
+const Xfinity = require("./provider/xfinity");
+
 /**
  * @constant
  * @type {string}
@@ -33,21 +48,41 @@ const STANDARD_WAIT_OK_TIMEOUT = 3500;
  * @type {string}
  */
 const PATH_TO_CHROME = process.env.SPOKAPI_CHROME_PATH;
+/**
+ * @constant
+ * @type {string}
+ */
+const CHANNEL_UNSUPPORTED_MESSAGE = "You don't have access to this channel with your cable provider.";
+/**
+ * @constant
+ * @type {Array<Class>}
+ * Ideally, in subclasses, we would have class names
+ * mapped to name values rather than the literal string
+ * value of the class name, but having it here and then
+ * matching them up prevents having to import in every
+ * subclass
+ */
+const PROVIDER_CLASSES = [
+    AttUverse,
+    Cox,
+    DirecTv,
+    DirecTvNow,
+    Dish,
+    FrontierCommunications,
+    Hulu,
+    Mediacom,
+    Optimum,
+    SlingTv,
+    Spectrum,
+    Suddenlink,
+    VerizonFios,
+    Xfinity
+];
 
 /**
  * @type {string}
- * @default
  */
-var username = process.env.SPOKAPI_USERNAME;
-/**
- * @type {string}
- * @default
- */
-var password = process.env.SPOKAPI_PASSWORD;
-/**
- * @type {string}
- */
-var provider = process.env.SPOKAPI_PROVIDER;
+var providerName = process.env.SPOKAPI_PROVIDER;
 /**
  * @type {Array.<string>}
  * @default
@@ -77,13 +112,10 @@ class Site {
     static get STANDARD_TIMEOUT() { return STANDARD_TIMEOUT };
     static get STANDARD_WAIT_OK_TIMEOUT() { return STANDARD_WAIT_OK_TIMEOUT };
     static get PATH_TO_CHROME() { return PATH_TO_CHROME };
+    static get CHANNEL_UNSUPPORTED_MESSAGE() { return CHANNEL_UNSUPPORTED_MESSAGE };
 
-    static get username() { return username };
-    static set username(user) { username = user };
-    static get password() { return password };
-    static set password(pass) { password = pass };
-    static get provider() { return provider };
-    static set provider(prov) { provider = prov };
+    static get providerName() { return providerName };
+    static set providerName(prov) { providerName = prov; };
     static get totalNetworks() { return totalNetworks };
     static set totalNetworks(numNetworks) { totalNetworks = numNetworks; };
     static get connectedTabs() { return connectedTabs };
@@ -91,17 +123,7 @@ class Site {
     static get watchTabId() { return watchTabId };
     static set watchTabId(id) { watchTabId = id };
     static get unsupportedChannels() { return unsupportedChannels };
-    static set unsupportedChannels(option) { 
-        if( option.type == "allow" ) {
-            let index = unsupportedChannels.indexOf(option.channel);
-            if(index > -1) {
-                unsupportedChannels.splice(index, 1);
-            }
-        }
-        else {
-            unsupportedChannels.push(option.channel);
-        }
-    };
+    static set unsupportedChannels(channels) { unsupportedChannels = channels };
 
     /**
     * Constructor.
@@ -129,225 +151,22 @@ class Site {
         }
         return Promise.resolve(page); 
     }
-    
-    /**
-     * Login to the correct provider.
-     * @returns {Promise}
-     */
-    async loginProvider() {
-        if( provider === "Spectrum" ) {
-            await this.loginSpectrum();
-        }
-        else if( provider === "DIRECTV" ) {
-            await this.loginDIRECTV();
-        }
-        else if( provider === "Verizon Fios" ) {
-            await this.loginVerizon();
-        }
-        else if( provider === "Xfinity" ) {
-            await this.loginXfinity();
-        }
-        else if( provider === "DISH" ) {
-            await this.loginDISH();
-        }
-        else if( provider === "AT&T U-verse" ) {
-            await this.loginATT();
-        }
-        else if( provider === "Cox" ) {
-            await this.loginCox();
-        }
-        else if( provider === "Optimum" ) {
-            await this.loginOptimum();
-        }
-        else if( provider === "Sling TV" ) {
-            await this.loginSling();
-        }
-        else if( provider === "DIRECTV NOW" ) {
-            await this.loginDIRECTVNOW();
-        }
-        else if( provider === "Hulu" ) {
-            await this.loginHulu();
-        }
-        else if( provider === "Suddenlink" ) {
-            await this.loginSuddenlink();
-        }
-        else if( provider === "Frontier Communications" ) {
-            await this.loginFrontier();
-        }
-        else if( provider === "Mediacom" ) {
-            await this.loginMediacom();
-        }
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Standard method to log into a provider
-     * @param {string} usernameSelector - the selector for the username input
-     * @param {string} passwordSelector - the selector for the password input
-     * @param {string} submitSelector - the selector for the submit input
-     * @returns {Promise}
-     */
-    async loginStandardProvider(usernameSelector, passwordSelector, submitSelector) {
-        // Wait until we have the username box
-        await this.page.waitForSelector(usernameSelector, {timeout: STANDARD_TIMEOUT});
-        // Enter the username and password (evalute allows for this to occur in bg tab)
-        await this.page.waitFor(250);
-        await this.page.evaluate( (usernameSelector) => { 
-            document.querySelector(usernameSelector).focus();
-            document.querySelector(usernameSelector).click();
-            document.querySelector(usernameSelector).click();
-            document.querySelector(usernameSelector).click();
-        }, usernameSelector );
-        await this.page.keyboard.type(username);
-        await this.page.waitFor(250);
-        await this.page.evaluate( (passwordSelector) => {
-            document.querySelector(passwordSelector).focus();
-            document.querySelector(passwordSelector).click();
-            document.querySelector(passwordSelector).click();
-            document.querySelector(passwordSelector).click();
-        }, passwordSelector );
-        await this.page.keyboard.type(password);
-        // Login
-        await this.page.evaluate( (submitSelector) => {
-            document.querySelector(submitSelector).click();
-        }, submitSelector );
-        return Promise.resolve(1);
-    } 
-
-    /**
-     * Login to Spectrum
-     * @returns {Promise}
-     */
-    async loginSpectrum() {
-        await this.loginStandardProvider("#IDToken1", "#IDToken2", "#submint_btn");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to DIRECTV
-     * @returns {Promise}
-     */
-    async loginDIRECTV() {
-        await this.loginStandardProvider("#usernameInputId", ".inputFieldPass", "#loginSubmitId");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Verizon
-     * @returns {Promise}
-     */
-    async loginVerizon() {
-        await this.loginStandardProvider("#IDToken1", "#IDToken2", "#tvloginsignin");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Xfinity
-     * @returns {Promise}
-     */
-    async loginXfinity() {
-        await this.loginStandardProvider("#user", "#passwd", "#sign_in");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to DISH
-     * @returns {Promise}
-     */
-    async loginDISH() {
-        await this.loginStandardProvider("#username", "#password", "#login");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to AT&T U-verse
-     * @returns {Promise}
-     */
-    async loginATT() {
-        await this.loginStandardProvider("#nameBox", "#pwdBox", "#submitLogin");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Cox
-     * @returns {Promise}
-     */
-    async loginCox() {
-        await this.loginStandardProvider("input[name='username']", "input[name='password']", "input[alt='Sign In']");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Optimum
-     * @returns {Promise}
-     */
-    async loginOptimum() {
-        await this.loginStandardProvider("#IDToken1", "#IDToken2", "#signin_button");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Sling
-     * @returns {Promise}
-     */
-    async loginSling() {
-        await this.loginStandardProvider("#username", "#password", "#login");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to DIRECTV NOw
-     * @returns {Promise}
-     */
-    async loginDIRECTVNOW() {
-        await this.loginStandardProvider("#userName", "#password", "#loginButton-lgwgLoginButton");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Hulu
-     * @returns {Promise}
-     */
-    async loginHulu() {
-        await this.loginStandardProvider("input[name='email']", "input[name='password']", ".login-button");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Sudddenlink
-     * @returns {Promise}
-     */
-    async loginSuddenlink() {
-        await this.loginStandardProvider("#username", "#password", "#login");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Frontier Communications
-     * @returns {Promise}
-     */
-    async loginFrontier() {
-        await this.loginStandardProvider("#username", "#password", "#submit");
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Login to Mediacom
-     * @returns {Promise}
-     */
-    async loginMediacom() {
-        await this.loginStandardProvider("#username", "#password", "a[title='Login']");
-        return Promise.resolve(1);
-    }
 
     /**
      * Stop playing a program
+     * @param {String} message - An optional message to display on the blank page
      * @returns {Promise}
      */
-    async stop() {
+    async stop(message) {
         await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+        if ( message ) {
+            await this.page.waitForSelector("body", {timeout: STANDARD_TIMEOUT});
+            await this.page.evaluate( (message) => document.body.innerText = message, message );
+        }
         return Promise.resolve(1);
     }
+
+    // --------------- Static methods -----------------
 
     /**
      * Connect to a pre-running instance of Chrome
@@ -456,6 +275,100 @@ class Site {
             "latitude": location.latitude,
             "longitude": location.longitude
         });
+    }
+
+    /**
+     * Add or remove an unsupported channel
+     * @param {Object} option - an object with a type ("type" - allow or remove) and a channel name ("channel")
+     */
+    static addUnsupportedChannel(option) {
+        if( option.type == "allow" ) {
+            let index = unsupportedChannels.indexOf(option.channel);
+            if(index > -1) {
+                unsupportedChannels.splice(index, 1);
+            }
+        }
+        else {
+            unsupportedChannels.push(option.channel);
+        }
+    }
+
+    /**
+     * Create the start time, end time, and run time based on some common string values for showtimes
+     * @param {*} startHours    - the start hour  
+     * @param {*} startMinutes  - the start minute
+     * @param {string} startMeridian - the start meridian (A or P)
+     * @param {*} endHours      - the end hour
+     * @param {*} endMinutes    - the end minute
+     * @param {string} endMeridian  - the end meridian (A or P)
+     */
+    static makeTimes(startHours, startMinutes, startMeridian, endHours, endMinutes, endMeridian ) {
+        startHours = parseInt(startHours);
+        startMinutes = parseInt(startMinutes);
+        endHours = parseInt(endHours);
+        endMinutes = parseInt(endMinutes);
+
+        let endDay = 0;
+        // If the hours are less than 12 but we have PM, add 12 to convert to 24 hour time
+        if( startHours < 12 && startMeridian == "P" ) {
+            startHours += 12;
+        }
+        else if ( startHours == 12 && startMeridian == "A") {
+            startHours = 0;
+        }
+        if( endHours != null ) {
+            if( endHours < 12 && endMeridian == "P" ) {
+                endHours += 12;
+            }
+            else if( endHours == 12 && endMeridian == "A" ) {
+                endHours = 0;
+                // If the start is not also at the midnight hour,
+                // Or it is at the midnight hour, but has later minutes (e.g. start is 12:45am, end is 12:15am)
+                // The days must be different 
+                if( startHours != 0 || (startHours == 0 && startMinutes >= endMinutes) ) {
+                    endDay = 1;
+                }
+            }
+        }
+
+        let startDate = new Date(0, 0, 0, startHours, startMinutes, 0);
+        let endDate; 
+        let runtime; 
+        
+        if ( endHours != null ) {
+            endDate = new Date(0, 0, endDay, endHours, endMinutes, 0);
+            runtime = Math.abs(endDate.getTime() - startDate.getTime());
+        }
+
+        return {
+            "start": startDate,
+            "end": endDate,
+            "run": runtime
+        };
+    }
+
+    /**
+     * Get the correct provider.
+     * To only be called in subclasses of site
+     * @returns {Provider}
+     */
+    static getProvider() {
+        // Get the classes that are valid for this site
+        let validProviderClasses = PROVIDER_CLASSES.filter( ProviderTmp => Object.keys(this.VALID_PROVIDERS).includes(ProviderTmp.name.toLowerCase()) );
+        // Now get the class for the current provider if it is in the list of valid classes
+        let ProviderClass = validProviderClasses.filter( ProviderTmp => new ProviderTmp().name == Site.providerName )[0];
+        if( ProviderClass ) {
+            let provider = new ProviderClass();
+            // We know there is a key, what we are checking is if the value is defined
+            if( this.VALID_PROVIDERS[ProviderClass.name.toLowerCase()] ) {
+                // Set a custom name for the provider for this site for the selector
+                provider.name = this.VALID_PROVIDERS[ProviderClass.name.toLowerCase()];
+            }
+            return provider;
+        }
+        else {
+            return null;
+        } 
     }
 
 };
