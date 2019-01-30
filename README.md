@@ -35,6 +35,7 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     3. Add the following to the newly created file `{ "RunAllFlashInAllowMode": true, "AllowOutdatedPlugins": true, "DefaultPluginsSetting": 1,"PluginsAllowedForUrls": ["https://*", "http://*"]}`
     4. Restart Chrome/Chrome OS. Flash should now be enabled by default. You can confirm policies by going to `chrome://policy`
 15. You should be all set! Note: You might want to make sure that the computer running the Spokapi server has a static local IP address in your router settings. In addition, adding the Spokapi client's URL to the homesreen of your device should provide easy access!
+16. Another note: If you are connecting to a pre-existing chrome instance, you will want to make sure the window is somewhat large, so that Spokapi finds all the right elements (We don't want mobile view!). Starting chrome with `--start-maximized` should work on most screens.
 
 ## Current Support
 - Providers
