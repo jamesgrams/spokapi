@@ -45,7 +45,6 @@ const Fxx                       = require('./modules/site/foxsite/fxx');
 const FxxWest                   = require('./modules/site/foxsite/fxxwest');
 const NatGeoWild                = require('./modules/site/foxsite/natgeowild');
 
-
 /**
  * @constant
  * @type {number}
@@ -539,7 +538,13 @@ async function watch(page, url, request) {
     let Network = NETWORKS[networkName];
     if( Network ) {
         let network = new Network(page);
-        await network.watch();
+        let provider = Network.getProvider();
+        if( provider ) {
+            await network.watch();
+        }
+        else {
+            await network.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
+        }
     }
 
     return Promise.resolve(1);
@@ -562,6 +567,7 @@ async function fetchPrograms(fetchNetworks) {
     }
 
     networks = [];
+    // Note: To block a channel from fetching, make sure it is lower case
     if( !Site.PATH_TO_CHROME ) {
         watchBrowser = await Site.connectToChrome();
         // Create an instance of each network class

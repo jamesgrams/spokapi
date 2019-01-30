@@ -87,7 +87,7 @@ var providerName = process.env.SPOKAPI_PROVIDER;
  * @type {Array.<string>}
  * @default
  */
-var unsupportedChannels = ["espn+","espndeportes","longhorn","accextra","sec","secplus","NBC Sports Gold"];
+var unsupportedChannels = ["ESPN+","ESPNDEPORTES","LONGHORN","ACCEXTRA","SEC","SECPLUS","NBC Sports Gold"];
 /**
  * @type {number}
  */

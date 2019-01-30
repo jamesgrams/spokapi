@@ -84,6 +84,20 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - TLC
     - Travel Channel
 
+### How to add a network
+
+1. Create a class for the network extending Site (the filename should be the lowercase class name)
+2. Implement a generatePrograms, login, and watch method (make sure you make use of the provider features [Create a mapping, "VALID_PROVIDERS," to map provider classes to a string that can easily be used to select the provider])
+3. Add the class to the object of networks in `src/index.js` (the key should be the lowercase class name). You will have to import the class too.
+
+### How to add a provider
+
+1. Create a class for the provider extending Provider (the filename should be the lowercase class name)
+    - It's a good idea for the "name" to be what you would usually need to select the provider (That way, you don't have to specify a custom one for each network)
+    - The "name" is also what you will use as the provider name when specifying (e.g. SPOKAPI_PROVIDER env variable)
+2. Add the class to the array of classes in `src/modules/site.js`
+3. For each of the site subclasses, make sure to appropriately update VALID_PROVIDERS to help with selecting the new provider when provider login is needed
+
 ## Endpoints
 - `/programs/`
     - This will return an array of objects containing a list of available programs to watch
