@@ -19,7 +19,7 @@ const STOP_URL = "about:blank";
  * @type {number}
  * @default
  */
-const STANDARD_TIMEOUT = 80000;
+const STANDARD_TIMEOUT = 280000;
 /**
  * @constant
  * @type {number}
