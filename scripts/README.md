@@ -18,6 +18,6 @@ Note: Tested and working well on Chrome OS version 71.0.3578.127
 14. Remove the write protection on the file system by running `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`, and then running the command that prints out.
 15. Reboot, go back into a bash terminal (see step 3) and make sure you can write to the file system (`touch /etc/test`)
 16. If you can't remove the write protection (happens sometimes) repeat the previous two steps until you can (should take at most 3 times)
-17. Setup read-only ssh keys to the Spokapi GitHub repository for root user (for the update endpoint) (https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
+17. Setup read-only ssh keys to the Spokapi GitHub repository for root user (for the update endpoint) (https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). You will need to change the origin of the repo after this to point to the ssh version rather than https.
 18. At this point, the system is setup where all future steps can be done automatically. Run `/home/chronos/user/Downloads/spokapi/scripts/setup.sh` to setup Spokapi. You may have to input some information (such as typing Y to confirm) while this script runs.
-19. To allow ssh with a password, you may have to set a password for the chronos user (https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/). You will need to change the origin of the repo after this to point to the ssh version rather than https.
+19. To allow ssh with a password, you may have to set a password for the chronos user (https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/). 
