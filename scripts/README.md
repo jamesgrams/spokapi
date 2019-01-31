@@ -1,5 +1,7 @@
 # Spokapi Setup on Chrome OS
 
+Note: Tested and working well on Chrome OS version 71.0.3578.127
+
 1. Setup a Google account specifically for this device with a unique password.
 2. Put your Chrome Device in developer mode (Follow instructions [here](https://archlinuxarm.org/platforms/armv7/rockchip/asus-chromebit-cs10))
 3. Open a terminal by pressing `Ctrl + Alt + T` in Chrome, and use the `shell` command to get to a bash shell.
@@ -8,7 +10,7 @@
 6. Create a file named `password.txt` and place in `/home/chronos/user/Downloads/spokapi`. The contents of this file should be the password of your account (This will be used to auto-login).
 7. Set the background of the computer to be the Spokapi background image
 8. Set the login picture of the user to be the Spokapi background image
-9. In Chrome Settings, set to boot to the new tab page each time.
+9. In Chrome Settings, set to boot to the new tab page each time and remove shortcuts to apps besides Chrome.
 10. Enable Bluetooth (this setting will persist after reboot).
 11. Enable Newblue in `chrome://flags`
 12. Disable sleep mode for the Chromebit
