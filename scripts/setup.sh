@@ -13,12 +13,6 @@ nodebrew use 10.15.0
 
 # Install Python
 crew install python27
-# Install uinput
-sudo mv /opt/spokapi/lib/python-uinput /usr/local/python-uinput
-# Install PyBluez locally
-cd /usr/local/python-uinput
-sudo LD_LIBRARY_PATH=/usr/local/lib python2.7 setup.py build
-sudo LD_LIBRARY_PATH=/usr/local/lib python2.7 setup.py install
 
 # Install SPOKAPI
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -26,6 +20,13 @@ npm install --prefix /home/chronos/user/Downloads/spokapi
 # Note that everything for Spokapi is installed prior to moving the files
 # There was some issue running npm in the /opt/ directory 
 sudo cp -r /home/chronos/user/Downloads/spokapi /opt/
+
+# Install uinput
+sudo mv /opt/spokapi/lib/python-uinput /usr/local/python-uinput
+# Install PyBluez locally
+cd /usr/local/python-uinput
+sudo LD_LIBRARY_PATH=/usr/local/lib python2.7 setup.py build
+sudo LD_LIBRARY_PATH=/usr/local/lib python2.7 setup.py install
 
 # Install Bluetooth dependencies
 # First, the header files
