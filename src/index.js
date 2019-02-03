@@ -70,7 +70,7 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @default
  */
 const NETWORKS = { 
-    "animalplanet": AnimalPlanet/*,
+    "animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -98,7 +98,7 @@ const NETWORKS = {
     "fxm": Fxm,
     "fxx": Fxx,
     "fxxwest": FxxWest,
-    "natgeowild": NatGeoWild*/
+    "natgeowild": NatGeoWild
 };
 /**
  * @constant
