@@ -500,6 +500,9 @@ if ( fs.existsSync(LOGIN_INFO_FILE) ) {
     }
 }
 
+// Open browser
+openBrowser();
+
 app.listen(PORT); // Listen for requests
 
 // -------------------- Helper Functions --------------------
