@@ -52,21 +52,17 @@ class Provider {
         await page.waitForSelector(usernameSelector, {timeout: timeout});
         // Enter the username and password (evalute allows for this to occur in bg tab)
         await page.waitFor(250);
-        await page.evaluate( (usernameSelector) => { 
+        await page.evaluate( (usernameSelector, username) => { 
             document.querySelector(usernameSelector).focus();
-            document.querySelector(usernameSelector).click();
-            document.querySelector(usernameSelector).click();
-            document.querySelector(usernameSelector).click();
-        }, usernameSelector );
-        await page.keyboard.type(username);
+            document.querySelector(usernameSelector).select();
+            document.querySelector(usernameSelector).value = username;
+        }, usernameSelector, username );
         await page.waitFor(250);
-        await page.evaluate( (passwordSelector) => {
+        await page.evaluate( (passwordSelector, password) => {
             document.querySelector(passwordSelector).focus();
-            document.querySelector(passwordSelector).click();
-            document.querySelector(passwordSelector).click();
-            document.querySelector(passwordSelector).click();
-        }, passwordSelector );
-        await page.keyboard.type(password);
+            document.querySelector(passwordSelector).select();
+            document.querySelector(passwordSelector).value = password;
+        }, passwordSelector, password );
         // Login
         await page.evaluate( (submitSelector) => {
             document.querySelector(submitSelector).click();
