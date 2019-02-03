@@ -182,23 +182,13 @@ class Site {
          // Now, we can connect to chrome
         let endpoint = json.webSocketDebuggerUrl;
         
-        let browser = await puppeteer.connect( {browserWSEndpoint: endpoint} );
+        let browser = await puppeteer.connect( {browserWSEndpoint: endpoint, defaultViewport: null} );
         this.browser = browser; // Important that browser be defined for later usage (if a site needs to rearrange tabs)
 
         // Create the connected chrome tabs
-        // Connect to an incognito context
-        let incongitoContext;
-        let contexts = browser.browserContexts();
-        for( let context of contexts ) {
-            if( context.isIncognito() ) {
-                incongitoContext = context;
-            }
-        }
-        if ( !incongitoContext ) {
-            incongitoContext = await browser.createIncognitoBrowserContext();
-        }
-        await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
-        await incongitoContext.overridePermissions('https://www.fox.com', ['geolocation']);
+        let context = await browser.defaultBrowserContext();
+        await context.overridePermissions('https://www.cbs.com', ['geolocation']);
+        await context.overridePermissions('https://www.fox.com', ['geolocation']);
 
         // Get the location
         let location = await Site.getLocation();
@@ -207,7 +197,7 @@ class Site {
         // tab (first one means watching) (we "reconnect" to these)
         // Close all other open tabs too
         Site.connectedTabs = [];
-        let tabs = await incongitoContext.pages();
+        let tabs = await context.pages();
         if( tabs.length > 0 ) {
             for(let i=0; i<tabs.length; i++ ) {
                 Site.connectedTabs.push(tabs[i]);
@@ -221,7 +211,7 @@ class Site {
 
         // We need a tab for each network plus the watch tab
         for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
-            let page = await incongitoContext.newPage();
+            let page = await context.newPage();
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');

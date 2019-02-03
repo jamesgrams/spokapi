@@ -11,6 +11,7 @@ const ip = require("ip");
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const execSync = require('child_process').execSync;
+const publicIp = require('public-ip');
 
 const Site 	                    = require('./modules/site');
 const Provider 	                = require('./modules/provider');
@@ -56,7 +57,7 @@ const PORT = 8080;
  * @type {number}
  * @default
  */
-const FETCH_INTERVAL = 240000;
+const FETCH_INTERVAL = 480000;
 /**
  * @constant
  * @type {number}
@@ -69,7 +70,7 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @default
  */
 const NETWORKS = { 
-    "animalplanet": AnimalPlanet,
+    "animalplanet": AnimalPlanet/*,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -97,7 +98,7 @@ const NETWORKS = {
     "fxm": Fxm,
     "fxx": Fxx,
     "fxxwest": FxxWest,
-    "natgeowild": NatGeoWild
+    "natgeowild": NatGeoWild*/
 };
 /**
  * @constant
@@ -457,6 +458,15 @@ app.post( '/update', async function(request, response) {
     response.end(JSON.stringify({"status":"success"}));
 
     execSync("reboot");
+} );
+
+// Endpoint to return IP address
+app.get('/ip', async function(request, response) {
+    let ipAddress = await publicIp.v4();
+
+    // Respond to the user
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success","ip":ipAddress}));
 } );
 
 // -------------------- Main Program --------------------
