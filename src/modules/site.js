@@ -7,6 +7,7 @@ const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 const publicIp = require('public-ip');
 const iplocation = require("iplocation").default;
+const execSync = require('child_process').execSync;
 
 const AttUverse = require("./provider/attuverse");
 const Cox = require("./provider/cox");
@@ -222,6 +223,14 @@ class Site {
         // We need a tab for each network plus the watch tab
         for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
             let page = await incongitoContext.newPage();
+            // If we opened a new browser context and this is the first tab
+            // Go fullscreen
+            if (i==0) {
+                try {
+                    execSync("python2.7 /opt/spokapi/scripts/fullscreen.py");
+                }
+                catch(err) {} // Python program does not exist
+            }
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');
