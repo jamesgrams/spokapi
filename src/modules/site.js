@@ -7,7 +7,6 @@ const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 const publicIp = require('public-ip');
 const iplocation = require("iplocation").default;
-const execSync = require('child_process').execSync;
 
 const AttUverse = require("./provider/attuverse");
 const Cox = require("./provider/cox");
@@ -188,18 +187,9 @@ class Site {
 
         // Create the connected chrome tabs
         // Connect to an incognito context
-        let incongitoContext;
-        let contexts = browser.browserContexts();
-        for( let context of contexts ) {
-            if( context.isIncognito() ) {
-                incongitoContext = context;
-            }
-        }
-        if ( !incongitoContext ) {
-            incongitoContext = await browser.createIncognitoBrowserContext();
-        }
-        await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
-        await incongitoContext.overridePermissions('https://www.fox.com', ['geolocation']);
+        let context = await browser.defaultBrowserContext();
+        await context.overridePermissions('https://www.cbs.com', ['geolocation']);
+        await context.overridePermissions('https://www.fox.com', ['geolocation']);
 
         // Get the location
         let location = await Site.getLocation();
@@ -208,10 +198,11 @@ class Site {
         // tab (first one means watching) (we "reconnect" to these)
         // Close all other open tabs too
         Site.connectedTabs = [];
-        let tabs = await incongitoContext.pages();
+        let tabs = await context.pages();
         if( tabs.length > 0 ) {
             for(let i=0; i<tabs.length; i++ ) {
                 Site.connectedTabs.push(tabs[i]);
+                await tabs[i].goto("about:blank"); // Make sure the tab is blank
                 await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
                 await tabs[i].setGeolocation(location);
             }
@@ -222,15 +213,7 @@ class Site {
 
         // We need a tab for each network plus the watch tab
         for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
-            let page = await incongitoContext.newPage();
-            // If we opened a new browser context and this is the first tab
-            // Go fullscreen
-            if (i==0) {
-                try {
-                    execSync("python2.7 /opt/spokapi/scripts/fullscreen.py");
-                }
-                catch(err) {} // Python program does not exist
-            }
+            let page = await context.newPage();
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');
