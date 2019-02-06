@@ -639,8 +639,6 @@ async function fetchPrograms(fetchNetworks) {
     networks = [];
     // Note: To block a channel from fetching, make sure it is lower case
     if( !Site.PATH_TO_CHROME ) {
-        watchBrowser = await Site.connectToChrome();
-        await Site.displayLoading();
         // Create an instance of each network class
         let index = 2;
         for( let Network of fetchNetworks.map( v => NETWORKS[v] ) ) {
@@ -712,9 +710,6 @@ async function fetchPrograms(fetchNetworks) {
     catch (err) { console.log(err) }
 
     fetchLocked = false;
-    
-    if( !Site.PATH_TO_CHROME )
-        await Site.cancelLoading();
 
     return Promise.resolve(true);
 }

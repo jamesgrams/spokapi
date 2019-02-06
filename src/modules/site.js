@@ -40,7 +40,7 @@ const LOADING_URL = "localhost:8080/static/loading.html";
  * @type {number}
  * @default
  */
-const STANDARD_TIMEOUT = 280000;
+const STANDARD_TIMEOUT = 120000;
 /**
  * @constant
  * @type {number}
@@ -367,11 +367,11 @@ class Site {
             for(let i=0; i<tabs.length; i++ ) {
                 // Don't reset the loading page
                 if( tabs[i].mainFrame()._id != Site.connectedTabs[1].mainFrame()._id ) {
-                    tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+                    await tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
                 }
                 else {
                     // This allows the loading url to update
-                    tabs[i].goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
+                    await tabs[i].goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
                 }
             }
         }
