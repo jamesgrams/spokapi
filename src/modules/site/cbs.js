@@ -186,13 +186,14 @@ class Cbs extends Site {
         else if( await (await actionElement.getProperty("id")).jsonValue() == "#mvpd-signin" ) {
             await this.loginCbs();
         }
-        // We don't need to login to anything!
-        // Wait for the drop down arrow to log out
-        await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_TIMEOUT});
 
         // Exit the loading page now that we're loaded (needs to be before fullscreen)
         if( !Site.PATH_TO_CHROME )
             await Site.stopLoading(this.page);
+
+        // We don't need to login to anything!
+        // Wait for the drop down arrow to log out
+        await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_TIMEOUT});
 
         // Click the full screen button
         await this.page.evaluate( () => { document.querySelector('#LIVE_TV_CONTENT').webkitRequestFullScreen(); } );
