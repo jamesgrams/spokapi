@@ -369,6 +369,10 @@ class Site {
                 if( tabs[i].mainFrame()._id != Site.connectedTabs[1].mainFrame()._id ) {
                     tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
                 }
+                else {
+                    // This allows the loading url to update
+                    tabs[i].goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
+                }
             }
         }
         
