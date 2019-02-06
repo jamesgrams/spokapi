@@ -153,10 +153,17 @@ class NbcSports extends Site {
 
     /**
      * Begin watching something on NBC Sports.
-     * Note: You should already be at the correct url
+     * @param {String} url - the url to watch
      * @returns {Promise}
      */
-    async watch() {
+    async watch(url) {
+
+        if( !Site.PATH_TO_CHROME )
+            await Site.displayLoading();
+
+        // Go to the url
+        await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
+
         // Wait until the login detector is loaded
         await this.page.waitForSelector("#accessEnablerUI", {timeout: Site.STANDARD_TIMEOUT});
         // See if we need to log in
@@ -174,7 +181,7 @@ class NbcSports extends Site {
         // Wait for a play button, sometimes it autoplays though..
         try {
             await this.page.waitForSelector('.player-wrapper', {timeout: 7000}); // Note this is non-standard
-            await this.page.click('.player-wrapper');
+            await this.page.evaluate( () => document.querySelector(".player-wrapper").click() );
         }
         // OK to autoplay
         catch(err) { }
@@ -183,6 +190,11 @@ class NbcSports extends Site {
         if( await(this.page.$(".playerContainer")) ) {
             container = ".playerContainer";
         }
+
+        // Exit the loading page now that we're loaded (needs to be before fullscreen)
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
+
         await this.page.evaluate( (container) => { document.querySelector(container).webkitRequestFullScreen(); }, container );
         return Promise.resolve(1);
     }

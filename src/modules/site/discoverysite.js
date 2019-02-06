@@ -108,7 +108,7 @@ class DiscoverySite extends Site {
     async login() {
         // Click sign in
         let signInButton = await this.page.$('.play-button');
-        await signInButton.click();
+        await this.page.evaluate( (signInButton) => signInButton.click(), signInButton );
         // Wait for the list of providers
         await this.page.waitForSelector('.affiliateList__preferred', {timeout: Site.STANDARD_TIMEOUT});
 
@@ -124,7 +124,7 @@ class DiscoverySite extends Site {
         await this.page.waitForXPath(providerSelector, {timeout: Site.STANDARD_TIMEOUT});
         // Click the provider selector
         let providerElements = await this.page.$x(providerSelector);
-        await providerElements[0].click();
+        await this.page.evaluate( (providerElement) => providerElement.click(), providerElements[0] );
         // We should be on our Provider screen now
         try {
             await provider.login(this.page, Site.STANDARD_TIMEOUT);
@@ -135,10 +135,17 @@ class DiscoverySite extends Site {
 
     /**
      * Begin watching something on Discovery.
-     * Note: You should already be at the correct url
+     * @param {String} url - the url to watch
      * @returns {Promise}
      */
-    async watch() {
+    async watch(url) {
+
+        if( !Site.PATH_TO_CHROME )
+            await Site.displayLoading();
+
+        // Go to the url
+        await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
+
         // See if we need to log in
         try {
             // Wait for the fullscreen indicator (we will use this to know we are logged in)
@@ -154,7 +161,12 @@ class DiscoverySite extends Site {
         }
         // Wait for the play button
         await this.page.waitForSelector("button[data-plyr='fullscreen']", {timeout: Site.STANDARD_TIMEOUT});
-        await this.page.click("button[data-plyr='fullscreen']");
+
+        // Exit the loading page now that we're loaded (needs to be before fullscreen)
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
+
+        await this.page.evaluate( () => document.querySelector("button[data-plyr='fullscreen']").click() );
         return Promise.resolve(1);
     }
 

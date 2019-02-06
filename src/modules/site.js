@@ -28,7 +28,7 @@ const Xfinity = require("./provider/xfinity");
  * @type {string}
  * @default
  */
-const STOP_URL = "localhost:8080/static/home.html";
+const STOP_URL = "about:blank";
 /**
  * @constant
  * @type {string}
@@ -165,9 +165,16 @@ class Site {
      */
     async stop(message) {
         await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
-        if ( message ) {
-            await this.page.waitForSelector("body", {timeout: STANDARD_TIMEOUT});
-            await this.page.evaluate( (message) => document.querySelector("#message").innerText = message, message );
+        // If this is the watch page being stopped, we can display a message in Chrome OS mode
+        if( !Site.PATH_TO_CHROME && this.page.mainFrame()._id == Site.watchTabId ) {
+            // Go to the loading/home page and display the message
+            await Site.connectedTabs[1].bringToFront();
+            // Make sure the stop page isn't loading
+            await Site.cancelLoading();
+            if ( message ) {
+                await Site.connectedTabs[1].waitForSelector("body", {timeout: STANDARD_TIMEOUT});
+                await Site.connectedTabs[1].evaluate( (message) => document.querySelector("#message").innerText = message, message );
+            }
         }
         return Promise.resolve(1);
     }
@@ -180,7 +187,8 @@ class Site {
      */
     static async connectToChrome() {
         // The number of needed tabs
-        let neededTabs = totalNetworks + 1;
+        // Total networks + watch tab + loading tab
+        let neededTabs = totalNetworks + 2;
 
         // First, get the ID of the running chrome instance (it must have remote debugging enabled on port 1337)
         let response = await fetch('http://localhost:1337/json/version');
@@ -204,15 +212,11 @@ class Site {
         // tab (first one means watching) (we "reconnect" to these)
         Site.connectedTabs = [];
         let tabs = await context.pages();
-        if( tabs.length > 0 ) {
-            for(let i=0; i<tabs.length; i++ ) {
-                if( i < neededTabs ) { // If we still need more tabs
-                    Site.connectedTabs.push(tabs[i]);
-                    await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
-                    await tabs[i].setGeolocation(location);
-                }
-            }
-        } 
+        for(let i=0; i<tabs.length; i++ ) { // We will remove tabs we don't need later
+            connectedTabs.push(tabs[i]);
+            await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
+            await tabs[i].setGeolocation(location);
+        }
 
         // We need a tab for each network plus the watch tab
         for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
@@ -223,18 +227,21 @@ class Site {
             await page.setGeolocation(location);
             Site.connectedTabs.push(page);
         }
-        await Site.makeWatchTabFirst(browser);
-        await Site.connectedTabs[0].bringToFront();
+        await Site.makeWatchTabFirst(browser); // For easy referral as the first tab later on
         // Sometime watching video doesn't work well unless we have a correct user agent
         await Site.connectedTabs[0].setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
         await Site.connectedTabs[0]._client.send('Emulation.clearDeviceMetricsOverride');
 
+        await Site.makeLoadingTabSecond(browser);
+
+        await Site.connectedTabs[1].bringToFront();
+
         // Remove unecessary tabs
-        tabs = await context.pages();
-        for(let i=0; i<tabs.length; i++) {
-            if( Site.connectedTabs.indexOf( tabs[i] ) == -1 ) {
-                tabs[i].close();
-            }
+        // We know we won't accidently remove the watch and loading tabs,
+        // since they are tabs #0 & #1, and neededTabs will always be at least 2
+        for(let i=Site.connectedTabs.length-1; i>=neededTabs; i--) {
+            Site.connectedTabs[i].close();
+            Site.connectedTabs.splice(i, 1);
         }
 
         return Promise.resolve(browser);
@@ -247,10 +254,9 @@ class Site {
     static async makeWatchTabFirst() {
         let watchTab;
         let watchTabIndex = 0;
-        Site.connectedTabs;
         for( let i=0; i<Site.connectedTabs.length; i++ ) {
             let tab = Site.connectedTabs[i];
-            if( tab.mainFrame()._id == Site.watchTabId ) {
+            if( tab.mainFrame()._id == Site.watchTabId && ! tab.url().includes(LOADING_URL) ) {
                 watchTab = tab;
                 watchTabIndex = i;
                 break;
@@ -258,6 +264,7 @@ class Site {
         }
         if( !watchTab ) {
             watchTab = Site.connectedTabs[0];
+            await watchTab.goto(STOP_URL, {timeout: Site.STANDARD_TIMEOUT});
             Site.watchTabId = watchTab.mainFrame()._id;
         }
         // Switch the element currently first with watchTab
@@ -265,6 +272,86 @@ class Site {
         Site.connectedTabs[0] = watchTab;
         
         return Promise.resolve(watchTab);
+    }
+
+    /**
+     * Make the loading tab the second tab on the list of connected tabs
+     * @returns {Promise}
+     */
+    static async makeLoadingTabSecond() {
+        let loadingTab;
+        let loadingTabIndex = 1;
+
+        for( let i=1; i<Site.connectedTabs.length; i++ ) { // Start at 1 since loadingTab cannot equal watchTab
+            let tab = Site.connectedTabs[i];
+            if( tab.url().includes(LOADING_URL) ) {
+                loadingTab = tab;
+                loadingTabIndex = i;
+                break;
+            }
+        }
+        if( !loadingTab ) {
+            loadingTab = Site.connectedTabs[1];
+            await loadingTab.goto(LOADING_URL, {timeout: Site.STANDARD_TIMEOUT});
+        }
+        // Switch the element currently first with watchTab
+        Site.connectedTabs[loadingTabIndex] = Site.connectedTabs[1];
+        Site.connectedTabs[1] = loadingTab;
+        
+        return Promise.resolve(loadingTab);
+    }
+
+    /**
+     * Send the browser to the loading screen
+     * @returns {Promise<Page>}
+     */
+    static async displayLoading() {
+        let loadingPage = Site.connectedTabs[1];
+        await loadingPage.bringToFront();
+        await loadingPage.evaluate( () => startLoading() );
+        await Site.clearMessage();
+        return Promise.resolve(loadingPage);
+    }
+
+    /**
+     * Go back to the watch tab
+     * @param {string} watchPage - the watch page
+     * @returns {Promise<Page>}
+     */
+    static async stopLoading(watchPage) {
+        try {
+            await watchPage.bringToFront();
+            let session = await watchPage.target().createCDPSession();
+            await session.send("Page.enable");
+            await session.send("Page.setWebLifecycleState", { state: "active" });
+        }
+        catch(err) { console.log(err); }
+        let loadingPage = Site.connectedTabs[1];
+        await loadingPage.evaluate( () => stopLoading() );
+        await Site.clearMessage();
+        return Promise.resolve(watchPage);
+    }
+
+    /**
+     * Cancel loading (due to error, or user interaction)
+     * @returns {Promise<Page>}
+     */
+    static async cancelLoading() {
+        let loadingPage = Site.connectedTabs[1];
+        await loadingPage.bringToFront();
+        await loadingPage.evaluate( () => stopLoading() );
+        await Site.clearMessage(); // Stop, which adds a message, calls this before adding a new message
+        return Promise.resolve(loadingPage);
+    }
+
+    /**
+     * Remove the message from being displayed
+     * @returns {Promise}
+     */
+    static async clearMessage() {
+        await Site.connectedTabs[1].waitForSelector("body", {timeout: STANDARD_TIMEOUT});
+        await Site.connectedTabs[1].evaluate( () => document.querySelector("#message").innerText = "" );
+        return Promise.resolve(1);
     }
 
     /**
@@ -276,24 +363,18 @@ class Site {
         let context = await browser.defaultBrowserContext();
         let tabs = await context.pages();
         if(tabs.length > 0) {
+            tabs[0].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
             for(let i=0; i<tabs.length; i++ ) {
-                tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+                // Don't reset the loading page
+                if( tabs[i].mainFrame()._id != Site.connectedTabs[1].mainFrame()._id ) {
+                    tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+                }
             }
         }
+        
+        new Site(tabs[0]).stop("Welcome");
 
         return Promise.resolve(1);
-    }
-
-    /**
-     * Send the page to the loading screen
-     * @param {Browser} browser - the browser to display loading
-     * @returns {Promise<Page}
-     */
-    static async displayLoading(browser) {
-        // If there is an error, this loading tab will get removed/repurposed on the next connect
-        let loadingPage = await browser.newPage();
-        await loadingPage.goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
-        return Promise.resolve(loadingPage);
     }
 
     /**

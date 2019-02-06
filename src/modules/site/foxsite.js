@@ -140,11 +140,11 @@ class FoxSite extends Site {
         // Wait to see all providers and then click it
         await this.page.waitForSelector("div[class^='AuthMVPDStart_provider']:last-child > a[class^='AuthMVPDStart_provider']", {timeout: Site.STANDARD_TIMEOUT});
         await this.page.waitFor(1000); // Some JS may still need to load
-        await (await this.page.$("div[class^='AuthMVPDStart_provider']:last-child > a[class^='AuthMVPDStart_provider']")).click();
+        await this.page.evaluate( () => document.querySelector("div[class^='AuthMVPDStart_provider']:last-child > a[class^='AuthMVPDStart_provider']").click() );
 
         // Focus on the place to type providers
         await this.page.waitForSelector("*[class^='AuthMVPDSearch_input'] > input", {timeout: Site.STANDARD_TIMEOUT});
-        await (await this.page.$("*[class^='AuthMVPDSearch_input'] > input")).focus();
+        await this.page.evaluate( () => document.querySelector("*[class^='AuthMVPDSearch_input'] > input").focus() );
 
         let provider = this.constructor.getProvider();
         if( !provider ) { // Provider unsupported
@@ -168,7 +168,7 @@ class FoxSite extends Site {
         let oldPageCount = allPages.length;
 
         // The new page will open in a popup
-        await this.page.click("*[class^='AuthMVPDSearch_providerContainer'] a");
+        await this.page.evaluate( () => document.querySelector("*[class^='AuthMVPDSearch_providerContainer'] a").click() );
         
         // We should be on our Provider screen now
         // It'll be on a different tab though, so we have to switch to that
@@ -195,15 +195,27 @@ class FoxSite extends Site {
         catch(err) {console.log(err);}
 
         this.page = watchPage;
+
         return Promise.resolve(1);
     }
 
     /**
      * Begin watching something on Fox.
-     * Note: You should already be at the correct url
+     * @param {String} url - the url to watch
      * @returns {Promise}
      */
-    async watch() {
+    async watch(url) {
+
+        if( !Site.PATH_TO_CHROME )
+            await Site.displayLoading();
+
+        // Go to the url
+        await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
+
+        // Exit the loading page now that we're loaded (TODO: figure this out better)
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
+
         // See what we need to do
         await this.page.waitForSelector("*[class^='AuthPlaybackError_primaryAction'],*[class^='VideoContainer_previewPassLoginLink'],*[class^='AuthSignIn_button'],*[class^='AuthMVPDStart_provider'],.fullscreenButton", {timeout: Site.STANDARD_TIMEOUT});
 
@@ -217,8 +229,8 @@ class FoxSite extends Site {
 
         // We need to click ok for location
         if( actionClassName.indexOf("AuthPlaybackError_primaryAction") != -1 ) {
-            await actionElement.click();
-            await this.watch(); // We basically just want to start again after clicking OK for location.
+            await this.page.evaluate( () => document.querySelector("*[class^='AuthPlaybackError_primaryAction']").click() );
+            await this.watch(url); // We basically just want to start again after clicking OK for location.
             return Promise.resolve(1);
         }
         // We're in preview mode or it's asking us to login
@@ -226,13 +238,13 @@ class FoxSite extends Site {
         // In this case it looks like it still hits the previewPassLoginLink
         if( actionClassName.indexOf("VideoContainer_previewPassLoginLink") != -1 || actionClassName.indexOf("AuthSignIn_button") != -1 ) {
             await this.page.waitFor(700);
-            await actionElement.click();
+            await this.page.evaluate( (actionElement) => actionElement.click(), actionElement );
             if ( actionClassName.indexOf("VideoContainer_previewPassLoginLink") != -1 ) {
                 try {
                     // Click Sign in again if necessary
                     await this.page.waitFor(700);
                     await this.page.waitForSelector("*[class^='AuthSignIn_button']", {timeout: (Site.STANDARD_WAIT_OK_TIMEOUT * 2)});
-                    await this.page.click("*[class^='AuthSignIn_button']"); 
+                    await this.page.evaluate( () => document.querySelector("*[class^='AuthSignIn_button']").click() );
                 }
                 catch (err) { console.log(err); }
             }
@@ -242,6 +254,7 @@ class FoxSite extends Site {
 
         // Wait for the play button
         await this.page.waitForSelector("video", {timeout: (Site.STANDARD_TIMEOUT * 2)});
+
         await this.page.evaluate( () => document.querySelector("video").webkitRequestFullScreen() );
         return Promise.resolve(1);
     }

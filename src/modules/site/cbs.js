@@ -108,7 +108,7 @@ class Cbs extends Site {
             await this.page.evaluate( () => document.querySelector(".button--cta").click() );
             await this.page.waitForSelector( 'div[data-provider-id="'+provider.name+'"]', {timeout: Site.STANDARD_TIMEOUT} );
             // Click the input field
-            await this.page.focus(".providers__search-field");
+            await this.page.evaluate( () => document.querySelector(".providers__search-field").focus() );
             await this.page.keyboard.type(provider.name);
             await this.page.waitFor(250);
             await this.page.keyboard.press("ArrowDown");
@@ -147,7 +147,7 @@ class Cbs extends Site {
             await this.page.evaluate( (cbsUsername) => { document.querySelector('#j_username').value =cbsUsername; }, cbsUsername );
             await this.page.evaluate( (cbsPassword) => { document.querySelector('#j_password').value =cbsPassword; }, cbsPassword );
             // Login
-            await this.page.click('#submit-btn');
+            await this.page.evaluate( () => { document.querySelector('#submit-btn').click(); } );
         }
         // We didn't actually have to sign in
         catch (err) { console.log(err); }
@@ -157,10 +157,17 @@ class Cbs extends Site {
 
     /**
      * Begin watching something on CBS.
-     * Note: You should already be at the correct url
+     * @param {String} url - the url to watch
      * @returns {Promise}
      */
-    async watch() {
+    async watch(url) {
+        
+        if( !Site.PATH_TO_CHROME )
+            await Site.displayLoading();
+
+        // Go to the url
+        await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
+
         // This means the page should be ready
         await this.page.waitForSelector("#flashcontent", {timeout: Site.STANDARD_TIMEOUT});
         // See what we need to do
@@ -182,7 +189,12 @@ class Cbs extends Site {
         // We don't need to login to anything!
         // Wait for the drop down arrow to log out
         await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_TIMEOUT});
-        // Click the full screen button (it might be hidden, so use evaluate)
+
+        // Exit the loading page now that we're loaded (needs to be before fullscreen)
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
+
+        // Click the full screen button
         await this.page.evaluate( () => { document.querySelector('#LIVE_TV_CONTENT').webkitRequestFullScreen(); } );
         return Promise.resolve(1);
     }

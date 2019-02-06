@@ -70,7 +70,7 @@ let MAX_SIMULTANEOUS_FETCHES = 2;
  * @default
  */
 const NETWORKS = { 
-    "animalplanet": AnimalPlanet,
+    /*"animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -87,7 +87,7 @@ const NETWORKS = {
     "nbcsports": NbcSports, 
     "foxsports": FoxSports, 
     "cbs": Cbs,
-    "pbskids": PbsKids,
+    */"pbskids": PbsKids/*,
     "fox": Fox,
     "nationalgeographic": NationalGeographic,
     "nationalgeographicwest": NationalGeographicWest,
@@ -98,7 +98,7 @@ const NETWORKS = {
     "fxm": Fxm,
     "fxx": Fxx,
     "fxxwest": FxxWest,
-    "natgeowild": NatGeoWild
+    "natgeowild": NatGeoWild*/
 };
 /**
  * @constant
@@ -216,8 +216,15 @@ app.get('/programs', async function(request, response) {
 
             // Disconnect the current session
             if( !Site.PATH_TO_CHROME && watchBrowser ) {
-                watchBrowser.disconnect();
-                watchBrowser = null;
+                try {
+                    if( !Site.PATH_TO_CHROME )
+                        await Site.cancelLoading();
+                }
+                catch (err) { console.log(err); }
+                try {
+                    await watchBrowser.disconnect();
+                }
+                catch (err) { console.log(err); }
             }
 
             let fetchNetworks;
@@ -228,7 +235,7 @@ app.get('/programs', async function(request, response) {
 
             // Remove watchBrowser from memory
             if ( !Site.PATH_TO_CHROME ) {
-                if (watchBrowser) { watchBrowser.disconnect() };
+                if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
                 watchBrowser = null;
             }
         }
@@ -246,7 +253,18 @@ app.get('/watch', async function(request, response) {
     response.end(JSON.stringify({"status":"success"}));
 
     if( !Site.PATH_TO_CHROME && watchBrowser ) {
-        watchBrowser.disconnect();
+        try {
+            try {
+                if( !Site.PATH_TO_CHROME )
+                    await Site.cancelLoading();
+            }
+            catch (err) { console.log(err); }
+            try {
+                await watchBrowser.disconnect();
+            }
+            catch (err) { console.log(err); }
+        }
+        catch (err) { console.log(err); }
         watchBrowser = null;
     }
 
@@ -265,9 +283,6 @@ app.get('/watch', async function(request, response) {
         page = Site.connectedTabs[0];
     }
 
-    // Ensure the page is focused
-    await page.bringToFront();
-
     // Set watching to true on the program
     if( programsCache ) {
         for( let program of programsCache ) {
@@ -281,12 +296,11 @@ app.get('/watch', async function(request, response) {
         }
     }
 
-    // We don't wait for watching to be done before sending the response
     await watch(page, url, request);
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        if (watchBrowser) { try { watchBrowser.disconnect() } catch (err) { console.log(err) } };
+        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
         watchBrowser = null;
     }
 });
@@ -297,7 +311,18 @@ app.get('/stop', async function(request, response) {
     response.end(JSON.stringify({"status":"success"}));
 
     if( !Site.PATH_TO_CHROME && watchBrowser ) {
-        watchBrowser.disconnect();
+        try {
+            try {
+                if( !Site.PATH_TO_CHROME )
+                    await Site.cancelLoading();
+            }
+            catch (err) { console.log(err); }
+            try {
+                await watchBrowser.disconnect();
+            }
+            catch (err) { console.log(err); }
+        }
+        catch (err) { console.log(err); }
         watchBrowser = null;
     }
 
@@ -325,7 +350,7 @@ app.get('/stop', async function(request, response) {
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        if (watchBrowser) { watchBrowser.disconnect() };
+        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
         watchBrowser = null;
     }
 
@@ -469,6 +494,27 @@ app.get('/ip', async function(request, response) {
     response.end(JSON.stringify({"status":"success","ip":ipAddress}));
 } );
 
+// Endpoint to go to any URL (for debugging)
+app.get('/navigate', async function(request, response) {
+    let url = decodeURIComponent(request.query.url);
+
+    let page;
+    if ( Site.PATH_TO_CHROME ) {
+        let pages = await watchBrowser.pages();
+        page = pages[0];
+    }
+    else {
+        page = Site.connectedTabs[0];
+    }
+
+    await page.bringToFront();
+    await page.goto(url);
+
+    // Respond to the user
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success","ip":ipAddress}));
+} );
+
 // -------------------- Main Program --------------------
 
 // Read file for login data
@@ -535,7 +581,7 @@ async function openBrowser(clean) {
     else {
         watchBrowser = await Site.connectToChrome();
         if( clean ) {
-            Site.cleanupAll(watchBrowser);
+            await Site.cleanupAll(watchBrowser);
         }        
     }
     watchBrowser.on("disconnected", function() {
@@ -556,7 +602,14 @@ async function watch(page, url, request) {
         let network = new Network(page);
         let provider = Network.getProvider();
         if( provider ) {
-            await network.watch(url);
+            // Try to watch, but it's OK if the watch fails
+            try {
+                await network.watch(url);
+            }
+            catch (err) {
+                await new Site(page).stop("An error has occurred. Please try again.");
+                console.log(err);
+            }
         }
         else {
             await network.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);
@@ -576,6 +629,7 @@ async function fetchPrograms(fetchNetworks) {
     if( fetchLocked ) {
         return Promise.resolve(false);
     }
+
     fetchLocked = true;
 
     if( !fetchNetworks ) {
@@ -586,8 +640,9 @@ async function fetchPrograms(fetchNetworks) {
     // Note: To block a channel from fetching, make sure it is lower case
     if( !Site.PATH_TO_CHROME ) {
         watchBrowser = await Site.connectToChrome();
+        await Site.displayLoading();
         // Create an instance of each network class
-        let index = 1;
+        let index = 2;
         for( let Network of fetchNetworks.map( v => NETWORKS[v] ) ) {
             if( Site.unsupportedChannels.indexOf(Network.name.toLowerCase()) === -1 ) {
                 networks.push(new Network( Site.connectedTabs[index] ));
@@ -657,6 +712,10 @@ async function fetchPrograms(fetchNetworks) {
     catch (err) { console.log(err) }
 
     fetchLocked = false;
+    
+    if( !Site.PATH_TO_CHROME )
+        await Site.cancelLoading();
+
     return Promise.resolve(true);
 }
 

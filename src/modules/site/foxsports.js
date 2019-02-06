@@ -176,10 +176,17 @@ class FoxSports extends Site {
 
     /**
      * Begin watching something on Fox Sports.
-     * Note: You should already be at the correct url
+     * @param {String} url - the url to watch
      * @returns {Promise}
      */
-    async watch() {
+    async watch(url) {
+
+        if( !Site.PATH_TO_CHROME )
+            await Site.displayLoading();
+
+        // Go to the url
+        await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
+
         await this.checkLogin();
 
         // Check in on whether or not we're playing by seeing if no ask is enabled
@@ -192,6 +199,11 @@ class FoxSports extends Site {
 
         // Go Fullscreen
         await this.page.waitForSelector("#video__wrapper", {timeout: Site.STANDARD_TIMEOUT});
+
+        // Exit the loading page now that we're loaded (needs to be before fullscreen)
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
+
         await this.page.evaluate( () => { document.querySelector("#video__wrapper").webkitRequestFullScreen(); } );
 
         return Promise.resolve(1);

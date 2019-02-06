@@ -166,12 +166,12 @@ class Espn extends Site {
      * @returns {Promise}
      */
     async watch(url) {
-        let loadingPage;
+        
         if( !Site.PATH_TO_CHROME )
-            loadingPage = await Site.displayLoading(this.page.browser());
+            await Site.displayLoading();
 
         // Go to the url
-        await this.page.goto(url);
+        await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
 
         // See if we need to log in
         try {
@@ -194,14 +194,9 @@ class Espn extends Site {
         // There may be autoplay.
         catch(err) {}
 
-        // Exit the loading page now that we're loaded
-        if( loadingPage ) {
-            await this.page.bringToFront();
-            await loadingPage.close();
-            let session = await this.page.target().createCDPSession();
-            await session.send("Page.enable");
-            await session.send("Page.setWebLifecycleState", { state: "active" });
-        }
+        // Exit the loading page now that we're loaded (needs to be before fullscreen)
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
 
         // Click the full screen button (it might be hidden, so use evaluate)
         await this.page.evaluate( () => { document.querySelector('.vjs-fullscreen-control').click(); } );
