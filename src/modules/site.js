@@ -202,17 +202,15 @@ class Site {
 
         // First, check to see if there are tabs open we can use
         // tab (first one means watching) (we "reconnect" to these)
-        // Close all other open tabs too
         Site.connectedTabs = [];
         let tabs = await context.pages();
         if( tabs.length > 0 ) {
-            for(let i=0; i<neededTabs; i++ ) {
-                Site.connectedTabs.push(tabs[i]);
-                await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
-                await tabs[i].setGeolocation(location);
-            }
-            for(let i=Site.connectedTabs.length; i<tabs.length; i++) {
-                await tabs[i].close();
+            for(let i=0; i<tabs.length; i++ ) {
+                if( i < neededTabs ) { // If we still need more tabs
+                    Site.connectedTabs.push(tabs[i]);
+                    await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
+                    await tabs[i].setGeolocation(location);
+                }
             }
         } 
 
@@ -230,6 +228,14 @@ class Site {
         // Sometime watching video doesn't work well unless we have a correct user agent
         await Site.connectedTabs[0].setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
         await Site.connectedTabs[0]._client.send('Emulation.clearDeviceMetricsOverride');
+
+        // Remove unecessary tabs
+        tabs = await context.pages();
+        for(let i=0; i<tabs.length; i++) {
+            if( Site.connectedTabs.indexOf( tabs[i] ) == -1 ) {
+                tabs[i].close();
+            }
+        }
 
         return Promise.resolve(browser);
     }
