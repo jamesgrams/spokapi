@@ -10,7 +10,7 @@ Note: Tested and working well on Chrome OS version 71.0.3578.127
 6. Create a file named `password.txt` and place in `/home/chronos/user/Downloads/spokapi`. The contents of this file should be the password of your account (This will be used to auto-login).
 7. Set the background of the computer to be the Spokapi background image
 8. Set the login picture of the user to be the Spokapi background image
-9. In Chrome Settings, set to boot to the `localhost:8080/static/loading.html` page each time.
+9. In Chrome Settings, set to boot to the `localhost:8080/static/home.html` page each time.
 10. Remove shortcuts to apps besides Chrome.
 11. Enable Bluetooth (this setting will persist after reboot).
 12. Enable Newblue in `chrome://flags`

@@ -28,7 +28,7 @@ const Xfinity = require("./provider/xfinity");
  * @type {string}
  * @default
  */
-const STOP_URL = "about:blank";
+const STOP_URL = "localhost:8080/static/home.html";
 /**
  * @constant
  * @type {string}
@@ -167,17 +167,8 @@ class Site {
         await this.page.goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
         if ( message ) {
             await this.page.waitForSelector("body", {timeout: STANDARD_TIMEOUT});
-            await this.page.evaluate( (message) => document.body.innerText = message, message );
+            await this.page.evaluate( (message) => document.querySelector("#message").innerText = message, message );
         }
-        return Promise.resolve(1);
-    }
-
-    /**
-     * Send the page to the loading screen
-     * @returns {Promise}
-     */
-    async load() {
-        await this.page.goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
         return Promise.resolve(1);
     }
 
@@ -272,6 +263,7 @@ class Site {
 
     /**
      * Cleanup all tabs (for loading on program startup)
+     * @param {Browser} browser - the browser to clean up
      * @returns {Promise}
      */
     static async cleanupAll(browser) {
@@ -284,6 +276,18 @@ class Site {
         }
 
         return Promise.resolve(1);
+    }
+
+    /**
+     * Send the page to the loading screen
+     * @param {Browser} browser - the browser to display loading
+     * @returns {Promise<Page}
+     */
+    static async displayLoading(browser) {
+        // If there is an error, this loading tab will get removed/repurposed on the next connect
+        let loadingPage = await browser.newPage();
+        await loadingPage.goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
+        return Promise.resolve(loadingPage);
     }
 
     /**

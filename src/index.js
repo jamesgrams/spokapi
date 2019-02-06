@@ -548,7 +548,6 @@ async function openBrowser(clean) {
  * Asynchronously start watching
  */
 async function watch(page, url, request) {
-    await page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
 
     let networkName = request.query.network;
 
@@ -557,7 +556,7 @@ async function watch(page, url, request) {
         let network = new Network(page);
         let provider = Network.getProvider();
         if( provider ) {
-            await network.watch();
+            await network.watch(url);
         }
         else {
             await network.stop(Site.CHANNEL_UNSUPPORTED_MESSAGE);

@@ -162,10 +162,17 @@ class Espn extends Site {
 
     /**
      * Begin watching something on ESPN.
-     * Note: You should already be at the correct url
+     * @param {String} url - the url to watch
      * @returns {Promise}
      */
-    async watch() {
+    async watch(url) {
+        let loadingPage;
+        if( !Site.PATH_TO_CHROME )
+            loadingPage = await Site.displayLoading(this.page.browser());
+
+        // Go to the url
+        await this.page.goto(url);
+
         // See if we need to log in
         try {
             // Wait for the play button
@@ -182,10 +189,20 @@ class Espn extends Site {
         // Wait for the play button
         await this.page.waitForSelector(".vjs-big-play-button", {timeout: Site.STANDARD_TIMEOUT});
         try {
-            await this.page.click(".vjs-big-play-button");
+            await this.page.evaluate( () => { document.querySelector('.vjs-big-play-button').click(); } );
         }
         // There may be autoplay.
         catch(err) {}
+
+        // Exit the loading page now that we're loaded
+        if( loadingPage ) {
+            await this.page.bringToFront();
+            await loadingPage.close();
+            let session = await this.page.target().createCDPSession();
+            await session.send("Page.enable");
+            await session.send("Page.setWebLifecycleState", { state: "active" });
+        }
+
         // Click the full screen button (it might be hidden, so use evaluate)
         await this.page.evaluate( () => { document.querySelector('.vjs-fullscreen-control').click(); } );
         return Promise.resolve(1);
