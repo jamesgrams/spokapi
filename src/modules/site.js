@@ -31,6 +31,12 @@ const Xfinity = require("./provider/xfinity");
 const STOP_URL = "about:blank";
 /**
  * @constant
+ * @type {string}
+ * @default
+ */
+const LOADING_URL = "localhost:8080/static/loading.html";
+/**
+ * @constant
  * @type {number}
  * @default
  */
@@ -166,6 +172,15 @@ class Site {
         return Promise.resolve(1);
     }
 
+    /**
+     * Send the page to the loading screen
+     * @returns {Promise}
+     */
+    async load() {
+        await this.page.goto(LOADING_URL, {timeout: STANDARD_TIMEOUT});
+        return Promise.resolve(1);
+    }
+
     // --------------- Static methods -----------------
 
     /**
@@ -202,7 +217,6 @@ class Site {
         if( tabs.length > 0 ) {
             for(let i=0; i<tabs.length; i++ ) {
                 Site.connectedTabs.push(tabs[i]);
-                await tabs[i].goto("about:blank"); // Make sure the tab is blank
                 await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
                 await tabs[i].setGeolocation(location);
             }
@@ -254,6 +268,22 @@ class Site {
         Site.connectedTabs[0] = watchTab;
         
         return Promise.resolve(watchTab);
+    }
+
+    /**
+     * Cleanup all tabs (for loading on program startup)
+     * @returns {Promise}
+     */
+    static async cleanupAll(browser) {
+        let context = await browser.defaultBrowserContext();
+        let tabs = await context.pages();
+        if(tabs.length > 0) {
+            for(let i=0; i<tabs.length; i++ ) {
+                tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+            }
+        }
+
+        return Promise.resolve(1);
     }
 
     /**

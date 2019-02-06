@@ -501,7 +501,7 @@ if ( fs.existsSync(LOGIN_INFO_FILE) ) {
 }
 
 // Open browser
-openBrowser();
+openBrowser(true);
 
 app.listen(PORT); // Listen for requests
 
@@ -509,8 +509,9 @@ app.listen(PORT); // Listen for requests
 
 /**
  * Launch the watch browser.
+ * @param {boolean} clean - true if the browser should clean out its pages (Non-launch/connect only)
  */
-async function openBrowser() {
+async function openBrowser(clean) {
     // If there is a Chrome path, we will try to launch chrome
     if ( Site.PATH_TO_CHROME ) {
         watchBrowser = await puppeteer.launch({
@@ -533,6 +534,9 @@ async function openBrowser() {
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {
         watchBrowser = await Site.connectToChrome();
+        if( clean ) {
+            Site.cleanupAll(watchBrowser);
+        }        
     }
     watchBrowser.on("disconnected", function() {
         watchBrowser = null;
