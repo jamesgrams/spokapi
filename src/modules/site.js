@@ -206,7 +206,7 @@ class Site {
         Site.connectedTabs = [];
         let tabs = await context.pages();
         if( tabs.length > 0 ) {
-            for(let i=0; i<tabs.length; i++ ) {
+            for(let i=0; i<neededTabs; i++ ) {
                 Site.connectedTabs.push(tabs[i]);
                 await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
                 await tabs[i].setGeolocation(location);
