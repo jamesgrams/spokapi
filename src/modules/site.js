@@ -240,7 +240,7 @@ class Site {
         // We know we won't accidently remove the watch and loading tabs,
         // since they are tabs #0 & #1, and neededTabs will always be at least 2
         for(let i=Site.connectedTabs.length-1; i>=neededTabs; i--) {
-            Site.connectedTabs[i].close();
+            await Site.connectedTabs[i].close();
             Site.connectedTabs.splice(i, 1);
         }
 
@@ -363,11 +363,16 @@ class Site {
         let context = await browser.defaultBrowserContext();
         let tabs = await context.pages();
         if(tabs.length > 0) {
-            tabs[0].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+            await tabs[0].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
             for(let i=0; i<tabs.length; i++ ) {
                 // Don't reset the loading page
                 if( tabs[i].mainFrame()._id != Site.connectedTabs[1].mainFrame()._id ) {
-                    await tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+                    try {
+                        await tabs[i].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
+                    }
+                    catch (err) {
+                        console.log(err);
+                    }
                 }
                 else {
                     // This allows the loading url to update
