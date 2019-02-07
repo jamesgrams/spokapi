@@ -105,14 +105,14 @@ class Cbs extends Site {
             }
 
             // Click the "More Providers" button
+            await this.page.waitFor(1000);
             await this.page.evaluate( () => document.querySelector(".button--cta").click() );
             await this.page.waitForSelector( 'div[data-provider-id="'+provider.name+'"]', {timeout: Site.STANDARD_TIMEOUT} );
             // Click the input field
-            await this.page.evaluate( () => document.querySelector(".providers__search-field").focus() );
-            await this.page.keyboard.type(provider.name);
+            await this.page.evaluate( (name) => { document.querySelector(".providers__search-field").value = name; $('.providers__search-field').keyup(); }, provider.name );
+            await this.page.waitFor(1000);
+            await this.page.evaluate( () => { $(".provider-row:visible").mouseup(); } );
             await this.page.waitFor(250);
-            await this.page.keyboard.press("ArrowDown");
-            await this.page.keyboard.press("Enter");
             
             // Click the sign in button
             await this.page.evaluate( () => document.querySelectorAll(".button--cta")[1].click() );
