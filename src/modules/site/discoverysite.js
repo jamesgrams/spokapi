@@ -47,6 +47,9 @@ class DiscoverySite extends Site {
         super(page);
         this.url = url;
         this.channelName = channelName;
+        let baseUrlRegex = /(.*\.com)/;
+        let baseUrl = baseUrlRegex.exec(this.url)[1];
+        this.scheduleUrl = baseUrl + "/schedule";
     }
     
     /**
@@ -68,30 +71,71 @@ class DiscoverySite extends Site {
             // Wait until the listing of what's on now is listed
             await this.page.waitForSelector(".liveVideoMetadata__now", {timeout: Site.STANDARD_TIMEOUT});
 
+            let title = await (await (await this.page.$(".headerLiveStream__name")).getProperty('textContent')).jsonValue();
             let network = this.constructor.name.toLowerCase();
             let channel = this.channelName ? this.channelName : network;
-            let startTime = await (await this.page.$(".liveVideoMetadata__now .liveVideoMetadata__time")).getProperty('textContent');
-            let endTime = await (await this.page.$(".liveVideoMetadata__next .liveVideoMetadata__time")).getProperty('textContent');
+            let startTime = await( await (await this.page.$(".liveVideoMetadata__now .liveVideoMetadata__time")).getProperty('textContent')).jsonValue();
+            let endTime = await( await (await this.page.$(".liveVideoMetadata__next .liveVideoMetadata__time")).getProperty('textContent')).jsonValue();
 
             let timeRegex = /(\d+):(\d+)([AP])/;
             let startMatch = timeRegex.exec(startTime);
             let endMatch = timeRegex.exec(endTime);
             let times = Site.makeTimes(startMatch[1], startMatch[2], startMatch[3], endMatch[1], endMatch[2], endMatch[3]);
 
+            // Now, we need to view the full schedule to get the extra information that we need
+            await this.page.goto(this.scheduleUrl, {timeout: Site.STANDARD_TIMEOUT});
+
+            // Wait for the show full schedule button and click it
+            await this.page.waitForSelector( ".schedule__listingsButton", {timeout: Site.STANDARD_TIMEOUT});
+            await this.page.evaluate( () => document.querySelector(".schedule__listingsButton").click() );
+
+            // Wait for the selector for the current time
+            let liveSelector = '//div[@class="episodeScheduleTile__time"]/p[text()="' + startTime.replace(/\s.*/,"").replace(/A/," A").replace(/P/, " P") + '"]/../..';
+            await this.page.waitForXPath(liveSelector, {timeout: Site.STANDARD_TIMEOUT});
+            let liveElement = await this.page.waitForXPath(liveSelector);
+
+            let description = await this.page.evaluate( (liveElement) => liveElement.querySelector(".episodeScheduleTile__episodeDescription").innerText, liveElement );
+            let episodeTitle = await this.page.evaluate( (liveElement) => liveElement.querySelector(".episodeScheduleTile__episodeTitle").innerText, liveElement );
+            let thumbnail = "";
+            try {
+                thumbnail = await this.page.evaluate( (liveElement) => liveElement.querySelector('img').getAttribute('src'), liveElement );
+            }
+            catch(err) { // No thumbnail
+                console.log(err);
+            }
+            let season = "";
+            let episode = "";
+            try {
+                let seasonEpisode = await this.page.evaluate( (liveElement) => liveElement.querySelector('.episodeScheduleTile__episodeNumber').innerText, liveElement );
+                let seasonEpisodeRegex = /(Season\s(\d+)\s)?Episode\s(\d+)/i;
+                let seasonEpisodeMatch = await seasonEpisodeRegex.exec(seasonEpisode);
+                if( seasonEpisodeMatch ) {
+                    if( seasonEpisodeMatch[2] ) {
+                        season = seasonEpisodeMatch[2];
+                    }
+                    if( seasonEpisodeMatch[3] ) {
+                        episode = seasonEpisodeMatch[3];
+                    }
+                }
+            }
+            catch (err) { // There is no season episode
+                console.log(err);
+            }
+
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
-                    await (await (await this.page.$(".headerLiveStream__name")).getProperty('textContent')).jsonValue(),
+                    title,
                     this.url,
                     times.start,
                     times.run,
                     network,
                     channel,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
+                    description,
+                    season,
+                    episode,
+                    episodeTitle,
+                    thumbnail
                 ) );
             }
 

@@ -30,6 +30,11 @@ h1 > img {
 .program-title {
     font-weight: bold;
     display: inline-block;
+    margin-right: 5px;
+}
+.program-right {
+    float: right;
+    margin-left: 10px;
 }
 .program-channel {
     font-style: italic;
@@ -43,6 +48,27 @@ h1 > img {
 }
 .program-time, .program-channel {
     float: right;
+}
+.program-info {
+    font-style: italic;
+    color:grey;
+    font-size: 70%;
+    display: inline-block;
+    margin-top: 5px;
+}
+.program-image {
+    width: 89px;
+    height: 50px;
+    background-position: center;
+    background-size: cover;
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 10px;
+}
+.program-description {
+    font-size: 75%;
+    margin-top: 5px;
+    clear: both;
 }
 .program-seperator {
     clear: both;

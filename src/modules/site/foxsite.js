@@ -85,7 +85,7 @@ class FoxSite extends Site {
             }
 
             // Wait until the live program is loaded
-            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]//*[contains(@class,"ScheduleItem_scheduleItem_1Cppt")]';
+            let liveSelector = '//*[contains(@class,"Live_scheduleRowSelected")]//*[contains(@data-test,"scheduleitem-item")]';
             if( this.altSelector ) {
                 liveSelector = '//img[contains(@class,"Live_networkLogo")][@alt="'+this.altSelector+'"]/../..//*[contains(@data-test,"scheduleitem-item")]';
             }
@@ -106,6 +106,24 @@ class FoxSite extends Site {
             let title = liveInfoMatch[1];
             let times = Site.makeTimes(liveInfoMatch[2], liveInfoMatch[3], liveInfoMatch[4], liveInfoMatch[5], liveInfoMatch[6], liveInfoMatch[7]);
 
+            // Get the season information if it exists
+            let season;
+            let episode;
+            let episodeTitle;
+            try {
+                let subtitle = await this.page.evaluate( (liveElement) => liveElement.querySelector("*[class^='ScheduleItem_subtitle']").innerText, liveElement );
+                let seasonEpisodeRegex = /^S(\d+)\sE(\d+)\s(.*)$/;
+                let seasonEpisodeMatch = seasonEpisodeRegex.exec(subtitle);
+                if( seasonEpisodeMatch ) {
+                    season = seasonEpisodeMatch[1];
+                    episode = seasonEpisodeMatch[2];
+                    episodeTitle = seasonEpisodeMatch[3];
+                }
+            }
+            // No subtitle
+            catch(err) { console.log(err); }
+
+
             // Make sure the network is not blacklisted
             if( Site.unsupportedChannels.indexOf(network) === -1 && Site.unsupportedChannels.indexOf(channel) === -1 ) {
                 programs.push( new Program (
@@ -116,9 +134,9 @@ class FoxSite extends Site {
                     network,
                     channel,
                     null,
-                    null,
-                    null,
-                    null,
+                    season,
+                    episode,
+                    episodeTitle,
                     null
                 ) );
             }

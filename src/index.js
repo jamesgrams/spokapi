@@ -57,6 +57,12 @@ const PORT = 8080;
  * @type {number}
  * @default
  */
+const STATIC_PORT = 8081;
+/**
+ * @constant
+ * @type {number}
+ * @default
+ */
 const FETCH_INTERVAL = 480000;
 /**
  * @constant
@@ -123,6 +129,7 @@ var fetchInterval;
 process.setMaxListeners(Infinity);
 
 const app = express();
+const staticApp = express();
 
 // -------------------- Endpoints --------------------
 
@@ -131,6 +138,9 @@ app.use( bodyParser.json() );
 
 // Middleware to serve static public directory
 app.use( '/static/', express.static(DIR) );
+
+// Middleware to serve static public directory
+staticApp.use( '/static/', express.static(DIR) ); // Allow instant access to static resources
 
 // Middleware to allow cors from any origin
 app.use(function(req, res, next) {
@@ -141,66 +151,8 @@ app.use(function(req, res, next) {
 
 // Endpoint to serve the basic HTML needed to run this app
 app.get("/", async function(request, response) {
-    let ipAddress = ip.address();
-    let page = `<html>
-<head>
-<title>Spokapi</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="mobile-web-app-capable" content="yes">
-<script src="/static/index.js"></script>
-<link rel="stylesheet" type="text/css" href="/static/index.css">
-<link href="https://fonts.googleapis.com/css?family=Noto+Sans+JP" rel="stylesheet">
-<link rel="manifest" href="/static/manifest.json">
-</head>
-<body>
-    <h1><img src="/static/spokapi.png"/>Spokapi</h1>
-    <div id="programs">
-        Loading...
-    </div>
-    <div id="login-wrapper">
-        <div class="login-row"><label for="username"><div class="login-label-title">Username/Email: </div><input id="username" type="text"/></label></div>
-        <div class="login-row"><label for="password"><div class="login-label-title">Password: </div><input id="password" type="password"/></label></div>
-        <div class="login-row"><label for="cbs-username"><div class="login-label-title">CBS Username/Email: </div><input id="cbs-username" type="text"/></label></div>
-        <div class="login-row"><label for="cbs-password"><div class="login-label-title">CBS Password: </div><input id="cbs-password" type="password"/></label></div>
-        <div class="login-row"><label for="provider"><div class="login-label-title">Provider: </div>
-            <select id="provider">
-                <option value="AT&T U-verse">AT&T U-verse</option>
-                <option value="Cox">Cox</option>
-                <option value="DIRECTV">DIRECTV</option>
-                <option value="DIRECTV NOW">DIRECTV NOW</option>
-                <option value="DISH">DISH</option>
-                <option value="Frontier Communications">Frontier Communications</option>
-                <option value="Hulu">Hulu</option>
-                <option value="Mediacom">Mediacom</option>
-                <option value="Optimum">Optimum</option>
-                <option value="Sling TV">Sling TV</option>
-                <option value="Spectrum">Spectrum</option>
-                <option value="Spectrum">Suddenlink</option>
-                <option value="Verizon Fios">Verizon Fios</option>
-                <option value="Xfinity">Xfinity</option>
-            </select>
-        </label></div>
-        <button id="update-info">Update Information</button>
-    </div>
-    <div id="break-cache-wrapper">
-        <button id="start-fetching">Start Fetching</button>
-        <button id="stop-fetching">Stop Fetching</button>
-        <button id="break-cache">Break Cache</button>
-    </div>
-    <div id="channels-wrapper">
-        <div id="block-channels">
-            <div class="block-channels-row"><label for="channel"><div class="block-channels-title">Channel: </div><input id="channel" type="text"/></label></div>
-            <button id="block-channel">Block Channel</button>
-        </div>
-        <div id="blocked-channels"></div>
-    </div>
-</body>
-</html>
-`;
-
-    response.writeHead(200, {'Content-Type': 'text/html'});
-    response.end(page);
+    request.url = "/static/index.html";
+    staticApp.handle(request, response);
 });
 
 // Endpoint to get a list of programs
@@ -551,15 +503,15 @@ if ( fs.existsSync(LOGIN_INFO_FILE) ) {
 }
 
 // Open browser
-openBrowser(true);
-
-app.listen(PORT); // Listen for requests
+staticApp.listen(STATIC_PORT);
+openBrowser(true).then( () => app.listen(PORT) );
 
 // -------------------- Helper Functions --------------------
 
 /**
  * Launch the watch browser.
  * @param {boolean} clean - true if the browser should clean out its pages (Non-launch/connect only)
+ * @returns {Promise}
  */
 async function openBrowser(clean) {
     // If there is a Chrome path, we will try to launch chrome

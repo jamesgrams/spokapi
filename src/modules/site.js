@@ -34,7 +34,7 @@ const STOP_URL = "about:blank";
  * @type {string}
  * @default
  */
-const LOADING_URL = "localhost:8080/static/loading.html";
+const LOADING_URL = "localhost:8081/static/loading.html";
 /**
  * @constant
  * @type {number}

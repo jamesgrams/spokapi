@@ -96,10 +96,36 @@ function generateProgram(program) {
     if( program.runTime ) {
         displayTime = program.startTime + " - " + program.endTime;
     }
+    var episodeInfo = "";
+    if( program.episodeTitle || program.episode || program.season ) {
+        var episodeInfoArray = [];
+        if( program.episodeTitle ) {
+            episodeInfoArray.push(program.episodeTitle);
+        }
+        if( program.season ) {
+            episodeInfoArray.push("S" + parseInt(program.season));
+        }
+        if( program.episode ) {
+            episodeInfoArray.push("E" + parseInt(program.episode));
+        }
+        episodeInfo = episodeInfoArray.join(" ");
+        episodeInfo = "<div class='program-info'>" + episodeInfo + "</div>";
+    }
+    var image = "";
+    if( program.episodeThumbnailUrl ) {
+        image = "<div class='program-image' style='background-image: url(\"" + program.episodeThumbnailUrl + "\")'></div>";
+    }
+    var description = "";
+    if( program.description ) {
+        description = "<div class='program-description'>" + program.description + "</div>";
+    }
     var html = "<div class='" + className + "' onclick='watchProgram(this)' data-link='"+program.link+"'>" +
+        image +
         "<div class='program-title'>" + program.title + "</div>" +
-        "<div class='program-channel'>" + program.channel + "</div>" +
-        "<div class='program-time'>" + displayTime + "</div>" +
+        episodeInfo +
+        "<div class='program-right'><div class='program-channel'>" + program.channel + "</div>" +
+        "<div class='program-time'>" + displayTime + "</div></div>" +
+        description + 
         "<div class='program-seperator'></div>"
         "</div>";
     return html;
