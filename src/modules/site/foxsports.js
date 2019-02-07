@@ -109,7 +109,7 @@ class FoxSports extends Site {
                             null,
                             null,
                             null,
-                            null
+                            item.urls && item.urls.length > 8 ? item.urls[8].src : ""
                         ) );
                     }
                 }

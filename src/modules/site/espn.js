@@ -126,7 +126,7 @@ class Espn extends Site {
                             null,
                             network,
                             channel,
-                            sport + " - " + subsport,
+                            sport + (subsport ? " - " + subsport : ""),
                             null,
                             null,
                             null,
