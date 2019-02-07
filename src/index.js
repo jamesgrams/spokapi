@@ -722,7 +722,13 @@ async function fetchPrograms(fetchNetworks) {
  * Update the Login Info file
  */
 function updateLoginInfo( newData ) {
-    let contents = fs.readFileSync(LOGIN_INFO_FILE, 'utf8');
+    let contents;
+    try {
+        contents = fs.readFileSync(LOGIN_INFO_FILE, 'utf8');
+    }
+    catch(err) {
+        contents = "{}";
+    }
     let data = JSON.parse(contents);
 
     for( let key of Object.keys(newData) ) {
