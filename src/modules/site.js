@@ -423,12 +423,23 @@ class Site {
      * @param {*} endHours      - the end hour
      * @param {*} endMinutes    - the end minute
      * @param {string} endMeridian  - the end meridian (A or P)
+     * @param {number} offset - the offset hours to add to the start and end dates
      */
-    static makeTimes(startHours, startMinutes, startMeridian, endHours, endMinutes, endMeridian ) {
+    static makeTimes( startHours, startMinutes, startMeridian, endHours, endMinutes, endMeridian, offset ) {
         startHours = parseInt(startHours);
         startMinutes = parseInt(startMinutes);
         endHours = parseInt(endHours);
         endMinutes = parseInt(endMinutes);
+
+        // When only the end meridian is known
+        if (startMeridian == "?") {
+            if( startHours > endHours || (startHours < endHours && endHours == 12) ) {
+                startMeridian = (endMeridian == "P" ? "A" : "P");
+            }
+            else {
+                startMeridian = endMeridian;
+            }
+        }
 
         let endDay = 0;
         // If the hours are less than 12 but we have PM, add 12 to convert to 24 hour time
@@ -448,9 +459,14 @@ class Site {
                 // Or it is at the midnight hour, but has later minutes (e.g. start is 12:45am, end is 12:15am)
                 // The days must be different 
                 if( startHours != 0 || (startHours == 0 && startMinutes >= endMinutes) ) {
-                    endDay = 1;
+                    endDay += 1;
                 }
             }
+        }
+
+        if( offset ) {
+            startHours += offset;
+            endHours += offset;
         }
 
         let startDate = new Date(0, 0, 0, startHours, startMinutes, 0);

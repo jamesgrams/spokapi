@@ -169,7 +169,7 @@ class FoxSports extends Site {
             }
 
             let returnVal = await this.login();
-            if( !returnVal ) return Promise.resolve(1);
+            if( !returnVal ) return Promise.resolve(0);
         }
         return Promise.resolve(1);
     }
@@ -187,7 +187,7 @@ class FoxSports extends Site {
         // Go to the url
         await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT});
 
-        await this.checkLogin();
+        if( !(await this.checkLogin()) ) { return Promise.resolve(1); };
 
         // Check in on whether or not we're playing by seeing if no ask is enabled
         await this.page.waitForSelector('#liveWFB' , {timeout: Site.STANDARD_TIMEOUT});
