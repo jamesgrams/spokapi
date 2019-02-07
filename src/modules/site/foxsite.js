@@ -254,6 +254,7 @@ class FoxSite extends Site {
 
         // Wait for the play button
         await this.page.waitForSelector("video", {timeout: (Site.STANDARD_TIMEOUT * 2)});
+        await this.page.waitFor(1000);
 
         await this.page.evaluate( () => document.querySelector("video").webkitRequestFullScreen() );
         return Promise.resolve(1);
