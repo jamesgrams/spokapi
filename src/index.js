@@ -504,7 +504,13 @@ if ( fs.existsSync(LOGIN_INFO_FILE) ) {
 
 // Open browser
 staticApp.listen(STATIC_PORT);
-openBrowser(true).then( () => app.listen(PORT) );
+
+if( !Site.PATH_TO_CHROME ) {
+    openBrowser(true).then( () => app.listen(PORT) );
+}
+else {
+    app.listen(PORT);
+}
 
 // -------------------- Helper Functions --------------------
 
