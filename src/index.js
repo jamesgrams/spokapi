@@ -443,11 +443,12 @@ app.post( '/update', async function(request, response) {
 
 // Endpoint to return IP address
 app.get('/ip', async function(request, response) {
-    let ipAddress = await publicIp.v4();
+    let publicIpAddress = await publicIp.v4();
+    let ipAddress = ip.address(); 
 
     // Respond to the user
     response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success","ip":ipAddress}));
+    response.end(JSON.stringify({"status":"success","ip": ipAddress, "public": publicIpAddress}));
 } );
 
 // Endpoint to go to any URL (for debugging)
