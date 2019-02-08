@@ -127,6 +127,10 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - Disconnect from a wifi network (Chrome OS)
 - `/update/`
     - Updates Spokapi (Chrome OS)
+- `/ip/`
+    - Gets the ip of the Spokapi server
+- `/navigate/`
+    - Allows for navigation to any URL (useful for testing; especially going to `chrome://settings`)
 - `/`
     - This will return the Spokapi Client (Simple and useful for testing)
 

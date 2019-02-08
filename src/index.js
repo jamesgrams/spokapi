@@ -62,8 +62,9 @@ const STATIC_PORT = 8081;
  * @constant
  * @type {number}
  * @default
+ * 15 minutes
  */
-const FETCH_INTERVAL = 480000;
+const FETCH_INTERVAL = 900000;
 /**
  * @constant
  * @type {number}
@@ -72,7 +73,7 @@ const FETCH_INTERVAL = 480000;
 let MAX_SIMULTANEOUS_FETCHES = 2;
 /**
  * @constant
- * @type {Array.<Object>}
+ * @type {Object}
  * @default
  */
 const NETWORKS = { 
@@ -106,6 +107,29 @@ const NETWORKS = {
     "fxxwest": FxxWest,
     "natgeowild": NatGeoWild
 };
+/**
+ * @constant
+ * @type {Array}
+ * @default
+ */
+const LOCAL_ONLY_NETWORKS = [
+    "fox",
+    "cbs",
+    "foxsports"
+];
+/**
+ * @constant
+ * @type {string}
+ * @default
+ * The remote
+ */
+const REMOTE_SERVER = "http://spokapi.com:8080/programs";
+/**
+ * @constant
+ * @type {boolean}
+ * @default
+ */
+const USE_REMOTE = process.argv.includes("--use-remote") ? true : false;
 /**
  * @constant
  * @type {string}
@@ -595,7 +619,13 @@ async function fetchPrograms(fetchNetworks) {
     fetchLocked = true;
 
     if( !fetchNetworks ) {
-        fetchNetworks = Object.keys(NETWORKS);
+        if( USE_REMOTE ) {
+            // Only fetch networks that are local-specific
+            fetchNetworks = LOCAL_ONLY_NETWORKS;
+        }
+        else {
+            fetchNetworks = Object.keys(NETWORKS);
+        }
     }
 
     networks = [];
@@ -639,6 +669,17 @@ async function fetchPrograms(fetchNetworks) {
     let joinedValues = [];
     for (let value of values) {
         joinedValues = joinedValues.concat(value);
+    }
+
+    // If we are using remote, do a request to the remote server
+    // Remote request will necessarily be for all channels, so we can
+    // overwrite the programsCache here.
+    if( USE_REMOTE ) {
+        let response = await fetch(REMOTE_SERVER);
+        let json = await response.json();
+        if ( json.programs ) {
+            programsCache = json.programs;
+        }
     }
 
     // If we didn't fetch the network, try to use the cached value
