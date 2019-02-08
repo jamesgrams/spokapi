@@ -178,10 +178,9 @@ app.get('/programs', async function(request, response) {
                 }
                 catch (err) { console.log(err); }
                 watchBrowser = null;
+                // Reconnect
+                await openBrowser();
             }
-
-            // Reconnect
-            await openBrowser();
 
             let fetchNetworks;
             if( request.query.networks ) {
