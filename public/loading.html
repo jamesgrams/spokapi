@@ -4,20 +4,37 @@
         <meta http-equiv="content-type" content="text/html; charset=windows-1252">
             <style>
                 body{
-                    background-color:#333;
+                    background-color:#000;/*#ff0055;*/
+                    margin:0px;
+                    cursor:none;
+                    overflow: hidden;
+                }
+                #myVideo {
+                    position: fixed;
+                    right: 0;
+                    bottom: 0;
+                    height: 100%;
+                    opacity:.11;
+                    z-index:1;
+                }
+                #logo{
+                    position:fixed;
+                    top:0px;
+                    left:0px;
+                    width:100%;
+                    height:100%;
                     background-image:url("logo.png");
                     background-size:60% auto;
                     background-position:center;
                     background-repeat:no-repeat;
-                    margin:0px;
-                    cursor:none;
-                    overflow: hidden;
+                    z-index:2;
                 }
                 #loader{
                     background:rgba(0,0,0,0.5);
                     height:18px;
                     position:fixed;
                     bottom:0px;
+                    z-index:3;
                 }
                 #message {
                     text-align: center;
@@ -60,11 +77,16 @@
             </style>
     </head>
     <body>
+        <video autoplay muted loop id="myVideo" style="display:none;">
+            <source src="ss.mp4" type="video/mp4">
+        </video>
+        <div id="logo"></div>
         <div id="loader" style="width: 4.86531px; border-radius: 10px 0px 0px; right: 0px; overflow: hidden;"></div>
         <div id="message"></div>
         <img id="spokapi" src="spokapi.png"/>
         <script>
             function slide(){
+                $("#myVideo").stop().fadeIn(2000);
                 var SPEED = 10000;
                 $("#loader").stop().css({borderRadius:"0px 10px 0px 0px"});
                 $("#loader").animate({width:"100%"}, SPEED, function(){

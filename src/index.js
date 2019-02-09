@@ -114,9 +114,9 @@ const NETWORKS = {
  * @default
  */
 const LOCAL_ONLY_NETWORKS = [
-    "fox",
+    /*"fox",
     "cbs",
-    "foxsports"
+    "foxsports"*/
 ];
 /**
  * @constant
