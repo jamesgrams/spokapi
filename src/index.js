@@ -12,6 +12,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const execSync = require('child_process').execSync;
 const publicIp = require('public-ip');
+const fetch = require('node-fetch');
 
 const Site 	                    = require('./modules/site');
 const Provider 	                = require('./modules/provider');
