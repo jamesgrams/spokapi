@@ -124,7 +124,7 @@ const LOCAL_ONLY_NETWORKS = [
  * @default
  * The remote
  */
-const REMOTE_SERVER = "http://spokapi.com/programs";
+const REMOTE_SERVER = "http://game103.net:8080/programs";
 /**
  * @constant
  * @type {boolean}
