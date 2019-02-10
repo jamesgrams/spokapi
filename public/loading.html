@@ -77,16 +77,16 @@
             </style>
     </head>
     <body>
-        <video autoplay muted loop id="myVideo" style="display:none;">
+        <!--<video autoplay muted loop id="myVideo" style="display:none;">
             <source src="ss.mp4" type="video/mp4">
-        </video>
+        </video>-->
         <div id="logo"></div>
         <div id="loader" style="width: 4.86531px; border-radius: 10px 0px 0px; right: 0px; overflow: hidden;"></div>
         <div id="message"></div>
         <img id="spokapi" src="spokapi.png"/>
         <script>
             function slide(){
-                $("#myVideo").stop().fadeIn(2000);
+                //$("#myVideo").stop().fadeIn(2000);
                 var SPEED = 10000;
                 $("#loader").stop().css({borderRadius:"0px 10px 0px 0px"});
                 $("#loader").animate({width:"100%"}, SPEED, function(){

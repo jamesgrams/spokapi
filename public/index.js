@@ -154,12 +154,12 @@ function breakCache() {
 }
 function startFetching() {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "/start-fetching", true);
+    xhttp.open("GET", "/start-interval", true);
     xhttp.send();
 }
 function stopFetching() {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "/stop-fetching", true);
+    xhttp.open("GET", "/stop-interval", true);
     xhttp.send();
 }
 function loadBlockedChannels() {

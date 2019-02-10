@@ -65,7 +65,7 @@ const STATIC_PORT = 8081;
  * @default
  * 15 minutes
  */
-const FETCH_INTERVAL = 300000;
+const FETCH_INTERVAL = 600000;
 /**
  * @constant
  * @type {number}
