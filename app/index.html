@@ -60,6 +60,48 @@
 				margin:auto;
 			}
 			
+			#confirm{
+				text-align:left;
+				position:fixed;
+				top:0px;
+				width:500px;
+				box-sizing:border-box;
+				left:50%;
+				margin:100px 0px 0px -250px;
+				z-index:99998;
+				padding:20px 30px 0px 30px;
+				color:#444;
+				font-size:16px;
+				display:none;
+				background:#fff;
+				border-radius:10px;
+				overflow:hidden;
+				-webkit-box-shadow: 4px 4px 10px 0px rgba(0,0,0,0.6);
+				-moz-box-shadow: 4px 4px 10px 0px rgba(0,0,0,0.6);
+				box-shadow: 4px 4px 10px 0px rgba(0,0,0,0.6);
+				font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			}
+			@media screen and (max-width: 555px) {
+				#confirm{
+					width:90%;
+					margin:100px 0px 0px -45%;
+				}
+			}
+			#confirm div:nth-of-type(2){
+				margin:20px -30px -20px -30px;
+				border-top:1px solid #eee;
+				padding:0px 15px;
+			}
+			#confirm button{
+				border:0px none transparent;
+				color:#0072c9;
+				padding:10px;
+				float:right;
+				font-size:16px;
+				background:transparent;
+				cursor:pointer;
+			}
+			
 			#promptInteractionBlock{
 				background:rgba(0,0,0,.4);
 				position:fixed;
@@ -101,7 +143,7 @@
 				overflow:hidden;
 				background:#ff0055;
 				color:#fff;
-				z-index:3;
+				z-index:4;
 				text-align:center;
 				padding-top:20%;
 				box-sizing:border-box;
@@ -118,7 +160,7 @@
 				overflow:scroll;
 				background:#00a6ff;
 				color:#fff;
-				z-index:2;
+				z-index:3;
 				text-align:center;
 				padding:30px;
 				box-sizing:border-box;
@@ -222,7 +264,7 @@
 				overflow:scroll;
 				background:#333;
 				color:#fff;
-				z-index:1;
+				z-index:2;
 				text-align:center;
 				padding:30px;
 				box-sizing:border-box;
@@ -311,6 +353,7 @@
 			}
 			
 			header{
+				position:relative;
 			}
 			
 			#headerBackground{
@@ -323,6 +366,82 @@
 				text-align:center;
 				font-family: 'Berkshire Swash', cursive;
 				color:#fff;
+			}
+			
+			#hamburger{
+				position:absolute;
+				top:35px;
+				right:20px;
+				width:22px;
+			}
+			
+			#hamburger>div{
+				height:2px;
+				background:#fff;
+				border-radius:2px;
+				overflow:hidden;
+			}
+			
+			#hamburger>div:nth-of-type(2){
+				margin:5px 0px;
+			}
+			
+			#nav{
+				position:fixed;
+				top:0px;
+				left:100%;
+				width:100%;
+				overflow:hidden;
+				height:100%;
+				background:#fff;
+				box-sizing:border-box;
+				overflow:scroll;
+				z-index:1;
+			}
+			
+			#navHeader{
+				background:#ff0055;
+				border-bottom:7px solid #EF0F53;
+			}
+			
+			#navHeader #backArrow{
+				position:absolute;
+				width:20px;
+				height:22px;
+				top:32px;
+				left:20px;
+				background-image:url("images/backArrow.png");
+				background-size:contain;
+				background-position:center;
+				background-repeat:no-repeat;
+			}
+			
+			#navHeader #navLogo{
+				padding:24px 10px 14px 10px;
+				font-size:30px;
+				text-align:center;
+				font-family: 'Berkshire Swash', cursive;
+				color:#fff;
+			}
+			
+			#navOptions>div{
+				padding:25px;
+				background:#f7f7f7;
+				border-bottom:1px solid #ddd;
+				color:#777;
+				font-size:14px;
+			}
+			
+			#nav .optionPanel{
+				position:fixed;
+				top:82px;
+				left:100%;
+				bottom:0px;
+				width:100%;
+				overflow:scroll;
+				background:#fff;
+				padding:10px 0px;
+				box-sizing:border-box;
 			}
 			
 			#primaryCategories{
@@ -411,7 +530,7 @@
 			#live, #replays, #searchResults, #episodes{
 				min-height:100%;
 				background:#fff;
-				padding:10px 0px;
+				padding:10px 0px 80px 0px;
 				box-sizing:border-box;
 			}
 			
@@ -729,6 +848,248 @@
 				left:20px;
 			}
 			
+			#currentlyWatching{
+				position:fixed;
+				bottom:0px;
+				left:0px;
+				width:100%;
+				padding:0px 15px 10px 15px;
+				box-sizing:border-box;
+				z-index:0;
+				display:none;
+			}
+			
+			#currentlyWatching>div{
+				background:#333;
+				border-radius:2px;
+				overflow:hidden;
+				display:table;
+				width:100%;
+			}
+			
+			#currentlyWatchingThumbnail{
+				display:table-cell;
+				vertical-align:middle;
+				text-align:left;
+				height:60px;
+				width:75px;
+				padding:10px;
+				box-sizing:border-box;
+			}
+			#currentlyWatchingThumbnail>div{
+				background-color:#eee;
+				height:100%;
+				background-size:cover;
+				background-position:center;
+				background-repeat:no-repeat;
+				border-radius:2px;
+				overflow:hidden;
+			}
+			
+			#currentlyWatchingTitle{
+				display:table-cell;
+				vertical-align:middle;
+				color:#fff;
+				text-transform:capitalize;
+				padding:10px 5px 10px 0px;
+				box-sizing:border-box;
+				opacity:0.7;
+			}
+			#currentlyWatchingTitle>div{
+				font-size:13px;
+				max-height:40px;
+				overflow:hidden;
+				line-height:150%;
+			}
+			
+			#currentlyWatchingPausePlay, #currentlyWatchingX{
+				display:table-cell;
+				vertical-align:middle;
+				text-align:right;
+				height:40px;
+				width:22px;
+				padding:10px;
+			}
+			#currentlyWatchingPausePlay>div, #currentlyWatchingX>div{
+				background-color:rgba(255,255,255,0);
+				color:#fff;
+				height:100%;
+				background-image:url("images/pause.png");
+				background-position:center;
+				background-repeat:no-repeat;
+			}
+			#currentlyWatchingPausePlay>div{
+				background-image:url("images/rollingWhite.svg");
+				background-size:auto 43%;
+			}
+			#currentlyWatchingX>div{
+				background-image:url("images/x.png");
+				background-size:auto 30%;
+			}
+			
+			.optionPanel .roller{
+				opacity:.7;
+				height:25px;
+				margin:20px auto;
+				display:block;
+			}
+			
+			#nav #manageProfilesPanel{
+				padding:5px 20px;
+			}
+			
+			#manageProfilesPanel .profile{
+				margin:15px 0px;
+				overflow:hidden;
+			}
+			
+			#manageProfilesPanel .profile>div{
+				display:table;
+				width:100%;
+				max-width:100%;
+				padding:10px;
+				box-sizing:border-box;
+				background:#f7f7f7;
+				border-radius:4px;
+				overflow:hidden;
+				color:#999;
+			}
+			
+			#manageProfilesPanel .profile .smiley{
+				width:40px;
+				min-width:40px;
+				height:40px;
+				display:table-cell;
+				vertical-align:top;
+				border-radius:2px;
+				overflow:hidden;
+				background-image:url("images/smile.png");
+				background-size:70% auto;
+				background-position:center;
+				background-repeat:no-repeat;
+			}
+			
+			#manageProfilesPanel .profile .name{
+				display:table-cell;
+				max-width:0px;
+				vertical-align:middle;
+				padding-left:10px;
+				font-size:16px;
+				text-transform:uppercase;
+				font-weight:bold;
+				overflow:hidden;
+				word-wrap: break-word;
+			}
+			
+			#manageProfilesPanel .profile .edit{
+				display:table-cell;
+				vertical-align:middle;
+				width:40px;
+				height:40px;
+				background-image:url("images/edit.png");
+				background-size:40% auto;
+				background-position:center;
+				background-repeat:no-repeat;
+				opacity:.3;
+			}
+			
+			#manageProfilesPanel .profile .name input[type="text"]{
+				border:0px none transparent;
+				background:rgba(0,0,0,0.05);
+				color:inherit;
+				text-align:left;
+				padding:5px;
+				outline:none;
+				text-transform:uppercase;
+				font-weight:bold;
+				font-size:16px;
+				box-sizing:border-box;
+				width:100%;
+				border-radius:4px;
+				overflow:hidden;
+			}
+			.lightPlaceholderInput::-webkit-input-placeholder {
+				color: #999;
+			}
+			.lightPlaceholderInput:-moz-placeholder {
+				color: #999;
+				opacity: 1;
+			}
+			.lightPlaceholderInput::-moz-placeholder {
+				color: #999;
+				opacity: 1;
+			}
+			.lightPlaceholderInput:-ms-input-placeholder {
+				color: #999;
+			}
+			
+			#manageProfilesPanel .newProfileButton{
+				width:47%;
+				margin:10px 1%;
+				background:rgba(0,0,0,0.3);
+				border-radius:4px;
+				overflow:hidden;
+				color:rgba(255,255,255,0.5);
+				padding:10px 15px;
+				box-sizing:border-box;
+				display:inline-block;
+				text-transform:uppercase;
+				font-weight:bold;
+				font-size:12px;
+			}
+			
+			#manageProfilesPanel #editButtons{
+				display:none;
+			}
+			
+			#manageProfilesPanel #editButtons>div:first-of-type{
+				display:table;
+				width:100%;
+			}
+			
+			#manageProfilesPanel #editButtons>div:first-of-type>div{
+				display:table-cell;
+				vertical-align:top;
+				width:50%;
+			}
+			#manageProfilesPanel #editButtons>div:first-of-type>div:nth-of-type(1){
+				padding-right:5px;
+			}
+			#manageProfilesPanel #editButtons>div:first-of-type>div:nth-of-type(2){
+				padding-left:5px;
+			}
+			
+			#cancelProfile, #saveProfile{
+				padding:10px;
+				background:#eee;
+				color:#999;
+				font-weight:bold;
+				font-size:13px;
+				text-transform:uppercase;
+				border-radius:4px;
+				overflow:hidden;
+				text-align:center;
+			}
+			
+			#saveProfile img{
+				height:18px;
+			}
+			
+			#deleteProfileHolder{
+				text-align:center;
+			}
+			
+			#deleteProfile{
+				text-decoration:underline;
+				color:#ccc;
+				font-size:11px;
+				margin-top:20px;
+			}
+			
+			#logOutOption img{
+				height:19px;
+			}
+			
 			.centeredText{
 				text-align:center;
 			}
@@ -978,9 +1339,14 @@
 				return tempStickRequest;
 			}
 			
-			function stickRequestExisted(stickRequest){
-				//USING null HERE UNTIL WE KNOW WHAT THE STICK SENDS US IF NO VALUE WAS STORED ON THE STICK FOR THE KEY WE REQUESTED
-				return (stickRequest !== null);
+			function stickRequestExisted(stickReq){
+				//USING "null" HERE UNTIL WE KNOW WHAT THE STICK SENDS US IF NO VALUE WAS STORED ON THE STICK FOR THE KEY WE REQUESTED
+				return (stickReq !== "null");
+			}
+			
+			function clearFromStick(key){
+				//USING "null" HERE UNTIL WE KNOW WHAT THE STICK SHOULD HOLD IF NO VALUE EXISTS FOR THE KEY WE REQUESTED
+				storeOnStick(key, "null");
 			}
 			
 			var email = "";
@@ -988,12 +1354,12 @@
 				requestFromStick("cableUsername");
 				setTimeout(function(){
 					var stickRequestCheck = setInterval(function(){
-						var stickRequest = grabStickRequest();
-						if(stickRequest !== false){
+						var stickReq = grabStickRequest();
+						if(stickReq !== false){
 							clearInterval(stickRequestCheck);
 							$("#splash").stop().animate({top:"-100%"}, 200);
-							if(stickRequestExisted(stickRequest)){
-								email = stickRequest;
+							if(stickRequestExisted(stickReq)){
+								email = stickReq;
 								$("#cableLogin").stop().animate({top:"-100%"}, 100);
 								askForProfile();
 							}
@@ -1133,29 +1499,31 @@
 					return false;
 				}
 				
-				savingNewProfile = true;
-				$("#saveNewProfileButton")[0].innerHTML = "<img src=\"images/rollingWhite.svg\" style=\"opacity:.5;height:17px;\">";
-				$.get(DOMAIN + "/php/createUser.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(newProfileName), function(data){
-					//success
-					if(data.indexOf("true|") == 0){
-						var profileData = JSON.parse(data.replace("true|", ""));
+				if(!savingNewProfile){
+					savingNewProfile = true;
+					$("#saveNewProfileButton")[0].innerHTML = "<img src=\"images/rollingWhite.svg\" style=\"opacity:.5;height:17px;\">";
+					$.get(DOMAIN + "/php/createUser.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(newProfileName), function(data){
+						//success
+						if(data.indexOf("true|") == 0){
+							var profileData = JSON.parse(data.replace("true|", ""));
+							savingNewProfile = false;
+							revertToAskForProfile("<div class=\"profile\" onclick=\"selectProfile('" + profileData[0] + "', '" + profileData[1] + "')\"><div class=\"smiley\" style=\"background-color:" + profileColors[profileData[0] % profileColors.length] + ";\"></div><div class=\"name\">" + profileData[1] + "</div></div>");
+						}
+						else{
+							savingNewProfile = false;
+							queueNotice("error", data.replace("false|", ""));
+						}
+					})
+					.fail(function(){
+						//error
 						savingNewProfile = false;
-						revertToAskForProfile("<div class=\"profile\" onclick=\"selectProfile('" + profileData[0] + "', '" + profileData[1] + "')\"><div class=\"smiley\" style=\"background-color:" + profileColors[profileData[0] % profileColors.length] + ";\"></div><div class=\"name\">" + profileData[1] + "</div></div>");
-					}
-					else{
-						savingNewProfile = false;
-						queueNotice("error", data.replace("false|", ""));
-					}
-				})
-				.fail(function(){
-					//error
-					savingNewProfile = false;
-					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy. Please try again.");
-				})
-				.always(function() {
-					//complete
-					$("#saveNewProfileButton")[0].innerHTML = "Save";
-				});
+						queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy. Please try again.");
+					})
+					.always(function() {
+						//complete
+						$("#saveNewProfileButton")[0].innerHTML = "Save";
+					});
+				}
 			}
 			
 			function revertToAskForProfile(newProfileHTML){
@@ -1182,6 +1550,7 @@
 				$("#live")[0].style.minHeight = desiredMinHeight;
 				$("#replays")[0].style.minHeight = desiredMinHeight;
 				$("#searchResults")[0].style.minHeight = desiredMinHeight;
+				$("#nav")[0].style.height = window.innerHeight;
 				
 				$("#searchResults")[0].style.top = $("header").eq(0)[0].clientHeight;
 				
@@ -1343,7 +1712,7 @@
 				if(listingObject["description"].toString() != ""){
 					htmlToReturn +=					"<div class=\"description\">" + listingObject["description"] + "</div>";
 				}
-				htmlToReturn +=						"<div class=\"watch programButton\" onclick=\"watch('" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + Number(listingObject["season"].toString().replace(/\D/g, "")) + "', '" + Number(listingObject["episode"].toString().replace(/\D/g, "")) + "', '" + listingObject["link"].trim() + "');\">WATCH NOW</div>";
+				htmlToReturn +=						"<div class=\"watch programButton\" onclick=\"watch('" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + Number(listingObject["season"].toString().replace(/\D/g, "")) + "', '" + Number(listingObject["episode"].toString().replace(/\D/g, "")) + "', '" + listingObject["episodeThumbnailURL"].trim() + "', '" + listingObject["link"].trim() + "');\">WATCH NOW</div>";
 				if(listingObject["season"].toString() != "" || listingObject["episode"].toString() != ""){
 					htmlToReturn +=					"<div class=\"moreEpisodes programButton\" onclick=\"showEpisodes('" + listingObject["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + listingObject["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "');\">MORE EPISODES</div>";
 				}
@@ -1388,7 +1757,7 @@
 				if(episode["description"].toString() != ""){
 					htmlToReturn +=					"<div class=\"description\">" + episode["description"] + "</div>";
 				}
-				htmlToReturn +=						"<div class=\"watch programButton\" onclick=\"watch('" + episode["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + episode["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + Number(episode["season"].toString().replace(/\D/g, "")) + "', '" + Number(episode["episode"].toString().replace(/\D/g, "")) + "', '" + episode["link"].trim() + "');\">WATCH NOW</div>";
+				htmlToReturn +=						"<div class=\"watch programButton\" onclick=\"watch('" + episode["channel"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + episode["programTitle"].toLowerCase().replace(/\s\s+/g, ' ').trim() + "', '" + Number(episode["season"].toString().replace(/\D/g, "")) + "', '" + Number(episode["episode"].toString().replace(/\D/g, "")) + "', '" + episode["episodeThumbnailURL"].trim() + "', '" + episode["link"].trim() + "');\">WATCH NOW</div>";
 				htmlToReturn +=					"</div>";
 				htmlToReturn +=				"</div>";
 				htmlToReturn +=			"</div>";
@@ -1923,11 +2292,352 @@
 				}
 			}
 			
-			function watch(channel, programTitle, season, episode, link){
+			var playStatus = "loading";//loading, playing, or paused
+			function watch(channel, programTitle, season, episode, thumbnail, link){
 				//track that the user has watched this
 				$.get(DOMAIN + "/php/addWatched.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(window.localStorage.getItem("name")) + "&channel=" + encodeURIComponent(channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&programTitle=" + encodeURIComponent(programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&season=" + Number(season.toString().replace(/\D/g, "")) + "&episode=" + Number(episode.toString().replace(/\D/g, "")), function(data){});
 				
 				//TODO: connect to the stick and throw it up on the tv
+				
+				$("#currentlyWatching").stop().fadeOut(0);
+				if(thumbnail.trim() == ""){
+					thumbnail = "images/thumbnails/noThumbnail.png";
+				}
+				$("#currentlyWatchingThumbnail>div").eq(0)[0].style.backgroundImage = "url('" + thumbnail + "')";
+				$("#currentlyWatchingTitle>div").eq(0)[0].innerHTML = programTitle.trim();
+				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundImage = "";
+				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundSize = "";
+				$("#currentlyWatching").stop().fadeIn(200);
+				playStatus = "loading";
+				detectPlayStatusChange(playStatus);
+			}
+			
+			function stopWatching(){
+				//TODO: connect to the stick and stop playing
+				
+				$("#currentlyWatching").stop().fadeOut(200);
+			}
+			
+			function requestPlayStatus(){
+				//TODO: get actual current play status from stick
+				playStatus = "playing";
+			}
+			
+			function detectPlayStatusChange(initialStatus){
+				var playStatusChangeCheck = setInterval(function(){
+					requestPlayStatus();
+					if(playStatus != initialStatus){
+						if(playStatus == "paused"){
+							$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundImage = "url('images/play.png')";
+							$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundSize = "auto 30%";
+							$("#currentlyWatchingPausePlay").eq(0)[0].onclick = play;
+						}
+						else if(playStatus == "playing"){
+							$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundImage = "url('images/pause.png')";
+							$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundSize = "auto 30%";
+							$("#currentlyWatchingPausePlay").eq(0)[0].onclick = pause;
+						}
+						clearInterval(playStatusChangeCheck);
+					}
+				}, 300);
+			}
+			
+			function pause(){
+				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundImage = "";
+				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundSize = "";
+				
+				//TODO: pause on stick
+				
+				detectPlayStatusChange(playStatus);
+			}
+			
+			function play(){
+				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundImage = "";
+				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundSize = "";
+				
+				//TODO: play on stick
+				
+				detectPlayStatusChange(playStatus);
+			}
+			
+			function showNav(){
+				$("#backArrow")[0].onclick = hideNav;
+				$("#nav").stop().animate({left:"0px"}, 200);
+			}
+			
+			function hideNav(){
+				$("#nav").stop().animate({left:"100%"}, 200);
+				hideNavOptionPanels();
+			}
+			
+			function showNavOptionPanel(panelElement, headerText){
+				if(headerText.length > 15){
+					headerText = headerText.substring(0, 13) + "...";
+				}
+				$("#backArrow")[0].onclick = hideNavOptionPanels;
+				$("#navHeader #navLogo")[0].innerHTML = headerText;
+				$(panelElement).stop().animate({left:"0px"}, 200);
+			}
+			
+			function hideNavOptionPanels(){
+				$("#backArrow")[0].onclick = hideNav;
+				$("#navHeader #navLogo")[0].innerHTML = "Options";
+				$("#nav .optionPanel").stop().animate({left:"100%"}, 200);
+			}
+			
+			function getProfileColor(profileID){
+				var profileColor = profileColors[profileID % profileColors.length];
+				for(var i = 1; i < profileColors.length; i++){
+					if(usedProfileColors.indexOf(profileColor) > -1){
+						profileColor = profileColors[(profileID + i) % profileColors.length];
+					}
+					else{
+						break;
+					}
+				}
+				return profileColor;
+			}
+			
+			function populateManageProfiles(){
+				$("#manageProfilesPanel")[0].innerHTML = "<img src=\"images/rolling.svg\" class=\"roller\"/>";
+				$.get(DOMAIN + "/php/getProfiles.php?email=" + encodeURIComponent(email), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						var profiles = JSON.parse(data.replace("true|", ""));
+						
+						profiles.sort(function(a, b){return Number(a[0]) - Number(b[0]);});
+						
+						var htmlToAdd = "";
+						for(var i = 0; i < profiles.length; i++){
+							var thisProfileColor = getProfileColor(profiles[i][0]);
+							for(var j = 1; j < profileColors.length; j++){
+								if(usedProfileColors.indexOf(thisProfileColor) > -1){
+									thisProfileColor = profileColors[(profiles[i][0] + j) % profileColors.length];
+								}
+								else{
+									break;
+								}
+							}
+							htmlToAdd += "<div class=\"profile\">" + 
+								"<div>" + 
+									"<div class=\"smiley\" style=\"background-color:" + thisProfileColor + ";\"></div>" + 
+									"<div class=\"name\">" + profiles[i][1] + "</div>" + 
+									"<div class=\"edit\" onclick=\"showEditProfileFormInManageProfiles(this.parentNode.parentNode, " + (i > 0) + ");\"></div>" + 
+								"</div>" + 
+							"</div>";
+						}
+						htmlToAdd += "<div class=\"profile\" id=\"manageProfilesNewProfile\" onclick=\"showNewProfileFormInManageProfiles();\">" + 
+							"<div>" + 
+								"<div class=\"smiley\" style=\"background-color:#999;background-image:url('images/plusGray.png');background-size:35%;\"></div>" + 
+								"<div class=\"name\">new profile</div>" + 
+							"</div>" + 
+						"</div>" + 
+						"<div id=\"editButtons\">" + 
+							"<div>" + 
+								"<div>" + 
+									"<div id=\"cancelProfile\" onclick=\"hideEditProfileFormInManageProfiles();\">Cancel</div>" + 
+								"</div>" + 
+								"<div>" + 
+									"<div id=\"saveProfile\" onclick=\"saveProfile();\">Save</div>" + 
+								"</div>" + 
+							"</div>" + 
+							"<div id=\"deleteProfileHolder\"><div id=\"deleteProfile\" onclick=\"deleteProfile();\">Delete profile.</div></div>" + 
+						"</div>";
+						
+						$("#manageProfilesPanel")[0].innerHTML = htmlToAdd;
+					}
+					else{
+						$("#manageProfilesPanel")[0].innerHTML = "Please come back and try again.";
+						queueNotice("error", data.replace("false|", ""));
+					}
+				})
+				.fail(function(){
+					//error
+					$("#manageProfilesPanel")[0].innerHTML = "Please come back and try again.";
+					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy.");
+				})
+				.always(function() {
+					//complete
+				});
+			}
+			
+			function showEditProfileFormInManageProfiles(profileElementToEdit, canDelete){
+				var profileElements = $("#manageProfilesPanel .profile");
+				for(var i = 0; i < profileElements.length; i++){
+					profileElements.eq(i)[0].style.maxHeight = profileElements.eq(i)[0].clientHeight;
+				}
+				$("#manageProfilesPanel .profile").stop().animate({maxHeight:"0px", margin:"0px"}, 200);
+				$(profileElementToEdit).stop();
+				
+				if(canDelete){
+					$("#deleteProfile").stop().fadeIn(0);
+				}
+				else{
+					$("#deleteProfile").stop().fadeOut(0);
+				}
+				$("#manageProfilesPanel #editButtons").stop().fadeIn(200);
+				$(profileElementToEdit).find(".edit").stop().fadeOut(100);
+				$(profileElementToEdit).find(".name").eq(0)[0].innerHTML = "<input type=\"text\" placeholder=\"" + $(profileElementToEdit).find(".name").eq(0)[0].innerHTML + "\" class=\"lightPlaceholderInput\"/>";
+				$(profileElementToEdit).find("input").eq(0)[0].focus();
+			}
+			
+			function hideEditProfileFormInManageProfiles(newName){
+				newName = newName || $("#manageProfilesPanel .name input").eq(0)[0].placeholder;
+				var profileElements = $("#manageProfilesPanel .profile");
+				$("#manageProfilesPanel .profile").stop().animate({margin:"15px 0px"}, 300);
+				$("#manageProfilesPanel .profile").animate({maxHeight:"500px", margin:"15px 0px"}, 600);
+				$("#manageProfilesPanel #editButtons").stop().fadeOut(200);
+				$("#manageProfilesPanel .edit").stop().fadeIn(100);
+				$("#manageProfilesPanel .name input").eq(0)[0].parentNode.innerHTML = newName;
+			}
+			
+			function saveProfile(){
+				var currentName = $("#manageProfilesPanel .name input").eq(0)[0].placeholder;
+				var newName = $("#manageProfilesPanel .name input").eq(0)[0].value.trim();
+				if(newName == ""){
+					hideEditProfileFormInManageProfiles();
+					return false;
+				}
+				
+				$("#clearInteractionBlock")[0].style.display = "block";
+				$("#saveProfile")[0].innerHTML = "<img src=\"images/rolling.svg\"/>";
+				$.get(DOMAIN + "/php/setProfileName.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(currentName) + "&newName=" + encodeURIComponent(newName), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						if(window.localStorage.getItem("name") == currentName){
+							window.localStorage.setItem("name", newName);
+						}
+						hideEditProfileFormInManageProfiles($("#manageProfilesPanel .name input").eq(0)[0].value.trim());
+					}
+					else{
+						queueNotice("error", data.replace("false|", ""));
+					}
+				})
+				.fail(function(){
+					//error
+					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy.");
+				})
+				.always(function() {
+					//complete
+					$("#clearInteractionBlock")[0].style.display = "none";
+					$("#saveProfile")[0].innerHTML = "Save";
+				});
+			}
+			
+			function deleteProfile(){
+				promptConfirm("Are you sure you want to delete this profile, its personalized list, and all data associated with it? You will never be able to recover it.", "No.", "Yes, I am sure!", function(){}, confirmProfileDeletion);
+				
+			}
+			
+			function confirmProfileDeletion(){
+				var currentName = $("#manageProfilesPanel .name input").eq(0)[0].placeholder;
+				
+				$("#manageProfilesPanel")[0].innerHTML = "<img src=\"images/rolling.svg\" class=\"roller\"/>";
+				$.get(DOMAIN + "/php/deleteProfile.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(currentName), function(data){
+					//success
+					if(data.indexOf("true|") == 0){
+						if(window.localStorage.getItem("name") == currentName){
+							window.location = window.location;
+						}
+					}
+					else{
+						queueNotice("error", data.replace("false|", ""));
+					}
+				})
+				.fail(function(){
+					//error
+					queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy.");
+				})
+				.always(function() {
+					//complete
+					populateManageProfiles();
+				});
+			}
+			
+			function showNewProfileFormInManageProfiles(){
+				$("#manageProfilesNewProfile .smiley").eq(0)[0].style.backgroundImage = "";
+				$("#manageProfilesNewProfile .smiley").eq(0)[0].style.backgroundSize = "";
+				$("#manageProfilesNewProfile .name").eq(0)[0].innerHTML = "Name";
+				showEditProfileFormInManageProfiles($("#manageProfilesNewProfile"), false);
+				$("#cancelProfile")[0].onclick = hideNewProfileFormInManageProfiles;
+				$("#saveProfile")[0].onclick = addNewProfileInManageProfiles;
+			}
+			
+			var addingNewProfile = false;
+			function addNewProfileInManageProfiles(){
+				var newName = $("#manageProfilesPanel .name input").eq(0)[0].value.trim();
+				if(newName == ""){
+					queueNotice("error", "Please enter a name for this profile.");
+					return false;
+				}
+				
+				if(!addingNewProfile){
+					addingNewProfile = true;
+					$("#clearInteractionBlock")[0].style.display = "block";
+					$("#saveProfile")[0].innerHTML = "<img src=\"images/rolling.svg\"/>";
+					$.get(DOMAIN + "/php/createUser.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(newName), function(data){
+						//success
+						if(data.indexOf("true|") == 0){
+							var profileData = JSON.parse(data.replace("true|", ""));
+							
+							$("#manageProfilesNewProfile").before("<div class=\"profile\" style=\"max-height:0px;margin:0px;\">" + 
+								"<div>" + 
+									"<div class=\"smiley\" style=\"background-color:" + getProfileColor(profileData[0]) + ";\"></div>" + 
+									"<div class=\"name\">" + profileData[1] + "</div>" + 
+									"<div class=\"edit\" onclick=\"showEditProfileFormInManageProfiles(this.parentNode.parentNode, true);\"></div>" + 
+								"</div>" + 
+							"</div>");
+							hideNewProfileFormInManageProfiles();
+						}
+						else{
+							queueNotice("error", data.replace("false|", ""));
+						}
+					})
+					.fail(function(){
+						//error
+						queueNotice("error", "Your request did not process. You may have a weak internet connection, or our servers might be busy. Please try again.");
+					})
+					.always(function() {
+						//complete
+						addingNewProfile = false;
+						$("#clearInteractionBlock")[0].style.display = "none";
+						$("#saveProfile")[0].innerHTML = "Save";
+					});
+				}
+			}
+			
+			function hideNewProfileFormInManageProfiles(){
+				hideEditProfileFormInManageProfiles();
+				$("#manageProfilesNewProfile .smiley").eq(0)[0].style.backgroundImage = "url('images/plusGray.png')";
+				$("#manageProfilesNewProfile .smiley").eq(0)[0].style.backgroundSize = "35%";
+				$("#manageProfilesNewProfile .name").eq(0)[0].innerHTML = "new profile";
+				$("#cancelProfile")[0].onclick = function(){hideEditProfileFormInManageProfiles();};
+				$("#saveProfile")[0].onclick = saveProfile;
+			}
+			
+			function logOut(){
+				$("#clearInteractionBlock")[0].style.display = "block";
+				$("#logOutOption")[0].innerHTML = "<img src=\"images/rolling.svg\"/>";
+				clearFromStick("cableUsername");
+				logOutWhenCableUsernameCleared();
+			}
+			
+			function logOutWhenCableUsernameCleared(){
+				requestFromStick("cableUsername");
+				setTimeout(function(){
+					var stickRequestCheck = setInterval(function(){
+						var stickReq = grabStickRequest();
+						if(stickReq !== false){
+							clearInterval(stickRequestCheck);
+							if(stickRequestExisted(stickReq)){
+								logOutWhenCableUsernameCleared();
+							}
+							else{
+								window.location = window.location;
+							}
+						}
+					}, 100);
+				}, 2000);
 			}
 		</script>
 	</head>
@@ -1937,6 +2647,14 @@
 		<div id="alert" onclick="hideNotice();"></div>
 		<div id="promptInteractionBlock"></div>
 		<div id="noticeInteractionBlock" onclick="hideNotice();"></div>
+		<div id="confirm">
+			<div></div>
+			<div>
+				<button>OK</button>
+				<button>Cancel</button>
+				<div class="clearBoth"></div>
+			</div>
+		</div>
 		<div id="clearInteractionBlock"></div>
 		<div id="splash">CableMooch</div>
 		<div id="cableLogin">
@@ -2513,8 +3231,8 @@
 					<option>Zito Media</option>
 				</select>
 			</div>
-			<div><input type="text" placeholder="Username/Email" id="cableLoginUsername"/></div>
-			<div><input type="password" placeholder="Password" id="cableLoginPassword"/></div>
+			<div><input type="text" placeholder="Username/Email" id="cableLoginUsername" autocomplete="off"/></div>
+			<div><input type="password" placeholder="Password" id="cableLoginPassword" autocomplete="off"/></div>
 			<div id="cableLoginButton" onclick="submitCableCredentials();">Log in</div>
 		</div>
 		<div id="profileSelection">
@@ -2524,6 +3242,11 @@
 			<div id="headerBackground">
 				<div id="logo">
 					CableMooch
+				</div>
+				<div id="hamburger" onclick="showNav();">
+					<div></div>
+					<div></div>
+					<div></div>
 				</div>
 				<div id="primaryCategories">
 					<div id="liveTVButton" style="text-decoration:underline;" onclick="showLiveTVPage();">Live TV</div>
@@ -2574,6 +3297,33 @@
 			</div>
 			<div id="searchResults"></div>
 			<div id="episodes"></div>
+			<div id="currentlyWatching">
+				<div>
+					<div id="currentlyWatchingThumbnail"><div></div></div>
+					<div id="currentlyWatchingTitle"><div></div></div>
+					<div id="currentlyWatchingPausePlay"><div></div></div>
+					<div id="currentlyWatchingX" onclick="stopWatching();"><div></div></div>
+				</div>
+			</div>
+			<div id="nav">
+				<div id="navHeader">
+					<div id="backArrow"></div>
+					<div id="navLogo">Options</div>
+				</div>
+				<div id="navOptions">
+					<div onclick="showNavOptionPanel($('#controlAnotherTVPanel'), this.innerHTML);">Control Another TV</div>
+					<div onclick="showNavOptionPanel($('#selectChannelsPanel'), this.innerHTML);">Select Channels</div>
+					<div onclick="populateManageProfiles();showNavOptionPanel($('#manageProfilesPanel'), this.innerHTML);">Manage Profiles</div>
+					<div onclick="logOut();" id="logOutOption">Log Out</div>
+				</div>
+				<div class="optionPanel" id="controlAnotherTVPanel">
+					<div style="text-align:center;color:#999;padding:10px;">We have not set this up yet.</div>
+				</div>
+				<div class="optionPanel" id="selectChannelsPanel">
+					<div style="text-align:center;color:#999;padding:10px;">We have not set this up yet.</div>
+				</div>
+				<div class="optionPanel" id="manageProfilesPanel"></div>
+			</div>
 		</main>
 		<footer>
 		</footer>
