@@ -4,7 +4,8 @@
         <meta http-equiv="content-type" content="text/html; charset=windows-1252">
             <style>
                 body{
-                    background-color:#000;/*#ff0055;*/
+                    /*background-color:#000;/*#ff0055;*/
+                    animation: colors 20s linear infinite;
                     margin:0px;
                     cursor:none;
                     overflow: hidden;
@@ -73,6 +74,15 @@
                     0% { transform:rotate(-15deg) scaleX(-1); } 
                     50% { transform:rotate(15deg) scaleX(-1); }
                     100% { transform:rotate(-15deg) scaleX(-1); } 
+                }
+                @keyframes colors {
+                    0% { background-color: #121F67; }
+                    16.66% { background-color: #95080C; }
+                    33.33% { background-color: #0D7A07; }
+                    50% { background-color: #976E08; }
+                    66.66% { background-color: #0D7A07; }
+                    83.33% { background-color: #95080C; }
+                    100% { background-color: #121F67; }
                 }
             </style>
     </head>
