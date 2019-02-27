@@ -176,6 +176,12 @@ class Cbs extends Site {
      */
     async loginCbs() {
         try {
+            // Skip sign in if already logged in
+            try {
+                await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+                return Promise.resolve(1);
+            }
+            catch(err) {}
             // Login to CBS Account
             await this.page.waitForSelector("#mvpd-signin", {timeout: Site.STANDARD_TIMEOUT});
             await this.page.waitFor(1000);
@@ -207,19 +213,25 @@ class Cbs extends Site {
         await this.page.waitFor(2500);
         await this.page.waitForSelector("#userBarArrow, #mvpd-signin, .providers__grid-view", {timeout: Site.STANDARD_TIMEOUT});
 
-        let actionElement = await this.page.$("#userBarArrow, #mvpd-signin, .providers__grid-view");
-        let actionClassName = await (await actionElement.getProperty("className")).jsonValue();
+        await this.page.waitFor(500);
 
-        // We need to login to the Provider
-        if( actionClassName.indexOf("providers__grid-view") != -1 ) {
-            let returnVal = await this.login();
-            if( !returnVal ) return Promise.resolve(0);
-            await this.loginCbs();
+        let actionElement = await this.page.$("#mvpd-signin, .providers__grid-view");
+
+        if( actionElement ) {
+            let actionClassName = await (await actionElement.getProperty("className")).jsonValue();
+
+            // We need to login to the Provider
+            if( actionClassName.indexOf("providers__grid-view") != -1 ) {
+                let returnVal = await this.login();
+                if( !returnVal ) return Promise.resolve(0);
+                await this.loginCbs();
+            }
+            // We need to login to CBS
+            else if( await (await actionElement.getProperty("id")).jsonValue() == "mvpd-signin" ) {
+                await this.loginCbs();
+            }
         }
-        // We need to login to CBS
-        else if( await (await actionElement.getProperty("id")).jsonValue() == "mvpd-signin" ) {
-            await this.loginCbs();
-        }
+
         // We don't need to login to anything!
         // Wait for the drop down arrow to log out
         await this.page.waitForSelector("#userBarArrow", {timeout: Site.STANDARD_TIMEOUT});

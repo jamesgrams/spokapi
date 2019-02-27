@@ -97,6 +97,11 @@ class FoxSite extends Site {
 
             // Get the live info (Will throw an error if no title)
             let liveInfo = await (await liveElement.getProperty("title")).jsonValue();
+
+            // Placeholders won't have a title
+            if( !liveInfo ) {
+                return Promise.resolve(programs);
+            }
             
             let network = this.constructor.name.toLowerCase();
             let channel = this.channelName ? this.channelName : network;
@@ -171,6 +176,7 @@ class FoxSite extends Site {
         }
 
         // Type the provider
+        await this.page.waitFor(500);
         await this.page.keyboard.type(provider.name);
         // Wait for the provider selector to be visible
         await this.page.waitForSelector("*[class^='AuthMVPDSearch_providerContainer']", {timeout: Site.STANDARD_TIMEOUT * 2});
@@ -186,8 +192,15 @@ class FoxSite extends Site {
         let oldPageCount = allPages.length;
 
         // The new page will open in a popup
+        // Open in the same tab
+        if( !Site.PATH_TO_CHROME )
+            await this.page.bringToFront();
         await this.page.evaluate( () => document.querySelector("*[class^='AuthMVPDSearch_providerContainer'] a").click() );
         
+        // Now that the new tab is detected, we can switch back to our loading screen
+        if( !Site.PATH_TO_CHROME )
+            await Site.displayLoading();
+
         // We should be on our Provider screen now
         // It'll be on a different tab though, so we have to switch to that
         await this.page.waitFor(1000);
@@ -200,12 +213,17 @@ class FoxSite extends Site {
             await this.page.waitFor(1000); // We're just sleeping here...
             count ++;
         }
+
         // Find which is the new page
         let newPages = allPages.filter( page => !oldPages.includes(page) );
 
         // Temporarily switch the site's page
         let watchPage = this.page;
         this.page = newPages[0];
+
+        // Now that the new tab is detected, we can switch back to our loading screen
+        //if( !Site.PATH_TO_CHROME )
+        //    await Site.displayLoading();
         
         try {
             await provider.login(this.page, Site.STANDARD_TIMEOUT * 2);
@@ -213,6 +231,19 @@ class FoxSite extends Site {
         catch(err) {console.log(err);}
 
         this.page = watchPage;
+
+        // Bring this page to front temporarily to allow credentials to fetch,
+        // then go back to the loading page
+        if( !Site.PATH_TO_CHROME ) {
+            // Wait for successful login
+            while( ! (await newPages[0].isClosed()) ) {
+                await this.page.waitFor(1000);
+            }
+            await this.page.waitFor(1000);
+            await this.page.bringToFront();
+            await this.page.waitFor(1000);
+            await Site.displayLoading();
+        }
 
         return Promise.resolve(1);
     }
@@ -230,9 +261,13 @@ class FoxSite extends Site {
         // Go to the url
         await this.page.goto(url, {timeout: Site.STANDARD_TIMEOUT * 2});
 
-        // Exit the loading page now that we're loaded (TODO: figure this out better)
-        if( !Site.PATH_TO_CHROME )
-            await Site.stopLoading(this.page);
+        // Bring to front to allow load
+        if( !Site.PATH_TO_CHROME ) {
+            await this.page.bringToFront();
+            await this.page.waitFor(100);
+            await Site.displayLoading();
+        }
+        await this.page.waitFor(1000);
 
         // See what we need to do
         await this.page.waitForSelector("*[class^='AuthPlaybackError_primaryAction'],*[class^='VideoContainer_previewPassLoginLink'],*[class^='AuthSignIn_button'],*[class^='AuthMVPDStart_provider'],.fullscreenButton", {timeout: Site.STANDARD_TIMEOUT * 2});
@@ -247,6 +282,9 @@ class FoxSite extends Site {
 
         // We need to click ok for location
         if( actionClassName.indexOf("AuthPlaybackError_primaryAction") != -1 ) {
+            if( !Site.PATH_TO_CHROME ) {
+                await this.page.bringToFront();
+            }
             await this.page.evaluate( () => document.querySelector("*[class^='AuthPlaybackError_primaryAction']").click() );
             await this.watch(url); // We basically just want to start again after clicking OK for location.
             return Promise.resolve(1);
@@ -274,6 +312,11 @@ class FoxSite extends Site {
         await this.page.waitForSelector("video", {timeout: (Site.STANDARD_TIMEOUT * 2)});
         await this.page.waitFor(1000);
 
+        // Exit the loading page now that we're loaded
+        if( !Site.PATH_TO_CHROME )
+            await Site.stopLoading(this.page);
+
+        await this.page.waitFor(1000);
         await this.page.evaluate( () => document.querySelector("video").webkitRequestFullScreen() );
         return Promise.resolve(1);
     }

@@ -121,14 +121,17 @@ class NbcSports extends Site {
      */
     async login() {
         // Wait for the sign in initiater
-        // We'll favor temp pass login, since that skips temp viewing
-        let initiater = "#accessEnablerLogin";
-        if( await(this.page.$("#temp-pass-login")) ) {
-            initiater = "#temp-pass-login";
-        }
+        let initiater = "#accessEnablerLogin"; // Click access enabler login for good measure
         await this.page.waitForSelector(initiater, {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( (initiater) => { document.querySelector(initiater).click(); }, initiater );
-        
+
+        // Click verify now if necessary
+        if( await(this.page.$("#temp-pass-login")) ) {
+            initiater = "#temp-pass-login";
+            await this.page.waitForSelector(initiater, {timeout: Site.STANDARD_TIMEOUT});
+            await this.page.evaluate( (initiater) => { document.querySelector(initiater).click(); }, initiater );
+        }
+
         // Wait until we have the option to log in
         let provider = this.constructor.getProvider();
         if( !provider ) { // Provider unsupported

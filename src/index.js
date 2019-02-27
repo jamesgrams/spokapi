@@ -71,14 +71,14 @@ const FETCH_INTERVAL = 600000;
  * @type {number}
  * @default
  */
-let MAX_SIMULTANEOUS_FETCHES = 6;
+let MAX_SIMULTANEOUS_FETCHES = 3;
 /**
  * @constant
  * @type {Object}
  * @default
  */
 const NETWORKS = { 
-    "animalplanet": AnimalPlanet,
+    /*"animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -96,17 +96,9 @@ const NETWORKS = {
     "foxsports": FoxSports, 
     "cbs": Cbs,
     "pbskids": PbsKids,
-    "fox": Fox,
-    "nationalgeographic": NationalGeographic,
-    "nationalgeographicwest": NationalGeographicWest,
-    "fbn": Fbn,
-    "foxnews": FoxNews,
-    "fx": Fx,
-    "fxwest": FxWest,
-    "fxm": Fxm,
-    "fxx": Fxx,
-    "fxxwest": FxxWest,
-    "natgeowild": NatGeoWild
+    "fox": Fox,*/
+    "fbn": Fbn/*,
+    "foxnews": FoxNews*/
 };
 /**
  * @constant
@@ -124,7 +116,7 @@ const LOCAL_ONLY_NETWORKS = [
  * @default
  * The remote
  */
-const REMOTE_SERVER = "http://game103.net:8080/programs";
+const REMOTE_SERVER = "http://spokapi.com:8080/programs";
 /**
  * @constant
  * @type {boolean}
