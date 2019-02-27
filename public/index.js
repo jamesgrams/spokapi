@@ -52,15 +52,22 @@ function loadPrograms() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            var status = JSON.parse(this.responseText).status;
+            var jsonResponse = JSON.parse(this.responseText);
+            var status = jsonResponse.status;
             if( status === "success" ) {
                 document.getElementById("programs").innerHTML = "";
-                programs = JSON.parse(this.responseText).programs;
+                programs = jsonResponse.programs;
                 sortPrograms();
                 generatePrograms();
             }
             else {
                 document.getElementById("programs").innerHTML = "Still loading...";
+                if( jsonResponse.programs && jsonResponse.programs.length ) {
+                    document.getElementById("programs").innerHTML += "<br>";
+                    programs = jsonResponse.programs;
+                    sortPrograms();
+                    generatePrograms();
+                }
                 window.setTimeout( loadPrograms, 2000 );
             }
         }

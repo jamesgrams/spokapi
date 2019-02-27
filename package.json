@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "node src/index.js",
-    "start-remote": "node src/index.js --use-remote"
+    "start-remote": "node src/index.js"
   },
   "dependencies": {
     "puppeteer": "^1.11.0",

@@ -78,7 +78,7 @@ let MAX_SIMULTANEOUS_FETCHES = 3;
  * @default
  */
 const NETWORKS = { 
-    /*"animalplanet": AnimalPlanet,
+    "animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -93,12 +93,12 @@ const NETWORKS = {
     "destinationamerica": DestinationAmerica,
     "espn": Espn, 
     "nbcsports": NbcSports, 
-    "foxsports": FoxSports, 
+    "foxsports": FoxSports,
     "cbs": Cbs,
     "pbskids": PbsKids,
-    "fox": Fox,*/
-    "fbn": Fbn/*,
-    "foxnews": FoxNews*/
+    "fox": Fox,
+    "fbn": Fbn,
+    "foxnews": FoxNews
 };
 /**
  * @constant
@@ -106,9 +106,9 @@ const NETWORKS = {
  * @default
  */
 const LOCAL_ONLY_NETWORKS = [
-    /*"fox",
+    "fox",
     "cbs",
-    "foxsports"*/
+    "foxsports"
 ];
 /**
  * @constant
@@ -214,8 +214,12 @@ app.get('/programs', async function(request, response) {
 
     }
     else {
+        let status = "success";
+        if( fetchLocked ) {
+            status = "loading";
+        }
         response.writeHead(200, {'Content-Type': 'application/json'});
-        response.end(JSON.stringify({ status: "success", programs: programsCache }));
+        response.end(JSON.stringify({ "status": status, programs: programsCache }));
     }
 });
 
@@ -224,7 +228,7 @@ app.get('/watch', async function(request, response) {
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 
-    if( !Site.PATH_TO_CHROME && watchBrowser ) {
+    if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
         try {
             try {
                 if( !Site.PATH_TO_CHROME )
@@ -272,7 +276,7 @@ app.get('/watch', async function(request, response) {
 
     // Remove watchBrowser from memory
     if ( !Site.PATH_TO_CHROME ) {
-        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+        if (watchBrowser && !fetchLocked) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
         watchBrowser = null;
     }
 });
@@ -625,7 +629,7 @@ async function fetchPrograms(fetchNetworks) {
     // Note: To block a channel from fetching, make sure it is lower case
     if( !Site.PATH_TO_CHROME ) {
         // Create an instance of each network class
-        let index = 2;
+        let index = 2; // Avoid watch tab and loading tab
         for( let Network of fetchNetworks.map( v => NETWORKS[v] ) ) {
             if( Site.unsupportedChannels.indexOf(Network.name.toLowerCase()) === -1 ) {
                 networks.push(new Network( Site.connectedTabs[index] ));
@@ -643,26 +647,7 @@ async function fetchPrograms(fetchNetworks) {
     }
 
     // Generate all the programs
-    let values = [];
-    for( let i=0; i < networks.length; i += MAX_SIMULTANEOUS_FETCHES ) {
-        let currentNetworks = [];
-        for ( let j=0; j<MAX_SIMULTANEOUS_FETCHES; j++ ) {
-            if( i+j < networks.length ) {
-                currentNetworks.push(networks[i+j]);
-            }
-        }
-        values = values.concat(
-            await Promise.all(
-                currentNetworks.map( network => network.generatePrograms() )
-            )
-        );
-    }
-
-    // Concatenate all the values
-    let joinedValues = [];
-    for (let value of values) {
-        joinedValues = joinedValues.concat(value);
-    }
+    programsCache = [];
 
     // If we are using remote, do a request to the remote server
     // Remote request will necessarily be for all channels, so we can
@@ -671,25 +656,25 @@ async function fetchPrograms(fetchNetworks) {
         let response = await fetch(REMOTE_SERVER);
         let json = await response.json();
         if ( json.programs ) {
-            programsCache = json.programs;
+            programsCache = updateProgramsCache( json.programs, Object.keys(NETWORKS).map( (network) => network.constructor.name.toLowerCase() ) );
         }
     }
 
-    // If we didn't fetch the network, try to use the cached value
-    if( programsCache ) {
-        for( let network of Object.keys(NETWORKS) ) {
-            if( fetchNetworks.indexOf(network) == -1 ) {
-                for( let cachedProgram of programsCache ) {
-                    if( cachedProgram.network == network ) {
-                        joinedValues.push(cachedProgram);
-                    }
-                }
+    for( let i=0; i < networks.length; i += MAX_SIMULTANEOUS_FETCHES ) {
+        let currentNetworks = [];
+        for ( let j=0; j<MAX_SIMULTANEOUS_FETCHES; j++ ) {
+            if( i+j < networks.length ) {
+                currentNetworks.push(networks[i+j]);
             }
         }
+        await Promise.all(
+            currentNetworks.map( async network => {
+                let programs = await network.generatePrograms();
+                let networkClassName = network.constructor.name.toLowerCase();
+                programsCache = updateProgramsCache( programs, [networkClassName] );
+            } )
+        )
     }
-
-    // Update the cache
-    programsCache = joinedValues;
 
     try {
         // Cleanup
@@ -730,4 +715,19 @@ function updateLoginInfo( newData ) {
     }
 
     fs.writeFileSync(LOGIN_INFO_FILE, JSON.stringify(data));
+}
+
+/**
+ * Update the programs cache
+ */
+function updateProgramsCache( programs, networkClassNames ) {
+    // Remove programs to be replaced
+    for( let i=programsCache.length-1; i >= 0; i-- ) {
+        if( networkClassNames.includes(programsCache[i].network) ) {
+            programsCache.splice(i, 1);
+        }
+    }
+    // Add new programs
+    programsCache = programsCache.concat(programs);
+    return programsCache;
 }
