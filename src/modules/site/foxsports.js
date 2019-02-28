@@ -209,6 +209,16 @@ class FoxSports extends Site {
         return Promise.resolve(1);
     }
 
+    /**
+     * Pause/unpause a program
+     * @returns {Promise}
+     */
+    async pause() {
+        await this.page.click("#video__wrapper");
+        await this.page.keyboard.press(" ");
+        return Promise.resolve(1);
+    }
+
 };
 
 module.exports = FoxSports;

@@ -1329,8 +1329,12 @@
 			
 			var stickRequest = false;
 			function requestFromStick(key){
+				var value = window.localStorage.getItem(key);
+				if( value === null ) {
+					value = "null";
+				}
 				//USING LOCALSTORAGE AS A PLACEHOLDER UNTIL WE STORE STUFF ON THE STICK
-				stickRequest = window.localStorage.getItem(key);
+				stickRequest = value;
 			}
 			
 			function grabStickRequest(){

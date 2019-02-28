@@ -56,15 +56,15 @@ function loadPrograms() {
             var status = jsonResponse.status;
             if( status === "success" ) {
                 document.getElementById("programs").innerHTML = "";
-                programs = jsonResponse.programs;
+                programs = jsonResponse.live;
                 sortPrograms();
                 generatePrograms();
             }
             else {
                 document.getElementById("programs").innerHTML = "Still loading...";
-                if( jsonResponse.programs && jsonResponse.programs.length ) {
+                if( jsonResponse.live && jsonResponse.live.length ) {
                     document.getElementById("programs").innerHTML += "<br>";
-                    programs = jsonResponse.programs;
+                    programs = jsonResponse.live;
                     sortPrograms();
                     generatePrograms();
                 }

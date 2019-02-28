@@ -179,13 +179,24 @@ class Site {
         return Promise.resolve(1);
     }
 
+    /**
+     * Pause/unpause a program
+     * @returns {Promise}
+     */
+    async pause() {
+        let mousie = this.page.mouse;
+        await mousie.click(100, 100); // Not sure we'll have anything smaller than 100 pixels
+        return Promise.resolve(1);
+    }
+
     // --------------- Static methods -----------------
 
     /**
      * Connect to a pre-running instance of Chrome
+     * @param {boolean} bringToFront - true if we should bring the spokapi page to the front
      * @returns {Promise<Browser>}
      */
-    static async connectToChrome() {
+    static async connectToChrome(bringToFront = true) {
         // The number of needed tabs
         // Total networks + watch tab + loading tab
         let neededTabs = totalNetworks + 2;
@@ -234,7 +245,9 @@ class Site {
 
         await Site.makeLoadingTabSecond(browser);
 
-        await Site.connectedTabs[1].bringToFront();
+        if( bringToFront ) {
+            await Site.connectedTabs[1].bringToFront();
+        }
 
         // Remove unecessary tabs
         // We know we won't accidently remove the watch and loading tabs,

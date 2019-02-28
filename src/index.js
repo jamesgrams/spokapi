@@ -134,11 +134,18 @@ const DIR = 'public';
  * @type {string}
  * @default
  */
+const APP_DIR = 'app';
+/**
+ * @constant
+ * @type {string}
+ * @default
+ */
 const LOGIN_INFO_FILE = 'login-info.txt';
 
 Site.totalNetworks = Object.keys(NETWORKS).length;
 
 var watchBrowser;
+var watchNetwork;
 var programsCache;
 var fetchLocked = false;
 var fetchInterval;
@@ -158,6 +165,12 @@ app.use( '/static/', express.static(DIR) );
 
 // Middleware to serve static public directory
 staticApp.use( '/static/', express.static(DIR) ); // Allow instant access to static resources
+
+// Middleware to serve static public directory
+app.use( '/app/', express.static(APP_DIR) );
+
+// Middleware to serve static public directory
+staticApp.use( '/app/', express.static(APP_DIR) ); // Allow instant access to static resources
 
 // Middleware to allow cors from any origin
 app.use(function(req, res, next) {
@@ -219,7 +232,7 @@ app.get('/programs', async function(request, response) {
             status = "loading";
         }
         response.writeHead(200, {'Content-Type': 'application/json'});
-        response.end(JSON.stringify({ "status": status, programs: programsCache }));
+        response.end(JSON.stringify({ "status": status, live: programsCache }));
     }
 });
 
@@ -228,6 +241,7 @@ app.get('/watch', async function(request, response) {
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
 
+    // Remove watchBrowser from memory only if not fetching
     if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
         try {
             try {
@@ -274,12 +288,56 @@ app.get('/watch', async function(request, response) {
 
     await watch(page, url, request);
 
-    // Remove watchBrowser from memory
-    if ( !Site.PATH_TO_CHROME ) {
-        if (watchBrowser && !fetchLocked) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+    // Remove watchBrowser from memory only if not fetching
+    if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
+        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
         watchBrowser = null;
     }
 });
+
+// Endpoint to pause or unpause a program
+app.get('/pause', async function(request, response) {
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify({"status":"success"}));
+
+    // Remove watchBrowser from memory only if not fetching
+    if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
+        try {
+            try {
+                if( !Site.PATH_TO_CHROME )
+                    await Site.cancelLoading();
+            }
+            catch (err) { console.log(err); }
+            try {
+                await watchBrowser.disconnect();
+            }
+            catch (err) { console.log(err); }
+        }
+        catch (err) { console.log(err); }
+        watchBrowser = null;
+    }
+
+    if( !watchBrowser ) {
+        await openBrowser(false, false);
+    }
+
+    if ( Site.PATH_TO_CHROME ) {
+        let pages = await watchBrowser.pages();
+        page = pages[0];
+    }
+    else {
+        page = Site.connectedTabs[0];
+    }
+
+    watchNetwork.page = page;
+    await watchNetwork.pause();
+
+    // Remove watchBrowser from memory only if not fetching
+    if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
+        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+        watchBrowser = null;
+    }
+} );
 
 // Endpoint to stop a program
 app.get('/stop', async function(request, response) {
@@ -538,9 +596,10 @@ else {
 /**
  * Launch the watch browser.
  * @param {boolean} clean - true if the browser should clean out its pages (Non-launch/connect only)
+ * @param {boolean} bringToFront - true if we should bring the spokapi page to front
  * @returns {Promise}
  */
-async function openBrowser(clean) {
+async function openBrowser(clean, bringToFront = true) {
     // If there is a Chrome path, we will try to launch chrome
     if ( Site.PATH_TO_CHROME ) {
         watchBrowser = await puppeteer.launch({
@@ -562,7 +621,7 @@ async function openBrowser(clean) {
     }
     // If not, we'll try to connect to an existing instance (ChromeOS)
     else {
-        watchBrowser = await Site.connectToChrome();
+        watchBrowser = await Site.connectToChrome(bringToFront);
         if( clean ) {
             await Site.cleanupAll(watchBrowser);
         }        
@@ -583,6 +642,7 @@ async function watch(page, url, request) {
     let Network = NETWORKS[networkName];
     if( Network ) {
         let network = new Network(page);
+        watchNetwork = network;
         let provider = Network.getProvider();
         if( provider ) {
             // Try to watch, but it's OK if the watch fails
