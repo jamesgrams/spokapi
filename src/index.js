@@ -400,9 +400,9 @@ app.get( '/break', async function(request, response) {
 
 // Endpoint to set cable information
 app.post( '/info', async function(request, response) {
-    let username = request.body.username;
-    let password = request.body.password;
-    let provider = request.body.provider;
+    let username = request.body.cableUsername;
+    let password = request.body.cablePassword;
+    let provider = request.body.cableProvider;
     let cbsUsername = request.body.cbsUsername;
     let cbsPassword = request.body.cbsPassword;
 
@@ -427,6 +427,11 @@ app.post( '/info', async function(request, response) {
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
+} );
+
+// Endpoint to set cable information
+app.get( '/info', async function(request, response) {
+
 } );
 
 // Endpoint to remove/add channels from the list of those disallowed

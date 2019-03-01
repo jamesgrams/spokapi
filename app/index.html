@@ -1323,18 +1323,26 @@
 			});
 			
 			function storeOnStick(key, value){
-				//USING LOCALSTORAGE AS A PLACEHOLDER UNTIL WE STORE STUFF ON THE STICK
-				window.localStorage.setItem(key, value);
+				var json = {};
+				json[key] = value;
+				$.post( "/info", json );
 			}
 			
 			var stickRequest = false;
 			function requestFromStick(key){
+				// JAMES TODO: ADD ENDPOINT FOR GETTING INFO
+				// SET stickRequest SUCCESS FUNCTION
+				// Set value to null
 				var value = window.localStorage.getItem(key);
 				if( value === null ) {
 					value = "null";
 				}
 				//USING LOCALSTORAGE AS A PLACEHOLDER UNTIL WE STORE STUFF ON THE STICK
 				stickRequest = value;
+
+				$.get(DOMAIN + "/php/getProfiles.php?email=" + encodeURIComponent(email), function(data){
+
+				});
 			}
 			
 			function grabStickRequest(){
@@ -1345,12 +1353,12 @@
 			
 			function stickRequestExisted(stickReq){
 				//USING "null" HERE UNTIL WE KNOW WHAT THE STICK SENDS US IF NO VALUE WAS STORED ON THE STICK FOR THE KEY WE REQUESTED
-				return (stickReq !== "null");
+				return (stickReq !== null); // Check to make sure if the stick had a value
 			}
 			
 			function clearFromStick(key){
 				//USING "null" HERE UNTIL WE KNOW WHAT THE STICK SHOULD HOLD IF NO VALUE EXISTS FOR THE KEY WE REQUESTED
-				storeOnStick(key, "null");
+				storeOnStick(key, null);
 			}
 			
 			var email = "";
@@ -2301,7 +2309,7 @@
 				//track that the user has watched this
 				$.get(DOMAIN + "/php/addWatched.php?email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(window.localStorage.getItem("name")) + "&channel=" + encodeURIComponent(channel.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&programTitle=" + encodeURIComponent(programTitle.toLowerCase().replace(/\s\s+/g, ' ').trim()) + "&season=" + Number(season.toString().replace(/\D/g, "")) + "&episode=" + Number(episode.toString().replace(/\D/g, "")), function(data){});
 				
-				//TODO: connect to the stick and throw it up on the tv
+				//JAMES TODO: connect to the stick and throw it up on the tv
 				
 				$("#currentlyWatching").stop().fadeOut(0);
 				if(thumbnail.trim() == ""){
@@ -2317,7 +2325,7 @@
 			}
 			
 			function stopWatching(){
-				//TODO: connect to the stick and stop playing
+				//JAMES TODO: connect to the stick and stop playing
 				
 				$("#currentlyWatching").stop().fadeOut(200);
 			}
@@ -2350,7 +2358,7 @@
 				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundImage = "";
 				$("#currentlyWatchingPausePlay>div").eq(0)[0].style.backgroundSize = "";
 				
-				//TODO: pause on stick
+				//JAMES TODO: pause on stick
 				
 				detectPlayStatusChange(playStatus);
 			}
