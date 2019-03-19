@@ -121,6 +121,13 @@ const REMOTE_SERVER = "http://spokapi.com:8080/programs";
  * @constant
  * @type {boolean}
  * @default
+ * If this is a server
+ */
+const SERVER_MODE = process.env.SPOKAPI_SERVER_MODE;
+/**
+ * @constant
+ * @type {boolean}
+ * @default
  */
 const USE_REMOTE = process.argv.includes("--use-remote") ? true : false;
 /**
@@ -431,7 +438,23 @@ app.post( '/info', async function(request, response) {
 
 // Endpoint to set cable information
 app.get( '/info', async function(request, response) {
-
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    if( SERVER_MODE ) {
+        response.end(JSON.stringify({
+            "status":"failure",
+            "message": "This is server mode."
+        }));
+    }
+    else {
+        response.end(JSON.stringify({
+            "status":"success",
+            "username": Provider.username,
+            "password": Provider.password,
+            "provider": Site.providerName,
+            "cbsUsername": Cbs.cbsUsername,
+            "cbsPassword": Cbs.cbsPassword
+        }));
+    }
 } );
 
 // Endpoint to remove/add channels from the list of those disallowed
