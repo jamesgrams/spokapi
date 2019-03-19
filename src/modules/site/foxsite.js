@@ -222,6 +222,7 @@ class FoxSite extends Site {
         this.page = newPages[0];
 
         // Now that the new tab is detected, we can switch back to our loading screen
+        // It's not best to do this here, it doesn't seem to work
         //if( !Site.PATH_TO_CHROME )
         //    await Site.displayLoading();
         
@@ -243,6 +244,9 @@ class FoxSite extends Site {
             await this.page.bringToFront();
             await this.page.waitFor(1000);
             await Site.displayLoading();
+        }
+        else {
+            this.page.waitFor(1000);
         }
 
         return Promise.resolve(1);

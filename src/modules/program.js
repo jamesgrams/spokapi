@@ -30,7 +30,7 @@ class Program {
         this.network                = network ? network : "";
         this.channel               = channel ? channel : "";
         this.description           = description ? description : "";
-        this.season                = season ? season : 0;
+        this.season                = season ? season : 1;
         this.episode               = episode ? episode : 0;
         this.episodeTitle          = episodeTitle ? episodeTitle : "";
         this.episodeThumbnailUrl   = episodeThumbnailUrl ? episodeThumbnailUrl : "";
