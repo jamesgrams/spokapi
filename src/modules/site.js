@@ -61,6 +61,11 @@ const PATH_TO_CHROME = process.env.SPOKAPI_CHROME_PATH;
 const CHANNEL_UNSUPPORTED_MESSAGE = "You don't have access to this channel with your cable provider.";
 /**
  * @constant
+ * @type {string}
+ */
+ const FAKE_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
+/**
+ * @constant
  * @type {Array<Class>}
  * Ideally, in subclasses, we would have class names
  * mapped to name values rather than the literal string
@@ -119,6 +124,7 @@ class Site {
     static get STANDARD_WAIT_OK_TIMEOUT() { return STANDARD_WAIT_OK_TIMEOUT };
     static get PATH_TO_CHROME() { return PATH_TO_CHROME };
     static get CHANNEL_UNSUPPORTED_MESSAGE() { return CHANNEL_UNSUPPORTED_MESSAGE };
+    static get FAKE_USER_AGENT() { return FAKE_USER_AGENT };
 
     static get providerName() { return providerName };
     static set providerName(prov) { providerName = prov; };
@@ -151,6 +157,7 @@ class Site {
                 executablePath: PATH_TO_CHROME
             });
             page = await this.browser.newPage();
+            page.setUserAgent(Site.FAKE_USER_AGENT);
         }
         else {
             this.browser = await Site.connectToChrome();
@@ -240,7 +247,7 @@ class Site {
         }
         await Site.makeWatchTabFirst(browser); // For easy referral as the first tab later on
         // Sometime watching video doesn't work well unless we have a correct user agent
-        await Site.connectedTabs[0].setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
+        await Site.connectedTabs[0].setUserAgent(Site.FAKE_USER_AGENT);
         await Site.connectedTabs[0]._client.send('Emulation.clearDeviceMetricsOverride');
 
         await Site.makeLoadingTabSecond(browser);

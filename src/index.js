@@ -283,6 +283,7 @@ app.get('/watch', async function(request, response) {
     // Set watching to true on the program
     if( programsCache ) {
         for( let program of programsCache ) {
+            program.stopped = false;
             let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
             if( programUrl == url ) {
                 program.watching = true;
@@ -383,9 +384,13 @@ app.get('/stop', async function(request, response) {
     await site.stop();
 
     // All programs are not being watched now
+    // List the program as being stopped
     if( programsCache ) {
         for( let program of programsCache ) {
-            program.watching = false;
+            if( program.watching ) {
+                program.watching = false;
+                program.stopped = true;
+            }
         }
     }
 
@@ -735,7 +740,9 @@ async function fetchPrograms(fetchNetworks) {
     }
 
     // Generate all the programs
-    programsCache = [];
+    if( !programsCache) { 
+        programsCache = [];
+    }
 
     // If we are using remote, do a request to the remote server
     // Remote request will necessarily be for all channels, so we can
