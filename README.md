@@ -14,9 +14,9 @@ Spokapi is an application that simplifies watching TV online (using sites such a
 3. Make sure you have node and npm installed.
 4. Make sure you have Google Chrome downloaded and know the path to it.
 5. `npm install`
-7. `export SPOKAPI_USERNAME=<Your Cable Provider Username/Email>`
-8. `export SPOKAPI_PASSWORD=<Your Cable Provider Username/Password>`
-9. `export SPOKAPI_PROVIDER=<Your Cable Provider>` (See the list of Supported Cable Providers)
+7. `export SPOKAPI_USERNAME=<Your Cable Provider Username/Email>` (this can be entered through the UI too)
+8. `export SPOKAPI_PASSWORD=<Your Cable Provider Username/Password>` (this can be entered through the UI too)
+9. `export SPOKAPI_PROVIDER=<Your Cable Provider>` (See the list of Supported Cable Providers) (this can be entered through the UI too)
 11. `export SPOKAPI_CHROME_PATH=<Path to Google Chrome on your Computer>` (Recommended Version: 68 [This saves your flash settings]).
     1. You may run Spokapi without specifying Chrome Path. If you do this, Spokapi will try to connect to Chrome's remote debugging on port 1337 (It'll try to connect to an already running instance of Chrome - the only way to work on Chrome OS, since you can't reopen a new instance of Chrome).
     2. You must configure chrome to enable remote debugging (using `--remote-debugging-port=1337`) to do this.
@@ -34,6 +34,7 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     2. `touch /etc/opt/chrome/policies/managed/test_policy.json`
     3. Add the following to the newly created file `{ "RunAllFlashInAllowMode": true, "AllowOutdatedPlugins": true, "DefaultPluginsSetting": 1,"PluginsAllowedForUrls": ["https://*", "http://*"]}`
     4. Restart Chrome/Chrome OS. Flash should now be enabled by default. You can confirm policies by going to `chrome://policy`
+    5. For some tips on macOS and Windows, visit [https://game103.net/flash](https://game103.net/flash).
 15. You should be all set! Note: You might want to make sure that the computer running the Spokapi server has a static local IP address in your router settings. In addition, adding the Spokapi client's URL to the homesreen of your device should provide easy access!
 16. Another note: If you are connecting to a pre-existing chrome instance, you will want to make sure the window is somewhat large, so that Spokapi finds all the right elements (We don't want mobile view!). Starting chrome with `--start-maximized` should work on most screens.
 
