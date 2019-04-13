@@ -704,6 +704,7 @@ async function fetchPrograms(fetchNetworks) {
     if( !programsCache ) {
         programsCache = [];
     }
+    var newProgramsCache = [];
 
     // If we are using remote, do a request to the remote server
     // Remote request will necessarily be for all channels, so we can
@@ -713,6 +714,7 @@ async function fetchPrograms(fetchNetworks) {
         let json = await response.json();
         if ( json.programs ) {
             programsCache = updateProgramsCache( json.programs, Object.keys(NETWORKS).map( (network) => network.constructor.name.toLowerCase() ) );
+            newProgramsCache = json.programs;
         }
     }
 
@@ -728,6 +730,7 @@ async function fetchPrograms(fetchNetworks) {
                 let programs = await network.generatePrograms();
                 let networkClassName = network.constructor.name.toLowerCase();
                 programsCache = updateProgramsCache( programs, [networkClassName] );
+                newProgramsCache = newProgramsCache.concat(programs);
             } )
         )
     }
@@ -750,6 +753,10 @@ async function fetchPrograms(fetchNetworks) {
         }
     }
     catch (err) { console.log(err) }
+
+    // Set programsCache to be newProgramsCache
+    // This will remove shows no longer there
+    programsCache = newProgramsCache;
 
     fetchLocked = false;
 
