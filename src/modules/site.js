@@ -219,9 +219,18 @@ class Site {
 
         // Create the connected chrome tabs
         // Connect to an incognito context
-        let context = await browser.createIncognitoBrowserContext();
-        await context.overridePermissions('https://www.cbs.com', ['geolocation']);
-        await context.overridePermissions('https://www.fox.com', ['geolocation']);
+        let incongitoContext;
+        let contexts = browser.browserContexts();
+        for( let context of contexts ) {
+            if( context.isIncognito() ) {
+                incongitoContext = context;
+            }
+        }
+        if ( !incongitoContext ) {
+            incongitoContext = await browser.createIncognitoBrowserContext();
+        }
+        await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
+        await incongitoContext.overridePermissions('https://www.fox.com', ['geolocation']);
 
         // Get the location
         let location = await Site.getLocation();
@@ -229,7 +238,7 @@ class Site {
         // First, check to see if there are tabs open we can use
         // tab (first one means watching) (we "reconnect" to these)
         Site.connectedTabs = [];
-        let tabs = await context.pages();
+        let tabs = await incongitoContext.pages();
         for(let i=0; i<tabs.length; i++ ) { // We will remove tabs we don't need later
             connectedTabs.push(tabs[i]);
             await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
@@ -238,7 +247,7 @@ class Site {
 
         // We need a tab for each network plus the watch tab
         for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
-            let page = await context.newPage();
+            let page = await incongitoContext.newPage();
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');
