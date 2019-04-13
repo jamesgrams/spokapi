@@ -740,9 +740,7 @@ async function fetchPrograms(fetchNetworks) {
     }
 
     // Generate all the programs
-    if( !programsCache) { 
-        programsCache = [];
-    }
+    programsCache = [];
 
     // If we are using remote, do a request to the remote server
     // Remote request will necessarily be for all channels, so we can
@@ -779,7 +777,7 @@ async function fetchPrograms(fetchNetworks) {
         else {
             // Try to conserve memory by closing pages
             await Promise.all(
-                networks.map( network => network.stop() )
+                networks.map( network => { try { network.stop() } catch(err) {console.log(err)} } )
             );
         }
     }
