@@ -219,7 +219,7 @@ class Site {
 
         // Create the connected chrome tabs
         // Connect to an incognito context
-        let context = await browser.defaultBrowserContext();
+        let context = await browser.createIncognitoBrowserContext();
         await context.overridePermissions('https://www.cbs.com', ['geolocation']);
         await context.overridePermissions('https://www.fox.com', ['geolocation']);
 
@@ -380,8 +380,7 @@ class Site {
      * @returns {Promise}
      */
     static async cleanupAll(browser) {
-        let context = await browser.defaultBrowserContext();
-        let tabs = await context.pages();
+        let tabs = await browser.pages();
         if(tabs.length > 0) {
             await tabs[0].goto(STOP_URL, {timeout: STANDARD_TIMEOUT});
             for(let i=0; i<tabs.length; i++ ) {
