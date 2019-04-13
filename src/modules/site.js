@@ -247,6 +247,7 @@ class Site {
         let tabs = await incongitoContext.pages();
         for(let i=0; i<tabs.length; i++ ) { // We will remove tabs we don't need later
             connectedTabs.push(tabs[i]);
+            await tabs[i].setUserAgent(Site.FAKE_USER_AGENT);
             await tabs[i]._client.send('Emulation.clearDeviceMetricsOverride');
             await tabs[i].setGeolocation(location);
         }
@@ -254,6 +255,7 @@ class Site {
         // We need a tab for each network plus the watch tab
         for ( let i=Site.connectedTabs.length; i < neededTabs; i++ ) {
             let page = await incongitoContext.newPage();
+            await page.setUserAgent(Site.FAKE_USER_AGENT);
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');
@@ -262,7 +264,6 @@ class Site {
         }
         await Site.makeWatchTabFirst(browser); // For easy referral as the first tab later on
         // Sometime watching video doesn't work well unless we have a correct user agent
-        await Site.connectedTabs[0].setUserAgent(Site.FAKE_USER_AGENT);
         await Site.connectedTabs[0]._client.send('Emulation.clearDeviceMetricsOverride');
 
         await Site.makeLoadingTabSecond(browser);

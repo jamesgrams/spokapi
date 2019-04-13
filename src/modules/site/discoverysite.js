@@ -65,8 +65,6 @@ class DiscoverySite extends Site {
 
         try {
             await this.page.goto(this.url, {timeout: Site.STANDARD_TIMEOUT});
-            // Overide the platform
-            await this.page.evaluate( (platform) => Object.defineProperty(navigator,"platform", { get: function () { return platform; }, set: function (a) {} }), Site.FAKE_PLATFORM );
             // Wait until the live program is loaded
             await this.page.waitForSelector('.headerLiveStream__name', {timeout: Site.STANDARD_TIMEOUT});
 
