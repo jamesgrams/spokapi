@@ -156,6 +156,8 @@ var watchNetwork;
 var programsCache;
 var fetchLocked = false;
 var fetchInterval;
+var reloadPrograms = false;
+var watchLocked = false;
 
 process.setMaxListeners(Infinity);
 
@@ -196,7 +198,7 @@ app.get("/", async function(request, response) {
 app.get('/programs', async function(request, response) {
 
     // There is no cache yet or there is a request for specific networks
-    if( !programsCache || request.query.networks ) {
+    if( !programsCache || request.query.networks || reloadPrograms ) {
         response.writeHead(200, {'Content-Type': 'application/json'});
         response.end(JSON.stringify({ status: "loading" }));
 
@@ -204,18 +206,20 @@ app.get('/programs', async function(request, response) {
         if( !fetchLocked ) {
 
             // Disconnect the current session
-            if( !Site.PATH_TO_CHROME && watchBrowser ) {
-                try {
-                    if( !Site.PATH_TO_CHROME )
-                        await Site.cancelLoading();
+            if( !Site.PATH_TO_CHROME ) {
+                if( watchBrowser ) {
+                    try {
+                        if( !Site.PATH_TO_CHROME )
+                            await Site.cancelLoading();
+                    }
+                    catch (err) { console.log(err); }
+                    try {
+                        await watchBrowser.disconnect();
+                    }
+                    catch (err) { console.log(err); }
+                    watchBrowser = null;
                 }
-                catch (err) { console.log(err); }
-                try {
-                    await watchBrowser.disconnect();
-                }
-                catch (err) { console.log(err); }
-                watchBrowser = null;
-                // Reconnect
+                // Reconnect / connect
                 await openBrowser();
             }
 
@@ -224,12 +228,6 @@ app.get('/programs', async function(request, response) {
                 fetchNetworks = request.query.networks.split(",");
             }
             await fetchPrograms(fetchNetworks);
-
-            // Remove watchBrowser from memory
-            if ( !Site.PATH_TO_CHROME ) {
-                if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
-                watchBrowser = null;
-            }
         }
 
     }
@@ -303,50 +301,6 @@ app.get('/watch', async function(request, response) {
     }
 });
 
-// Endpoint to pause or unpause a program
-app.get('/pause', async function(request, response) {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-
-    // Remove watchBrowser from memory only if not fetching
-    if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
-        try {
-            try {
-                if( !Site.PATH_TO_CHROME )
-                    await Site.cancelLoading();
-            }
-            catch (err) { console.log(err); }
-            try {
-                await watchBrowser.disconnect();
-            }
-            catch (err) { console.log(err); }
-        }
-        catch (err) { console.log(err); }
-        watchBrowser = null;
-    }
-
-    if( !watchBrowser ) {
-        await openBrowser(false, false);
-    }
-
-    if ( Site.PATH_TO_CHROME ) {
-        let pages = await watchBrowser.pages();
-        page = pages[0];
-    }
-    else {
-        page = Site.connectedTabs[0];
-    }
-
-    watchNetwork.page = page;
-    await watchNetwork.pause();
-
-    // Remove watchBrowser from memory only if not fetching
-    if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
-        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
-        watchBrowser = null;
-    }
-} );
-
 // Endpoint to stop a program
 app.get('/stop', async function(request, response) {
     response.writeHead(200, {'Content-Type': 'application/json'});
@@ -395,7 +349,7 @@ app.get('/stop', async function(request, response) {
     }
 
     // Remove watchBrowser from memory
-    if ( !Site.PATH_TO_CHROME ) {
+    if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
         if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
         watchBrowser = null;
     }
@@ -404,7 +358,7 @@ app.get('/stop', async function(request, response) {
 
 // Endpoint to break the cache
 app.get( '/break', async function(request, response) {
-    programsCache = null;
+    reloadPrograms = true;
 
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({"status":"success"}));
@@ -670,6 +624,10 @@ async function openBrowser(clean, bringToFront = true) {
  */
 async function watch(page, url, request) {
 
+    // Set this so we know to make sure the programs fetch doesn't remove watch browser from memory
+    // once it finishes
+    watchLocked = true;
+
     let networkName = request.query.network;
 
     let Network = NETWORKS[networkName];
@@ -692,6 +650,8 @@ async function watch(page, url, request) {
         }
     }
 
+    watchLocked = false;
+
     return Promise.resolve(1);
 }
 
@@ -707,6 +667,7 @@ async function fetchPrograms(fetchNetworks) {
     }
 
     fetchLocked = true;
+    reloadPrograms = false;
 
     if( !fetchNetworks ) {
         if( USE_REMOTE ) {
@@ -740,7 +701,9 @@ async function fetchPrograms(fetchNetworks) {
     }
 
     // Generate all the programs
-    programsCache = [];
+    if( !programsCache ) {
+        programsCache = [];
+    }
 
     // If we are using remote, do a request to the remote server
     // Remote request will necessarily be for all channels, so we can
@@ -777,8 +740,13 @@ async function fetchPrograms(fetchNetworks) {
         else {
             // Try to conserve memory by closing pages
             await Promise.all(
-                networks.map( network => { try { network.stop() } catch(err) {console.log(err)} } )
+                networks.map( async network => { try { await network.stop() } catch(err) {console.log(err)} } )
             );
+            // Remove watch browser from memory as long as we're not in the middle of trying to watch something
+            if( !watchLocked ) {
+                if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+                watchBrowser = null;
+            }
         }
     }
     catch (err) { console.log(err) }

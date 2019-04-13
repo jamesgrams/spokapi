@@ -97,8 +97,6 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - This will return an array of objects containing a list of available programs to watch
 - `/watch/`
     - This allows you to control the browser by watching a program
-- `/pause/`
-    - This pauses the watching program
 - `/stop/`
     - This stops the program that is currently playing (It directs the browser to a blank page)
 - `/break/`
