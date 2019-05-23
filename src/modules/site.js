@@ -523,6 +523,8 @@ class Site {
     /**
      * Get the correct provider.
      * To only be called in subclasses of site
+     * This will create a provider object with the correct name needed
+     * for the CSS selector on the particular site.
      * @returns {Provider}
      */
     static getProvider() {

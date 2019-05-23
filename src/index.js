@@ -65,13 +65,13 @@ const STATIC_PORT = 8081;
  * @default
  * 15 minutes
  */
-const FETCH_INTERVAL = 600000;
+const FETCH_INTERVAL = process.env.SPOKAPI_FETCH_INTERVAL ? process.env.SPOKAPI_FETCH_INTERVAL : 600000;
 /**
  * @constant
  * @type {number}
  * @default
  */
-let MAX_SIMULTANEOUS_FETCHES = 3;
+let MAX_SIMULTANEOUS_FETCHES = process.env.SPOKAPI_SIMULTANEOUS_FETCHES ? process.env.SPOKAPI_SIMULTANEOUS_FETCHES : 3;
 /**
  * @constant
  * @type {Object}
@@ -152,7 +152,6 @@ const LOGIN_INFO_FILE = 'login-info.txt';
 Site.totalNetworks = Object.keys(NETWORKS).length;
 
 var watchBrowser;
-var watchNetwork;
 var programsCache;
 var fetchLocked = false;
 var fetchInterval;
@@ -199,8 +198,13 @@ app.get('/programs', async function(request, response) {
 
     // There is no cache yet or there is a request for specific networks
     if( !programsCache || request.query.networks || reloadPrograms ) {
-        response.writeHead(200, {'Content-Type': 'application/json'});
-        response.end(JSON.stringify({ status: "loading" }));
+
+        let object = {};
+        // If we are reloading programs we should respond with the programsCache
+        if( reloadPrograms ) {
+            object = { live: programsCache };
+        }
+        writeResponse( response, "loading", object );
 
         // Start fetching programs
         if( !fetchLocked ) {
@@ -236,306 +240,283 @@ app.get('/programs', async function(request, response) {
         if( fetchLocked ) {
             status = "loading";
         }
-        response.writeHead(200, {'Content-Type': 'application/json'});
-        response.end(JSON.stringify({ "status": status, live: programsCache }));
+        writeResponse( response, status, {live: programsCache} );
     }
 });
-
-// Endpoint to watch a program
-app.get('/watch', async function(request, response) {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-
-    // Remove watchBrowser from memory only if not fetching
-    if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
-        try {
-            try {
-                if( !Site.PATH_TO_CHROME )
-                    await Site.cancelLoading();
-            }
-            catch (err) { console.log(err); }
-            try {
-                await watchBrowser.disconnect();
-            }
-            catch (err) { console.log(err); }
-        }
-        catch (err) { console.log(err); }
-        watchBrowser = null;
-    }
-
-    if( !watchBrowser ) {
-        await openBrowser();
-    }
-    // The url to watch the program on
-    let url = decodeURIComponent(request.query.url);
-
-    let page;
-    if ( Site.PATH_TO_CHROME ) {
-        let pages = await watchBrowser.pages();
-        page = pages[0];
-    }
-    else {
-        page = Site.connectedTabs[0];
-    }
-
-    // Set watching to true on the program
-    if( programsCache ) {
-        for( let program of programsCache ) {
-            program.stopped = false;
-            let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
-            if( programUrl == url ) {
-                program.watching = true;
-            }
-            else {
-                program.watching = false;
-            }
-        }
-    }
-
-    await watch(page, url, request);
-
-    // Remove watchBrowser from memory only if not fetching
-    if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
-        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
-        watchBrowser = null;
-    }
-});
-
-// Endpoint to stop a program
-app.get('/stop', async function(request, response) {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-
-    if( !Site.PATH_TO_CHROME && watchBrowser ) {
-        try {
-            try {
-                if( !Site.PATH_TO_CHROME )
-                    await Site.cancelLoading();
-            }
-            catch (err) { console.log(err); }
-            try {
-                await watchBrowser.disconnect();
-            }
-            catch (err) { console.log(err); }
-        }
-        catch (err) { console.log(err); }
-        watchBrowser = null;
-    }
-
-    if( !watchBrowser ) {
-        await openBrowser();
-    }
-
-    let page;
-    if ( Site.PATH_TO_CHROME ) {
-        let pages = await watchBrowser.pages();
-        page = pages[0];
-    }
-    else {
-        page = Site.connectedTabs[0];
-    }
-    let site = new Site(page);
-    await site.stop();
-
-    // All programs are not being watched now
-    // List the program as being stopped
-    if( programsCache ) {
-        for( let program of programsCache ) {
-            if( program.watching ) {
-                program.watching = false;
-                program.stopped = true;
-            }
-        }
-    }
-
-    // Remove watchBrowser from memory
-    if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
-        if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
-        watchBrowser = null;
-    }
-
-});
-
-// Endpoint to break the cache
-app.get( '/break', async function(request, response) {
-    reloadPrograms = true;
-
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
-
-// Endpoint to set cable information
-app.post( '/info', async function(request, response) {
-    let username = request.body.cableUsername;
-    let password = request.body.cablePassword;
-    let provider = request.body.cableProvider;
-    let cbsUsername = request.body.cbsUsername;
-    let cbsPassword = request.body.cbsPassword;
-
-    if( username ) {
-        Provider.username = username;
-    }
-    if( password ) {
-        Provider.password = password;
-    }
-    if( provider ) {
-        Site.providerName = provider;
-    }
-    if( cbsUsername ) {
-        Cbs.cbsUsername = cbsUsername;
-    }
-    if( cbsPassword ) {
-        Cbs.cbsPassword = cbsPassword;
-    }
-
-    // Save the info for future use
-    updateLoginInfo( request.body );
-
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
-
-// Endpoint to set cable information
-app.get( '/info', async function(request, response) {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    if( SERVER_MODE ) {
-        response.end(JSON.stringify({
-            "status":"failure",
-            "message": "This is server mode."
-        }));
-    }
-    else {
-        response.end(JSON.stringify({
-            "status":"success",
-            "username": Provider.username,
-            "password": Provider.password,
-            "provider": Site.providerName,
-            "cbsUsername": Cbs.cbsUsername,
-            "cbsPassword": Cbs.cbsPassword
-        }));
-    }
-} );
-
-// Endpoint to remove/add channels from the list of those disallowed
-app.post( '/channel', async function(request, response) {
-    let channel = request.body.channel;
-    let type = request.body.type;
-
-    Site.addUnsupportedChannel({ "channel": channel, "type": type });
-
-    updateLoginInfo( { "unsupportedChannels": Site.unsupportedChannels } );
-
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
 
 // Endpoint to find what channels are currently disallowed
 app.get( '/channel', async function(request, response) {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success", "channels":Site.unsupportedChannels}));
+    writeResponse( response, "success", {"channels":Site.unsupportedChannels} );
 } );
 
-// Endpoint to start the regularly occuring process of refetching programs
-app.get( '/start-interval', async function(request, response) {
-    if( !fetchInterval ) {
-        fetchInterval = setInterval(fetchPrograms, FETCH_INTERVAL); // Fetch every few minutes from this point on
-    }
+if( !SERVER_MODE ) {
+    // Endpoint to watch a program
+    app.get('/watch', async function(request, response) {
+        writeResponse( response, "success" );
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
+        // Remove watchBrowser from memory only if not fetching
+        if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
+            try {
+                try {
+                    if( !Site.PATH_TO_CHROME )
+                        await Site.cancelLoading();
+                }
+                catch (err) { console.log(err); }
+                try {
+                    await watchBrowser.disconnect();
+                }
+                catch (err) { console.log(err); }
+            }
+            catch (err) { console.log(err); }
+            watchBrowser = null;
+        }
 
-// Endpoint to stop the regularly occuring process of refetching programs
-app.get( '/stop-interval', async function(request, response) {
-    clearInterval(fetchInterval);
-    fetchInterval = null;
+        if( !watchBrowser ) {
+            await openBrowser();
+        }
+        // The url to watch the program on
+        let url = decodeURIComponent(request.query.url);
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
+        let page;
+        if ( Site.PATH_TO_CHROME ) {
+            let pages = await watchBrowser.pages();
+            page = pages[0];
+        }
+        else {
+            page = Site.connectedTabs[0];
+        }
 
-// Endpoint to get available wifi networks
-app.get ( '/networks/available', async function(request, response) {
-    let networks = await WiFi.availableNetworks();
+        // Set watching to true on the program
+        if( programsCache ) {
+            for( let program of programsCache ) {
+                program.stopped = false;
+                let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
+                if( programUrl == url ) {
+                    program.watching = true;
+                }
+                else {
+                    program.watching = false;
+                }
+            }
+        }
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success", "networks":networks}));
-} );
+        await watch(page, url, request);
 
-// Endpoint to get connected networks
-app.get ( '/networks/connected', async function(request, response) {
-    let networks = WiFi.connectedNetworks();
+        // Remove watchBrowser from memory only if not fetching
+        if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
+            if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+            watchBrowser = null;
+        }
+    });
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success", "networks":networks}));
-} );
+    // Endpoint to stop a program
+    app.get('/stop', async function(request, response) {
+        writeResponse( response, "success" );
 
-// Endpoint to get disconnect from networks
-app.post ( '/networks/disconnect', async function(request, response) {
-    let ssid = request.body.ssid;
+        if( !Site.PATH_TO_CHROME && watchBrowser ) {
+            try {
+                try {
+                    if( !Site.PATH_TO_CHROME )
+                        await Site.cancelLoading();
+                }
+                catch (err) { console.log(err); }
+                try {
+                    await watchBrowser.disconnect();
+                }
+                catch (err) { console.log(err); }
+            }
+            catch (err) { console.log(err); }
+            watchBrowser = null;
+        }
 
-    WiFi.disconnect(ssid);
+        if( !watchBrowser ) {
+            await openBrowser();
+        }
 
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
+        let page;
+        if ( Site.PATH_TO_CHROME ) {
+            let pages = await watchBrowser.pages();
+            page = pages[0];
+        }
+        else {
+            page = Site.connectedTabs[0];
+        }
+        let site = new Site(page);
+        await site.stop();
 
-// Endpoint to connect to a wifi network
-app.post( '/networks/connect', async function(request, response) {
-    let ssid = request.body.ssid;
-    let password = request.body.password;
-    let identity = request.body.identity;
+        // All programs are not being watched now
+        // List the program as being stopped
+        if( programsCache ) {
+            for( let program of programsCache ) {
+                if( program.watching ) {
+                    program.watching = false;
+                    program.stopped = true;
+                }
+            }
+        }
 
-    WiFi.connect(ssid, password, identity);
+        // Remove watchBrowser from memory
+        if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
+            if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+            watchBrowser = null;
+        }
 
-    // Respond to the user
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
-} );
+    });
 
-// Endpoint to perform an update to spokapi
-// Spokapi will need to be restarted after performing an update
-app.post( '/update', async function(request, response) {
-    execSync("git -C /home/chronos/user/Downloads/spokapi/ pull");
-    execSync("/bin/sh /home/chronos/user/Downloads/spokapi/scripts/setup.sh");
+    // Endpoint to break the cache
+    app.get( '/break', async function(request, response) {
+        reloadPrograms = true;
 
-    // Respond to the user
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success"}));
+        writeResponse( response, "success" );
+    } );
 
-    execSync("reboot");
-} );
+    // Endpoint to set cable information
+    app.post( '/info', async function(request, response) {
+        let username = request.body.cableUsername;
+        let password = request.body.cablePassword;
+        let provider = request.body.cableProvider;
+        let cbsUsername = request.body.cbsUsername;
+        let cbsPassword = request.body.cbsPassword;
 
-// Endpoint to return IP address
-app.get('/ip', async function(request, response) {
-    let publicIpAddress = await publicIp.v4();
-    let ipAddress = ip.address(); 
+        if( username ) {
+            Provider.username = username;
+        }
+        if( password ) {
+            Provider.password = password;
+        }
+        if( provider ) {
+            Site.providerName = provider;
+        }
+        if( cbsUsername ) {
+            Cbs.cbsUsername = cbsUsername;
+        }
+        if( cbsPassword ) {
+            Cbs.cbsPassword = cbsPassword;
+        }
 
-    // Respond to the user
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success","ip": ipAddress, "public": publicIpAddress}));
-} );
+        // Save the info for future use
+        updateLoginInfo( request.body );
 
-// Endpoint to go to any URL (for debugging)
-app.get('/navigate', async function(request, response) {
-    let url = decodeURIComponent(request.query.url);
+        writeResponse( response, "success" );
+    } );
 
-    let page;
-    if ( Site.PATH_TO_CHROME ) {
-        let pages = await watchBrowser.pages();
-        page = pages[0];
-    }
-    else {
-        page = Site.connectedTabs[0];
-    }
+    // Endpoint to set cable information
+    app.get( '/info', async function(request, response) {
+        let status = "success";
+        let object = {
+            username: Provider.username,
+            password: Provider.password,
+            provider: Site.providerName,
+            cbsUsername: Cbs.cbsUsername,
+            cbsPassword: Cbs.cbsPassword
+        };
 
-    await page.bringToFront();
-    await page.goto(url);
+        writeResponse( response, status, object );
+    } );
 
-    // Respond to the user
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({"status":"success","ip":ipAddress}));
-} );
+    // Endpoint to remove/add channels from the list of those disallowed
+    app.post( '/channel', async function(request, response) {
+        let channel = request.body.channel;
+        let type = request.body.type;
+
+        Site.addUnsupportedChannel({ "channel": channel, "type": type });
+
+        updateLoginInfo( { "unsupportedChannels": Site.unsupportedChannels } );
+
+        writeResponse( response, "success" );
+    } );
+
+    // Endpoint to start the regularly occuring process of refetching programs
+    app.get( '/start-interval', async function(request, response) {
+        startInterval();
+
+        writeResponse( response, "success" );
+    } );
+
+    // Endpoint to stop the regularly occuring process of refetching programs
+    app.get( '/stop-interval', async function(request, response) {
+        clearInterval(fetchInterval);
+        fetchInterval = null;
+
+        writeResponse( response, "success" );
+    } );
+
+    // Endpoint to get available wifi networks
+    app.get ( '/networks/available', async function(request, response) {
+        let networks = await WiFi.availableNetworks();
+
+        writeResponse( response, "success", {"networks":networks} );
+    } );
+
+    // Endpoint to get connected networks
+    app.get ( '/networks/connected', async function(request, response) {
+        let networks = WiFi.connectedNetworks();
+
+        writeResponse( response, "success", {"networks":networks} );
+    } );
+
+    // Endpoint to get disconnect from networks
+    app.post ( '/networks/disconnect', async function(request, response) {
+        let ssid = request.body.ssid;
+
+        WiFi.disconnect(ssid);
+
+        writeResponse( response, "success" );
+    } );
+
+    // Endpoint to connect to a wifi network
+    app.post( '/networks/connect', async function(request, response) {
+        let ssid = request.body.ssid;
+        let password = request.body.password;
+        let identity = request.body.identity;
+
+        WiFi.connect(ssid, password, identity);
+
+        // Respond to the user
+        writeResponse( response, "success" );
+    } );
+
+    // Endpoint to perform an update to spokapi
+    // Spokapi will need to be restarted after performing an update
+    app.post( '/update', async function(request, response) {
+        execSync("git -C /home/chronos/user/Downloads/spokapi/ pull");
+        execSync("/bin/sh /home/chronos/user/Downloads/spokapi/scripts/setup.sh");
+
+        // Respond to the user
+        writeResponse( response, "success" );
+
+        execSync("reboot");
+    } );
+
+    // Endpoint to return IP address
+    app.get('/ip', async function(request, response) {
+        let publicIpAddress = await publicIp.v4();
+        let ipAddress = ip.address(); 
+
+        // Respond to the user
+        writeResponse( response, "success", {"ip": ipAddress, "public": publicIpAddress} );
+    } );
+
+    // Endpoint to go to any URL (for debugging)
+    app.get('/navigate', async function(request, response) {
+        let url = decodeURIComponent(request.query.url);
+
+        let page;
+        if ( Site.PATH_TO_CHROME ) {
+            let pages = await watchBrowser.pages();
+            page = pages[0];
+        }
+        else {
+            page = Site.connectedTabs[0];
+        }
+
+        await page.bringToFront();
+        await page.goto(url);
+
+        // Respond to the user
+        writeResponse( response, "success" );
+    } );
+}
 
 // -------------------- Main Program --------------------
 
@@ -576,9 +557,39 @@ if( !Site.PATH_TO_CHROME ) {
 }
 else {
     app.listen(PORT);
+    if( SERVER_MODE ) {
+        startInterval();
+    }
 }
 
 // -------------------- Helper Functions --------------------
+
+/**
+ * Start the fetching inverval
+ */
+function startInterval() {
+    if( !fetchInterval ) {
+        fetchInterval = setInterval( function() { reloadPrograms = true; fetchPrograms(); }, FETCH_INTERVAL); // Fetch every few minutes from this point on
+    }
+}
+
+/**
+ * Send a response to the user
+ * @param {Response} response - the response object
+ * @param {String} status - the status of the request
+ * @param {Object} object - an object containing values to include in the response
+ * @param {Number} code - the HTTP response code (defaults to 200)
+ * @param {String} contentType - the content type of the response (defaults to application/json)
+ */
+function writeResponse( response, status, object, code, contentType ) {
+    if( !code ) { code = 200; }
+    if( !contentType ) { contentType = "application/json"; }
+    if( !object ) { object = {}; }
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    
+    let responseObject = Object.assign( {status:status}, object );
+    response.end(JSON.stringify(responseObject));
+}
 
 /**
  * Launch the watch browser.
@@ -621,6 +632,9 @@ async function openBrowser(clean, bringToFront = true) {
 
 /**
  * Asynchronously start watching
+ * @param {Page} page - the page in which to start watching the program
+ * @param {String} url - the url of the program to watch
+ * @param {Request} request - the request object to start watching
  */
 async function watch(page, url, request) {
 
@@ -633,7 +647,6 @@ async function watch(page, url, request) {
     let Network = NETWORKS[networkName];
     if( Network ) {
         let network = new Network(page);
-        watchNetwork = network;
         let provider = Network.getProvider();
         if( provider ) {
             // Try to watch, but it's OK if the watch fails
@@ -669,6 +682,7 @@ async function fetchPrograms(fetchNetworks) {
     fetchLocked = true;
     reloadPrograms = false;
 
+    // First, we get the networks we want to fetch
     if( !fetchNetworks ) {
         if( USE_REMOTE ) {
             // Only fetch networks that are local-specific
@@ -718,6 +732,7 @@ async function fetchPrograms(fetchNetworks) {
         }
     }
 
+    // Fetch shows (multi-threaded) - in batches of MAX_SIMULTANEOUS_FETCHES
     for( let i=0; i < networks.length; i += MAX_SIMULTANEOUS_FETCHES ) {
         let currentNetworks = [];
         for ( let j=0; j<MAX_SIMULTANEOUS_FETCHES; j++ ) {
@@ -764,7 +779,8 @@ async function fetchPrograms(fetchNetworks) {
 }
 
 /**
- * Update the Login Info file
+ * Update the Login info file
+ * @param {Object} newData - new data for the login info file
  */
 function updateLoginInfo( newData ) {
     let contents;
@@ -787,6 +803,11 @@ function updateLoginInfo( newData ) {
 
 /**
  * Update the programs cache
+ */
+/**
+ * Update the programs cache
+ * @param {Array<Program>} programs - an array of programs to add to the programs cache
+ * @param {Array<String>} networkClassNames - the network class names from which the programs to add originate (to remove previous programs from these networks from the programs cache)
  */
 function updateProgramsCache( programs, networkClassNames ) {
     // Remove programs to be replaced

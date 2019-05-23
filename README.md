@@ -14,9 +14,10 @@ Spokapi is an application that simplifies watching TV online (using sites such a
 3. Make sure you have node and npm installed.
 4. Make sure you have Google Chrome downloaded and know the path to it.
 5. `npm install`
-7. `export SPOKAPI_USERNAME=<Your Cable Provider Username/Email>` (this can be entered through the UI too)
-8. `export SPOKAPI_PASSWORD=<Your Cable Provider Username/Password>` (this can be entered through the UI too)
+7. `export SPOKAPI_USERNAME=<Your Cable Provider Username/Email>` (this can be entered through the UI too). 
+8. `export SPOKAPI_PASSWORD=<Your Cable Provider Password>` (this can be entered through the UI too)
 9. `export SPOKAPI_PROVIDER=<Your Cable Provider>` (See the list of Supported Cable Providers) (this can be entered through the UI too)
+10. If your are running Spokapi in server mode, run `export SPOKAPI_SERVER_MODE=1`. Additionally, optionally set `SPOKAPI_FETCH_INTERVAL` and `SPOKAPI_SIMULTANEOUS_FETCHES` to configure the program accordingly. You can also set `SPOKAPI_CBS_USERNAME` and `SPOKAPI_CBS_PASSWORD` for access to CBS.
 11. `export SPOKAPI_CHROME_PATH=<Path to Google Chrome on your Computer>` (Recommended Version: 68 [This saves your flash settings]).
     1. You may run Spokapi without specifying Chrome Path. If you do this, Spokapi will try to connect to Chrome's remote debugging on port 1337 (It'll try to connect to an already running instance of Chrome - the only way to work on Chrome OS, since you can't reopen a new instance of Chrome).
     2. You must configure chrome to enable remote debugging (using `--remote-debugging-port=1337`) to do this.
@@ -90,7 +91,7 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - It's a good idea for the "name" to be what you would usually need to select the provider (That way, you don't have to specify a custom one for each network)
     - The "name" is also what you will use as the provider name when specifying (e.g. SPOKAPI_PROVIDER env variable)
 2. Add the class to the array of classes in `src/modules/site.js`
-3. For each of the site subclasses, make sure to appropriately update VALID_PROVIDERS to help with selecting the new provider when provider login is needed
+3. For each of the site subclasses, make sure to appropriately update VALID_PROVIDERS to help with selecting the new provider when provider login is needed. It is important that the keys for these maps are the lowercase version of the Provider class name. This is how the program figures out which provider class to use.
 
 ## Endpoints
 - `/programs/`
