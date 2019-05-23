@@ -65,13 +65,13 @@ const STATIC_PORT = 8081;
  * @default
  * 15 minutes
  */
-const FETCH_INTERVAL = process.env.SPOKAPI_FETCH_INTERVAL ? process.env.SPOKAPI_FETCH_INTERVAL : 600000;
+const FETCH_INTERVAL = process.env.SPOKAPI_FETCH_INTERVAL ? parseInt(process.env.SPOKAPI_FETCH_INTERVAL) : 600000;
 /**
  * @constant
  * @type {number}
  * @default
  */
-let MAX_SIMULTANEOUS_FETCHES = process.env.SPOKAPI_SIMULTANEOUS_FETCHES ? process.env.SPOKAPI_SIMULTANEOUS_FETCHES : 3;
+let MAX_SIMULTANEOUS_FETCHES = process.env.SPOKAPI_SIMULTANEOUS_FETCHES ? parseInt(process.env.SPOKAPI_SIMULTANEOUS_FETCHES) : 3;
 /**
  * @constant
  * @type {Object}
