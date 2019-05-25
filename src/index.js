@@ -80,7 +80,7 @@ let MAX_SIMULTANEOUS_FETCHES = process.env.SPOKAPI_SIMULTANEOUS_FETCHES ? parseI
  * @default
  */
 const NETWORKS = { 
-    /*"animalplanet": AnimalPlanet,
+    "animalplanet": AnimalPlanet,
     "discovery": Discovery, 
     "investigationdiscovery": InvestigationDiscovery, 
     "foodnetwork": FoodNetwork, 
@@ -100,9 +100,9 @@ const NETWORKS = {
     "pbskids": PbsKids,
     "fox": Fox,
     "fbn": Fbn,
-    "foxnews": FoxNews,*/
-    "usa": Usa/*,
-    "bbcamerica": BbcAmerica*/
+    "foxnews": FoxNews,
+    "usa": Usa,
+    "bbcamerica": BbcAmerica
 };
 /**
  * @constant
