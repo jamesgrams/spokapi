@@ -159,7 +159,7 @@ class Site {
         let page;
         if( PATH_TO_CHROME ) {
             this.browser = await puppeteer.launch({
-                headless: false,
+                headless: true,
                 executablePath: PATH_TO_CHROME
             });
             page = await this.browser.newPage();
