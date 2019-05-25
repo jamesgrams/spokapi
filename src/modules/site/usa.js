@@ -203,6 +203,7 @@ class Usa extends Site {
         // Wait for the form to enter the provider
         await this.page.waitForSelector( ".providerForm", {timeout: Site.STANDARD_TIMEOUT} );
         // Click the provider
+        await this.page.waitForSelector(".mvpd a[title='"+provider.name+"']", {timeout: Site.STANDARD_TIMEOUT});
         await this.page.evaluate( (provider) => {
             document.querySelector(".mvpd a[title='"+provider+"']").click(); }, 
         provider.name );
@@ -227,7 +228,7 @@ class Usa extends Site {
         // See if we need to log in
         try {
             // Wait for the play button
-            await this.page.waitForSelector("#anvato-controller-splash-play-button", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
+            await this.page.waitForSelector(".providerLogo img", {timeout: Site.STANDARD_WAIT_OK_TIMEOUT});
         }
         // We need to log in
         catch(err) {
@@ -237,20 +238,22 @@ class Usa extends Site {
                 if( !returnVal ) return Promise.resolve(1);
             }
         }
-        // Wait for the play button
-        await this.page.waitForSelector("#anvato-controller-splash-play-button", {timeout: Site.STANDARD_TIMEOUT});
-        try {
-            await this.page.evaluate( () => { document.querySelector('#anvato-controller-splash-play-button').click(); } );
-        }
-        // There may be autoplay.
-        catch(err) {}
+        // Wait for the controls
+        await this.page.waitForSelector(".providerLogo img");
 
         // Exit the loading page now that we're loaded (needs to be before fullscreen)
         if( !Site.PATH_TO_CHROME )
             await Site.stopLoading(this.page);
 
         // Click the full screen button (it might be hidden, so use evaluate)
-        await this.page.evaluate( () => { document.querySelector('#anvato-controller-fullscreen-button').click(); } );
+        await this.page.waitFor(10000);
+        await this.page.evaluate( () => { 
+            document.querySelector("#videoplayer").webkitRequestFullScreen();
+        } );
+        
+        let mousie = this.page.mouse;
+        await mousie.click(100, 100); // Not sure we'll have anything smaller than 100 pixels
+
         return Promise.resolve(1);
     }
 
