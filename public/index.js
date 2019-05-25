@@ -150,9 +150,9 @@ function updateInfo() {
     xhr.open("POST", "/info", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({
-        "channelUsername": username,
-        "channelPassword": password,
-        "channelProvider": provider,
+        "username": username,
+        "password": password,
+        "provider": provider,
         "cbsUsername": cbsUsername,
         "cbsPassword": cbsPassword
     }));

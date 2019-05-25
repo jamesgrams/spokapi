@@ -75,7 +75,7 @@ class Cbs extends Site {
             await this.page.goto(CBS_URL, {timeout: Site.STANDARD_TIMEOUT});
 
             // Check if login is necessary and do so if necessary
-            if( !(await this.checkLogin()) ) { return Promise.resolve(1); };
+            if( !(await this.checkLogin()) ) { return Promise.resolve(programs); };
 
             await this.page.waitForSelector("#sch-box0-tip", {timeout: Site.STANDARD_TIMEOUT});
             let tipElement = await this.page.$("#sch-box0-tip");

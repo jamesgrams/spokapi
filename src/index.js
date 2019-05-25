@@ -46,6 +46,7 @@ const Fxm                       = require('./modules/site/foxsite/fxm');
 const Fxx                       = require('./modules/site/foxsite/fxx');
 const FxxWest                   = require('./modules/site/foxsite/fxxwest');
 const NatGeoWild                = require('./modules/site/foxsite/natgeowild');
+const Usa                       = require('./modules/site/usa');
 
 /**
  * @constant
@@ -98,7 +99,8 @@ const NETWORKS = {
     "pbskids": PbsKids,
     "fox": Fox,
     "fbn": Fbn,
-    "foxnews": FoxNews
+    "foxnews": FoxNews,
+    "usa": Usa
 };
 /**
  * @constant
@@ -249,6 +251,13 @@ app.get( '/channel', async function(request, response) {
     writeResponse( response, "success", {"channels":Site.unsupportedChannels} );
 } );
 
+// Endpoint to break the cache
+app.get( '/break', async function(request, response) {
+    reloadPrograms = true;
+
+    writeResponse( response, "success" );
+} );
+
 if( !SERVER_MODE ) {
     // Endpoint to watch a program
     app.get('/watch', async function(request, response) {
@@ -363,18 +372,11 @@ if( !SERVER_MODE ) {
 
     });
 
-    // Endpoint to break the cache
-    app.get( '/break', async function(request, response) {
-        reloadPrograms = true;
-
-        writeResponse( response, "success" );
-    } );
-
     // Endpoint to set cable information
     app.post( '/info', async function(request, response) {
-        let username = request.body.cableUsername;
-        let password = request.body.cablePassword;
-        let provider = request.body.cableProvider;
+        let username = request.body.username;
+        let password = request.body.password;
+        let provider = request.body.provider;
         let cbsUsername = request.body.cbsUsername;
         let cbsPassword = request.body.cbsPassword;
 
