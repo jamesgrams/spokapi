@@ -71,7 +71,7 @@ class Usa extends Site {
         let programs = [];
 
         try {
-            // First, get the time of the next program
+            // First, get the time of the program
             await this.page.goto(USA_HOMEPAGE_URL, {timeout: Site.STANDARD_TIMEOUT});
     
             // Wait for the on now selector

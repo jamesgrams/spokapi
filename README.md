@@ -59,6 +59,7 @@ Spokapi is an application that simplifies watching TV online (using sites such a
 - Channels
     - AHC (American History Channel)
     - Animal Planet
+    - BBC America
     - CBS
     - Cooking Channel
     - Destination America
@@ -78,6 +79,7 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - Science Channel
     - TLC
     - Travel Channel
+    - USA
 
 ### How to add a network
 
