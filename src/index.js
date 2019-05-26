@@ -48,6 +48,7 @@ const FxxWest                   = require('./modules/site/foxsite/fxxwest');
 const NatGeoWild                = require('./modules/site/foxsite/natgeowild');
 const Usa                       = require('./modules/site/usa');
 const BbcAmerica                = require('./modules/site/bbcamerica');
+const AdultSwim                = require('./modules/site/adultswim');
 
 /**
  * @constant
@@ -102,7 +103,8 @@ const NETWORKS = {
     "fbn": Fbn,
     "foxnews": FoxNews,
     "usa": Usa,
-    "bbcamerica": BbcAmerica
+    "bbcamerica": BbcAmerica,
+    "adultswim": AdultSwim
 };
 /**
  * @constant

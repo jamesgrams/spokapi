@@ -57,6 +57,7 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - Xfinity
     
 - Channels
+    - Adult Swim
     - AHC (American History Channel)
     - Animal Planet
     - BBC America
