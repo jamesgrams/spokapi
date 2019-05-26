@@ -749,6 +749,9 @@ async function fetchPrograms(fetchNetworks) {
         await Promise.all(
             currentNetworks.map( async network => {
                 let programs = await network.generatePrograms();
+                for( var i=0; i<programs.length; i++ ) {
+                    programs[i].fetched = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString();
+                }
                 let networkClassName = network.constructor.name.toLowerCase();
                 programsCache = updateProgramsCache( programs, [networkClassName] );
                 newProgramsCache = newProgramsCache.concat(programs);
