@@ -225,7 +225,7 @@ class Site {
 
         // Create the connected chrome tabs
         // Connect to an incognito context
-        let incongitoContext;
+        /*let incongitoContext;
         let contexts = browser.browserContexts();
         for( let context of contexts ) {
             if( context.isIncognito() ) {
@@ -234,7 +234,8 @@ class Site {
         }
         if ( !incongitoContext ) {
             incongitoContext = await browser.createIncognitoBrowserContext();
-        }
+        }*/
+        let incongitoContext = await browser.defaultBrowserContext();
         await incongitoContext.overridePermissions('https://www.cbs.com', ['geolocation']);
         await incongitoContext.overridePermissions('https://www.fox.com', ['geolocation']);
 
@@ -259,6 +260,7 @@ class Site {
             // This makes the viewport correct
             // https://github.com/GoogleChrome/puppeteer/issues/1183#issuecomment-383722137
             await page._client.send('Emulation.clearDeviceMetricsOverride');
+            await page._client.send('Network.clearBrowserCookies'); // When we open a tab for the first time, clear cookies
             await page.setGeolocation(location);
             Site.connectedTabs.push(page);
         }
