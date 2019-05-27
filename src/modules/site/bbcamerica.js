@@ -107,7 +107,7 @@ class BbcAmerica extends Site {
                 }
             }
             catch (err) { // There is no season episode
-                console.log(err);
+                //console.log(err);
             }
 
             // Get the thumbnail from the explore episode page

@@ -6,6 +6,7 @@ window.addEventListener('load', function() {
     loadBlockedChannels();
     document.getElementById("update-info").addEventListener('click', updateInfo);
     document.getElementById("break-cache").addEventListener('click', breakCache);
+    document.getElementById("pause").addEventListener('click', pause);
     document.getElementById("start-fetching").addEventListener('click', startFetching);
     document.getElementById("stop-fetching").addEventListener('click', stopFetching);
     document.getElementById("block-channel").addEventListener('click', addBlockedChannel);
@@ -112,10 +113,10 @@ function generateProgram(program) {
         if( program.episodeTitle ) {
             episodeInfoArray.push(program.episodeTitle);
         }
-        if( program.season ) {
-            episodeInfoArray.push("S" + parseInt(program.season));
-        }
         if( program.episode ) {
+            if( program.season ) {
+                episodeInfoArray.push("S" + parseInt(program.season));
+            }
             episodeInfoArray.push("E" + parseInt(program.episode));
         }
         episodeInfo = episodeInfoArray.join(" ");
@@ -156,6 +157,11 @@ function updateInfo() {
         "cbsUsername": cbsUsername,
         "cbsPassword": cbsPassword
     }));
+}
+function pause() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/pause", true);
+    xhttp.send();
 }
 function breakCache() {
     var xhttp = new XMLHttpRequest();

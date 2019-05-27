@@ -33,6 +33,7 @@ const VALID_PROVIDERS = {
     "frontiercommunications": "",
     "mediacom": "",
     "spectrum": "Charter Spectrum",
+    "xfinity": ""
 }
 
 /**

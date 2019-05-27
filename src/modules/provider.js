@@ -49,7 +49,13 @@ class Provider {
         let passwordSelector = this.passwordSelector;
         let submitSelector = this.submitSelector;
         // Wait until we have the username box
-        await page.waitForSelector(usernameSelector, {timeout: timeout});
+        try {
+            await page.waitForSelector(usernameSelector, {timeout: timeout});
+        }
+        catch(err) {
+            // We could be auto logged in
+            return Promise.resolve(1);
+        }
         // Enter the username and password (evalute allows for this to occur in bg tab)
         await page.waitFor(250);
         await page.evaluate( (usernameSelector, username) => { 

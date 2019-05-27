@@ -35,22 +35,23 @@ const DiyNetwork 	            = require('./modules/site/discoverysite/diynetwork
 const DestinationAmerica 	    = require('./modules/site/discoverysite/destinationamerica');
 const Cbs                       = require('./modules/site/cbs');
 const PbsKids                   = require('./modules/site/pbskids');
-const NationalGeographic        = require('./modules/site/foxsite/nationalgeographic');
-const NationalGeographicWest    = require('./modules/site/foxsite/nationalgeographicwest');
 const Fbn                       = require('./modules/site/foxsite/fbn');
 const Fox                       = require('./modules/site/foxsite/fox');
 const FoxNews                   = require('./modules/site/foxsite/foxnews');
+const Usa                       = require('./modules/site/usa');
+const BbcAmerica                = require('./modules/site/bbcamerica');
+const AdultSwim                 = require('./modules/site/adultswim');
+const Tnt                       = require('./modules/site/turnersite/tnt.js');
+const Tbs                       = require('./modules/site/turnersite/tbs.js');
+
+const NationalGeographic        = require('./modules/site/foxsite/nationalgeographic');
+const NationalGeographicWest    = require('./modules/site/foxsite/nationalgeographicwest');
 const Fx                        = require('./modules/site/foxsite/fx');
 const FxWest                    = require('./modules/site/foxsite/fxwest');
 const Fxm                       = require('./modules/site/foxsite/fxm');
 const Fxx                       = require('./modules/site/foxsite/fxx');
 const FxxWest                   = require('./modules/site/foxsite/fxxwest');
 const NatGeoWild                = require('./modules/site/foxsite/natgeowild');
-const Usa                       = require('./modules/site/usa');
-const BbcAmerica                = require('./modules/site/bbcamerica');
-const AdultSwim                 = require('./modules/site/adultswim');
-const Tnt                       = require('./modules/site/turnersite/tnt.js');
-const Tbs                       = require('./modules/site/turnersite/tbs.js');
 
 /**
  * @constant
@@ -162,6 +163,7 @@ const LOGIN_INFO_FILE = 'login-info.txt';
 Site.totalNetworks = Object.keys(NETWORKS).length;
 
 var watchBrowser;
+var watchNetwork;
 var programsCache;
 var fetchLocked = false;
 var fetchInterval;
@@ -306,7 +308,8 @@ if( !SERVER_MODE ) {
         // Set watching to true on the program
         if( programsCache ) {
             for( let program of programsCache ) {
-                program.stopped = false;
+                program.stopped = false; // Nothin has been explicitly stopped
+                program.paused = false;
                 let programUrl = decodeURIComponent( program.link.replace( "/watch?url=", "" ).replace( /&network=.*/, "" ) );
                 if( programUrl == url ) {
                     program.watching = true;
@@ -325,6 +328,56 @@ if( !SERVER_MODE ) {
             watchBrowser = null;
         }
     });
+
+    // Endpoint to pause or unpause a program
+    app.get('/pause', async function(request, response) {
+        writeResponse( response, "success" );
+
+       // Remove watchBrowser from memory only if not fetching
+        if( !Site.PATH_TO_CHROME && watchBrowser && !fetchLocked ) {
+            try {
+                try {
+                    if( !Site.PATH_TO_CHROME )
+                        await Site.cancelLoading();
+                }
+                catch (err) { console.log(err); }
+                try {
+                    await watchBrowser.disconnect();
+                }
+                catch (err) { console.log(err); }
+            }
+            catch (err) { console.log(err); }
+            watchBrowser = null;
+        }
+
+        if( !watchBrowser ) {
+            await openBrowser(false, false);
+        }
+
+        if ( Site.PATH_TO_CHROME ) {
+            let pages = await watchBrowser.pages();
+            page = pages[0];
+        }
+        else {
+            page = Site.connectedTabs[0];
+        }
+
+        if( watchNetwork ) {
+            watchNetwork.page = page;
+            await watchNetwork.pause();
+            for( let program of programsCache ) {
+                if( program.watching ) {
+                    program.paused = true;
+                }
+            }
+        }
+
+        // Remove watchBrowser from memory only if not fetching
+        if ( !Site.PATH_TO_CHROME && !fetchLocked ) {
+            if (watchBrowser) { try { await watchBrowser.disconnect() } catch (err) { console.log(err) } };
+            watchBrowser = null;
+        }
+    } );
 
     // Endpoint to stop a program
     app.get('/stop', async function(request, response) {
@@ -367,7 +420,8 @@ if( !SERVER_MODE ) {
             for( let program of programsCache ) {
                 if( program.watching ) {
                     program.watching = false;
-                    program.stopped = true;
+                    program.paused = false;
+                    program.stopped = true; // The program has been explicitly stopped
                 }
             }
         }
@@ -412,6 +466,20 @@ if( !SERVER_MODE ) {
 
     // Endpoint to set cable information
     app.get( '/info', async function(request, response) {
+        let status = "success";
+        let object = {
+            username: Provider.username,
+            password: Provider.password,
+            provider: Site.providerName,
+            cbsUsername: Cbs.cbsUsername,
+            cbsPassword: Cbs.cbsPassword
+        };
+
+        writeResponse( response, status, object );
+    } );
+
+    // Pause
+    app.get( '/pause', async function(request, response) {
         let status = "success";
         let object = {
             username: Provider.username,
@@ -613,7 +681,7 @@ async function openBrowser(clean, bringToFront = true) {
         watchBrowser = await puppeteer.launch({
             headless: false,
             executablePath: Site.PATH_TO_CHROME,
-            args: ['--disable-infobars','--start-maximized'],
+            args: ['--disable-infobars','--start-maximized', '--disk-cache-size=0'],
             userDataDir: './userDataDir'
         });
         let pages = await watchBrowser.pages();
@@ -657,6 +725,7 @@ async function watch(page, url, request) {
     let Network = NETWORKS[networkName];
     if( Network ) {
         let network = new Network(page);
+        watchNetwork = network;
         let provider = Network.getProvider();
         if( provider ) {
             // Try to watch, but it's OK if the watch fails
@@ -736,9 +805,9 @@ async function fetchPrograms(fetchNetworks) {
     if( USE_REMOTE ) {
         let response = await fetch(REMOTE_SERVER);
         let json = await response.json();
-        if ( json.programs ) {
-            programsCache = updateProgramsCache( json.programs, Object.keys(NETWORKS).map( (network) => network.constructor.name.toLowerCase() ) );
-            newProgramsCache = json.programs;
+        if ( json.live ) {
+            programsCache = updateProgramsCache( json.live, Object.keys(NETWORKS).filter( (network) => fetchNetworks.indexOf(network) == -1 ) );
+            newProgramsCache = json.live;
         }
     }
 

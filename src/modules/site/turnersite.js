@@ -243,7 +243,7 @@ class TurnerSite extends Site {
         }
         // We need to log in
         catch(err) {
-            let signInBox = await this.page.$('#mvpdPickerFrame');
+            let signInBox = await this.page.$('#mvpdPickerFrame, .timer-wrapper .freeview--button');
             if( signInBox ) {
                 let returnVal = await this.login();
                 if( !returnVal ) return Promise.resolve(1);

@@ -101,7 +101,7 @@ class DiscoverySite extends Site {
                 thumbnail = await this.page.evaluate( (liveElement) => liveElement.querySelector('img').getAttribute('src'), liveElement );
             }
             catch(err) { // No thumbnail
-                console.log(err);
+                //console.log(err);
             }
             let season = "";
             let episode = "";
@@ -119,7 +119,7 @@ class DiscoverySite extends Site {
                 }
             }
             catch (err) { // There is no season episode
-                console.log(err);
+                //console.log(err);
             }
 
             // Make sure the network is not blacklisted
