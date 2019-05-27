@@ -94,7 +94,7 @@ class Usa extends Site {
 
             // Get all the info
             let network = this.constructor.name.toLowerCase();
-            let channel = network;
+            let channel = "USA";
             let title = await ( await( await this.page.$(".show-name")).getProperty('textContent') ).jsonValue() ;
             title = title.replace( /^[\n\s]+/, "" );
             title = title.replace( /[\n\s]+$/, "" );

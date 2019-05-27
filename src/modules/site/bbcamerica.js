@@ -76,7 +76,7 @@ class BbcAmerica extends Site {
 
             // Get all the info
             let network = this.constructor.name.toLowerCase();
-            let channel = network;
+            let channel = "BBC America";
             let onNow = await this.page.$(".on_now");
             let title = await ( await( await onNow.$(".ssi-title a")).getProperty('textContent') ).jsonValue() ;
             let episodeTitle = await ( await( await onNow.$(".ssi-episode-title")).getProperty('textContent') ).jsonValue() ;

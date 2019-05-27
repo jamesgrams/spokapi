@@ -48,7 +48,9 @@ const FxxWest                   = require('./modules/site/foxsite/fxxwest');
 const NatGeoWild                = require('./modules/site/foxsite/natgeowild');
 const Usa                       = require('./modules/site/usa');
 const BbcAmerica                = require('./modules/site/bbcamerica');
-const AdultSwim                = require('./modules/site/adultswim');
+const AdultSwim                 = require('./modules/site/adultswim');
+const Tnt                       = require('./modules/site/turnersite/tnt.js');
+const Tbs                       = require('./modules/site/turnersite/tbs.js');
 
 /**
  * @constant
@@ -104,7 +106,9 @@ const NETWORKS = {
     "foxnews": FoxNews,
     "usa": Usa,
     "bbcamerica": BbcAmerica,
-    "adultswim": AdultSwim
+    "adultswim": AdultSwim,
+    "tnt": Tnt,
+    "tbs": Tbs
 };
 /**
  * @constant

@@ -78,7 +78,9 @@ Spokapi is an application that simplifies watching TV online (using sites such a
     - NBC Sports (+ subsidiaries)
     - PBS KIDS
     - Science Channel
+    - TBS
     - TLC
+    - TNT
     - Travel Channel
     - USA
 

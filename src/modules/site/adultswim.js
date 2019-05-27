@@ -71,7 +71,7 @@ class AdultSwim extends Site {
             for (let stream of streams) {
 
                 let network = this.constructor.name.toLowerCase();
-                let channel = network;
+                let channel = "Adult Swim";
 
                 let title = "";
                 let svgTitle = await stream.$("svg");
