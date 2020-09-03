@@ -10,7 +10,7 @@
     "start-remote": "node src/index.js --use-remote"
   },
   "dependencies": {
-    "puppeteer": "^1.11.0",
+    "puppeteer": "^1.13.0",
     "express": "^4.16.0",
     "ip": "^1.1.5",
     "node-fetch": "^2.3.0",
