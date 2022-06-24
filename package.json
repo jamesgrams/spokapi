@@ -13,7 +13,7 @@
     "puppeteer": "^1.11.0",
     "express": "^4.16.0",
     "ip": "^1.1.5",
-    "node-fetch": "^2.3.0",
+    "node-fetch": "^2.6.7",
     "body-parser": "^1.18.3",
     "iplocation": "^6.1.0",
     "public-ip": "^3.0.0"
